@@ -1,0 +1,78 @@
+<!-- data properties within our container are captured.  In this case the minute value is retained, but the hour is overwritten in our initial data -->
+<div id="container" data-hour="12" data-minute="30">
+
+  <label>hour
+    <!-- all named controls within our container are bound -->
+    <input name="hour" />
+  </label>
+
+  <!-- [optionnamespace]-text binds text without overwriting child elements -->
+  <label text="minuteLabel">
+    <!-- [optionalnamespace]-val also binds -->
+    <input val="minute" />
+  </label>
+
+  <label>day
+    <input name="day" value="6" />
+  </label>
+
+  <label>
+    read only year
+    <span text="year"></span>
+  </label>
+
+  <fieldset>
+    <legend>
+      Season
+    </legend>
+    <label>Summer
+      <input type="radio" name="season" value="0">
+    </label>
+    <label>Fall
+      <input type="radio" name="season" value="1">
+    </label>
+    <label>Winter
+      <input type="radio" name="season" value="2">
+    </label>
+    <label>Spring
+      <input type="radio" name="season" value="3">
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>
+      Real Feel
+    </legend>
+    <label>Hot
+      <input type="checkbox" name="reelfeel" value="0">
+    </label>
+    <label>Humid
+      <input type="checkbox" name="reelfeel" value="1">
+    </label>
+  </fieldset>
+
+  <fieldset databind="nested">
+    <legend>
+      Container for a Nested Instance
+    </legend>
+
+    <textarea name="info"></textarea>
+  </fieldset>
+
+</div>
+
+<hr/>
+
+
+<label for="JSON">JSON (outside of instance container)
+</label>
+<textarea id="JSON"></textarea>
+
+<label for="JSON2">nested branch JSON (outside of instance container)
+</label>
+<textarea id="JSON2"></textarea>
+
+<label for="commandLine">
+  live script
+</label>
+<textarea id="commandLine">//execute some script using the dataBinding instance to satisfy yourself that two-way databinding is really occurring.&#13&#13//Example: dataBinding.data.hour = 1;&#13&#13//Example: dataBinding.branches.nested.data.info = "new info";</textarea>
