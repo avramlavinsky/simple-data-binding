@@ -52,6 +52,18 @@ body{
   font-size: 15px;
 }
 
+.next, .prev{
+  display: inline-block;
+  position: absolute;
+  left: 50%;
+  width: 200px;
+  padding: 10px;
+}
+
+.prev{
+  margin-left: -200px;
+  text-align: right;
+}
 
 .icon{
   color: #AEAEAE;
@@ -73,8 +85,8 @@ iframe{
 
 <body>
    <div class="nav">
-  	<a class="prev" disabled><span class="navLinkLinier"><span class="icon">&#9668;</span> Previous</span></a>
-  	<a class="next" disabled><span class="navLinkLinier">Next <span class="icon">&#9658<span></span></span></a>
+  	<a class="prev" disabled><span class="navLinkLiner"><span class="icon">&#9668;</span> Previous</span></a>
+  	<a class="next" disabled><span class="navLinkLiner">Next <span class="icon">&#9658<span></span></span></a>
    </div>
   <iframe class="codepen" src="https://codepen.io/cagerattler/pen/QKbkqQ"></iframe>
 </body>
