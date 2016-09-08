@@ -1,24 +1,80 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Simple Two Way Data Binding Example</title>
-		<style>
-		.codepen{
-			position: absolute;
-		    	top: 50px;
-		    	bottom: 0;
-		        left: 0;
-		        right: 0;
-		        height: 100%;
-		        width: 100%;
-		}
-		</style>
-	</head>
-	<body>
-	   <div class="nav">
-	  	<a class="next" disabled>Previous</a>
-	  	<a class="prev" disabled>Next</a>
-  	   </div>
-	  <iframe class="codepen" src="https://codepen.io/cagerattler/pen/QKbkqQ"></iframe>
-	</body>
+  <head>
+    <title>Simple Two Way Data Binding Example</title>
+    <style>
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+html, body, div, iframe {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+body{
+  font-family: tahoma, arial;
+  color: White;
+  background-color: #000000;
+  font-size: 16px;
+  line-height: 20px;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+
+  -webkit-box-flex-direction: column;
+  -moz-box-flex-direction: column;
+  -ms-flex-direction: column;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+
+*, *:after, *:before{
+  box-sizing: border-box;
+}
+
+.nav{
+  -moz-box-flex: 0 0 auto;
+  -webkit-flex: 0 0 auto;
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+  height: 50px;
+}
+
+iframe{
+  -moz-box-flex: 1 0 auto;
+  -webkit-flex: 1 0 auto;
+  -ms-flex: 1 0 auto;
+  flex: 1 1 auto;
+  height: auto;
+  height: auto;
+}
+
+.next, .prev{
+  display: inline-block;
+  position: absolute;
+  left: 50%;
+  width: 200px;
+  padding: 10px;
+}
+
+.prev{
+  margin-left: -200px;
+  text-align: right;
+}
+  </style>
+  
+</head>
+
+<body>
+   <div class="nav">
+  	<a class="next" disabled>&#9668; Previous</a>
+  	<a class="prev" disabled>Next &#9658</a>
+     </div>
+  <iframe class="codepen" src="https://codepen.io/cagerattler/pen/QKbkqQ"></iframe>
+</body>
 </html>
