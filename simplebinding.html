@@ -99,11 +99,17 @@ div.nav + div, iframe{
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
-      debugger;
       if( ! e.target.getAttribute("disabled")){
         var increment = Number(e.target.dataset.increment);
         pageIndex += increment;
         page.update(pageData[pageIndex]);
+        if(pageIndex == 0){
+          document.querySelector(".prev").setAttribute("disabled", "disabled");
+          document.querySelector(".next").removetAttribute("disabled");
+        }else{
+          document.querySelector(".next").setAttribute("disabled", "disabled");
+          document.querySelector(".prev").removetAttribute("disabled");
+        }
       }
     }
     
