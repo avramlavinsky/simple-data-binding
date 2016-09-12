@@ -32,19 +32,19 @@ h1{
   padding: 0 20px;
 }
 
-.next, .prev{
+.nextContainer, .prevContainer{
   display: inline-block;
   position: relative;
   left: 50%;
   width: 200px;
 }
 
-.prev{
+.prevContainer{
   margin-left: -200px;
   text-align: right;
 }
 
-.navLinkLiner{
+.navLink{
   background: #4d4d50;
   border-radius: 3px;
   font-size: 15px;
@@ -55,7 +55,7 @@ h1{
   color: white;
 }
 
-.navLinkLiner:hover {
+.navLink:hover {
     background-color: #888888;
 }
 
@@ -83,8 +83,8 @@ div.nav + div, iframe{
 <body>
    <div class="nav">
     <h1 text="heading">Simplest Data Binding Ever</h1>
-  	<a class="prev" data-increment="-1" target="CodePen Embed" disabled><span class="navLinkLiner"><span class="icon">&#9668;</span> Previous</span></a>
-  	<a class="next" data-increment="1" target="CodePen Embed" href="//codepen.io/cagerattler/embed/vXLEor?height=800&theme-id=0&slug-hash=vXLEor&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true"><span class="navLinkLiner">Next <span class="icon">&#9658<span></span></span></a>
+  	<span class="prevContainer"><a class="navLink" data-increment="-1" target="CodePen Embed" disabled><span class="icon">&#9668;</span> Previous</a></span>
+  	<span class="nextContainer"><a class="navLink" data-increment="1" target="CodePen Embed" href="//codepen.io/cagerattler/embed/vXLEor?height=800&theme-id=0&slug-hash=vXLEor&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true">Next <span class="icon">&#9658</span></a></span>
    </div>
 
   <p data-height="800" data-theme-id="0" data-slug-hash="XjXAYx" data-default-tab="js,result" data-user="cagerattler" data-embed-version="2" data-editable="true" class="codepen">See the Pen <a href="http://codepen.io/cagerattler/pen/XjXAYx/">Simplest Two Way Data-binding Ever</a> by Avram Lavinsky (<a href="http://codepen.io/cagerattler">@cagerattler</a>) on <a href="http://codepen.io">CodePen</a>.</p>
