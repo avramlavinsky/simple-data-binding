@@ -60,8 +60,8 @@ h1{
     background-color: #888888;
 }
 
-[disabled] .navLinkLiner,
-[disabled] .navLinkLiner:hover{
+.navLink[disabled],
+.navLink[disabled]:hover{
     background-color: #444444;
     color: #999999;
     cursor: default;
@@ -107,9 +107,11 @@ div.nav + div, iframe{
     
     function changePage(e){
       debugger;
-      var increment = Number(e.target.dataset.increment);
-      pageIndex += increment;
-      page.update(pageData[pageIndex]);
+      if( ! e.target.getAttribute("disabled")){
+        var increment = Number(e.target.dataset.increment);
+        pageIndex += increment;
+        page.update(pageData[pageIndex]);
+      }
     }
     
     document.querySelector(".prev").addEventListener("click", changePage);
