@@ -83,8 +83,8 @@ div.nav + div, iframe{
 <body>
    <div class="nav">
     <h1 text="heading">Simplest Data Binding Ever</h1>
-  	<a class="prev" target="CodePen Embed" disabled><span class="navLinkLiner"><span class="icon">&#9668;</span> Previous</span></a>
-  	<a class="next" target="CodePen Embed" href="//codepen.io/cagerattler/embed/vXLEor?height=800&theme-id=0&slug-hash=vXLEor&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true"><span class="navLinkLiner">Next <span class="icon">&#9658<span></span></span></a>
+  	<a class="prev" data-increment="-1" target="CodePen Embed" disabled><span class="navLinkLiner"><span class="icon">&#9668;</span> Previous</span></a>
+  	<a class="next" data-increment="1" target="CodePen Embed" href="//codepen.io/cagerattler/embed/vXLEor?height=800&theme-id=0&slug-hash=vXLEor&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true"><span class="navLinkLiner">Next <span class="icon">&#9658<span></span></span></a>
    </div>
 
   <p data-height="800" data-theme-id="0" data-slug-hash="XjXAYx" data-default-tab="js,result" data-user="cagerattler" data-embed-version="2" data-editable="true" class="codepen">See the Pen <a href="http://codepen.io/cagerattler/pen/XjXAYx/">Simplest Two Way Data-binding Ever</a> by Avram Lavinsky (<a href="http://codepen.io/cagerattler">@cagerattler</a>) on <a href="http://codepen.io">CodePen</a>.</p>
@@ -96,10 +96,23 @@ div.nav + div, iframe{
   (function(){
     
   
-    var pageData = [{title: "SimpleDataBinding Example 1", heading: "Simplest Data Binding Ever", prevHref: "", nextHref: "//codepen.io/cagerattler/embed/vXLEor?height=800&theme-id=0&slug-hash=vXLEor&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true"}];
+    var pageData = [
+        {title: "SimpleDataBinding Example 1", heading: "Simplest Data Binding Ever", prevHref: "", nextHref: "//codepen.io/cagerattler/embed/vXLEor?height=800&theme-id=0&slug-hash=vXLEor&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true"},
+        {title: "SimpleDataBinding Example 2", heading: "Simple Prefilling", prevHref: "//codepen.io/cagerattler/embed/vXLEor?height=800&theme-id=0&slug-hash=vXLEor&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true", nextHref: ""}
+      ],
+      pageIndex = 0;
     
-    window.sdb = new SimpleDataBinding(document.documentElement, pageData[0]);
-  
+    window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
+    
+    function changePage(e){
+      debugger;
+      var increment = Number(e.target.dataSet.increment);
+      pageIndex += increment;
+      page.update(pageData[pageIndex]);
+    }
+    
+    document.querySelector(".prev").addEventListener("click", changePage);
+    document.querySelector(".next").addEventListener("click", changePage);
   })()
   
 </script>
