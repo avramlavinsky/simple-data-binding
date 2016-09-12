@@ -106,7 +106,7 @@ div.nav + div, iframe{
     
     function changePage(e){
       debugger;
-      var increment = Number(e.target.dataSet.increment);
+      var increment = Number(e.target.dataset.increment);
       pageIndex += increment;
       page.update(pageData[pageIndex]);
     }
