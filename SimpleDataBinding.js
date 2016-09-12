@@ -1,4 +1,4 @@
-function SimpleDataBinding(el, startData, configs) {
+function SimpleDataBinding(el, startData, configs, parentBranch) {
   //binds data to and from form controls or to static element text nodes
   //el:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
   //startData: object (optional)
@@ -10,7 +10,6 @@ function SimpleDataBinding(el, startData, configs) {
 
   var self = this;
 
-
   //<<<< Core Data Methods >>>>
 
   this.set = function(prop, val) {
@@ -19,21 +18,40 @@ function SimpleDataBinding(el, startData, configs) {
     return prop;
   };
 
-  this.get = function(prop) {
+  this.get = function(prop, inherit) {
     //getter
-    return self.data[self.toPrefixedCamel(prop)];
+    prop = self.toPrefixedCamel(prop);
+    return inherit ? self.inherittedData[prop] : self.data[prop];
   };
 
   this.update = function(newData) {
-    //sets all values present in newData object to data
+    //assigns all values present in newData object to data
+    var newBranchContainer, branch, clone;
+
     self.updating = true;
     for (var prop in newData) {
       if (typeof(newData[prop]) == "object") {
-        self.branches[prop] = new SimpleDataBinding('[' + self.toPrefixedHyphenated('databind') + '="' + prop + '"]', newData[prop], self.configs);
+        newBranchContainer = document.querySelector('[' + self.toPrefixedHyphenated('databind') + '="' + prop + '"]');
+        if (newData[prop] instanceof Array && newBranchContainer) {
+          for (var repeaterBranchIndex = 0, stop = newData[prop].length; repeaterBranchIndex < stop; repeaterBranchIndex++) {
+            branch = self.createBranch(prop + "-" + repeaterBranchIndex, self.cloneInPlace(newBranchContainer), newData[prop][repeaterBranchIndex]);
+            branch.updateDomInheritance();
+          };
+          Object.defineProperty(newData[prop], "container", newBranchContainer); //put a reference to the container dom element template in the array itself
+          newBranchContainer.parentElement.removeChild(newBranchContainer); //todo: get a reference to the tampate element
+        } else {
+          self.createBranch(prop, newBranchContainer, newData[prop]);
+        }
       } else {
         self.set(prop, newData[prop]);
       }
     }
+
+    //call potentially unbound user parser methods
+    if (configs && configs.parserMethods) {
+      self.setDomProp(configs.parserMethods);
+    } 
+
     setTimeout(function() {
       self.updating = false;
       self.previousData = self.assign({}, self.data);
@@ -42,34 +60,17 @@ function SimpleDataBinding(el, startData, configs) {
     return self.data;
   };
 
-  this.prefixData = function(dataset) {
-    //prefix data property names with namespace as needed
-    for (var prop in dataset) {
-      if (prop.substring(0, self.nameSpace.length) != self.nameSpace) {
-        self.set(prop, dataset[prop]);
-        delete dataset[prop];
-      }
-    }
-    return dataset;
-  };
-
-  this.unprefixData = function(obj) {
-    //remove namespace prefix from data property names
-    if (self.nameSpace) {
-      for (var prop in obj) {
-        obj[self.toUnprefixedCamel(prop)] = obj[prop];
-        delete obj[prop];
-      }
-    }
-    return obj;
-  };
-  
-  this.assign = Object.assign || function(obj1, obj2){
-  //polyfill for Object.assign
-    for (var prop in obj2){
+  this.assign = Object.assign || function(obj1, obj2) {
+    //polyfill for Object.assign
+    for (var prop in obj2) {
       obj1[prop] = obj2[prop];
     }
     return obj1;
+  };
+
+  this.createBranch = function(prop, el, data) {
+    self.children[prop] = new SimpleDataBinding(el, data, self.configs, self);
+    return self.children[prop];
   };
 
   this.export = function() {
@@ -78,12 +79,11 @@ function SimpleDataBinding(el, startData, configs) {
     //removes namespace from property names
     var dataClone = self.unprefixData(self.assign({}, self.data));
 
-    for (branch in self.branches) {
-      dataClone[branch] = self.branches[branch].export();
+    for (branch in self.children) {
+      dataClone[branch] = self.children[branch].export();
     }
     return dataClone;
   };
-
 
   //<<<<< String Utilities >>>>>
 
@@ -118,70 +118,107 @@ function SimpleDataBinding(el, startData, configs) {
     return str.charAt(0).toLowerCase() + str.slice(1);
   };
 
+  this.prefixData = function(dataset) {
+    //prefix data property names with namespace as needed
+    for (var prop in dataset) {
+      if (prop.substring(0, self.nameSpace.length) != self.nameSpace) {
+        self.set(prop, dataset[prop]);
+        delete dataset[prop];
+      }
+    }
+    return dataset;
+  };
+
+  this.unprefixData = function(obj) {
+    //remove namespace prefix from data property names
+    if (self.nameSpace) {
+      for (var prop in obj) {
+        obj[self.toUnprefixedCamel(prop)] = obj[prop];
+        delete obj[prop];
+      }
+    }
+    return obj;
+  };
 
   //<<< DOM Methods >>>
 
-  this.setDomProp = function(prop) {
-    //look for form control names matching property
-    //or data-text attribute values matching property
-    //and update the nodes that match
-
-    var value = self.get(prop);
-
-    self.eachDomNode("name", prop, self.setNodeValue, [value], true);
-    self.eachDomNode(self.toPrefixedHyphenated("val"), prop, self.setNodeValue, [value]);
-    self.eachDomNode(self.toPrefixedHyphenated("text"), prop, function(el, i, val) {
-      self.setNodeText(el, val);
-    }, [value]);
-  };
-
-  this.setNodeValue = function(el, i, value) {
-    if (el.type == "radio") {
-      el.checked = (value == el.value);
-    } else if (el.type == "checkbox") {
-      el.checked = (value.indexOf(el.value) != -1);
+  this.is = function(el, selector) {
+    //polyfill for matches method
+    var matchesTest = (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector);
+    if (matchesTest) {
+      return matchesTest.call(el, selector);
     } else {
-      el.value = value;
+      //ie8 polyfill
+      var nodes = el.parentNode.querySelectorAll(selector);
+      for (var i = nodes.length; i--;) {
+        if (nodes[i] === el)
+          return true;
+      }
+      return false;
     }
   };
 
-  this.setNodeText = function(el, value) {
-    if (el) {
-      for (var i = 0; i < el.childNodes.length; i++) {
-        if (el.childNodes[i].nodeName === "#text") {
-          el.childNodes[i].nodeValue = "";
-        } else {
-          break;
-        }
-      }
-      if (i === 0) {
-        el.innerText = value;
-      } else {
-        el.childNodes[i - 1].nodeValue = value;
-      }
+  this.closest = function(el, selector) {
+    //returns closest selector match in el or ancestors
+    //currently not used - may need for possible performance enhancements
+    while (!self.is(el, selector) && el !== document.body) {
+      el == el.parentElement;
     }
+    return el;
   };
 
-  this.eachDomNode = function(prop, value, fn, additionalArgs, explicit) {
-    //dom collection iterator
-    var selector, nodes, args;
+  this.cloneInPlace = function(el) {
+    //inserts a clone of an element before that element
+    var clone = el.cloneNode(true);
 
-    if (typeof(value) === "string") {
-      selector = '[' + prop + '="' + value + '"]';
+    el.parentElement.insertBefore(clone, el);
+    return clone;
+  };
+
+  this.setDomProp = function(prop, methods) {
+    //looks for element attribute values matching data property name if provided and updates via parser method or all parser methods if none is provided
+
+    var parserMethodName, attr;
+
+    if (typeof(methods) == "string") {
+      parserMethodName = methods;
+      methods = {};
+      methods[parserMethodName] = self.parserMethods[parserMethodName];
+    } else if (!(methods instanceof Array)) {
+      methods = self.parserMethods;
+    }
+
+    for (var key in methods) {
+      attr = methods[key].explicit ? key : self.toPrefixedHyphenated(key);
+      self.eachDomNode(attr, prop, methods[key].fn || methods[key]);
+    };
+  };
+
+  this.eachDomNode = function(attr, value, fn) {
+    //iterates DOM collection matching attr value and invokes method fn 
+    var selector, nodes, attrValue, args;
+
+    if (value) {
+      selector = '[' + attr + '="' + value || "" + '"]';
     } else {
-      selector = '[' + prop + ']';
+      selector = '[' + attr + ']';
     }
 
-    nodes = self.container.querySelectorAll(selector);
+    nodes = Array.prototype.slice.call(self.container.querySelectorAll(selector));
+
+    if (self.is(self.container, selector)) {
+      nodes.push(self.container);
+    }
 
     for (var i = 0, stop = nodes.length; i < stop; i++) {
-      args = [nodes[i], i];
-      args.push.apply(args, additionalArgs || []);
+      attrValue = value || nodes[i].getAttribute(attr);
+      args = [nodes[i], attrValue, self.get(attrValue), attr, nodes, i];
       fn.apply(self, args);
     }
   };
 
   this.getNodeValue = function(el) {
+    //returns value of form control or selected value of radio or checkbox group
     var val = "";
 
     if (el.type == "radio") {
@@ -190,7 +227,7 @@ function SimpleDataBinding(el, startData, configs) {
       }
     } else if (el.type == "checkbox") {
       val = self.data[el.getAttribute("data-" + self.nameSpace + "value") || el.name] || "";
-      val = val ? val.split(self.delimiter) : [];
+      val = val ? val.split(self.checkboxDataDelimiter) : [];
       if (el.checked) {
         val.push(el.value);
       } else {
@@ -204,6 +241,7 @@ function SimpleDataBinding(el, startData, configs) {
   };
 
   this.getInitialNodeValues = function() {
+    //assigns initial form values in elements with a name or a [namespace-]val attribute to data
     self.eachDomNode("name", null, function(el) {
       if (el.getAttribute("value")) {
         self.set(el.name, self.getNodeValue(el));
@@ -217,7 +255,77 @@ function SimpleDataBinding(el, startData, configs) {
     return self.data;
   };
 
+  this.updateDomInheritance = function() {
+    //set properties in the DOM to express data inheritted from ancestor databinding instances
+    //used during initalization prior to setting modulation listener
 
+    //note that mutation observer has not triggered yet for this instance's init
+    var inherittedData = {};
+
+    //create current inherittedData
+    for (var i in self.ancestors) {
+      this.assign(inherittedData, self.ancestors[i].data);
+    };
+
+    //set DOM properties for [namespace-]val attribute with this instance's data so checkbox and radio selected values can be expressed in inheritted data accurately
+    for (var prop in self.data) {
+      self.setDomProp(prop, "val");
+    };
+
+    //set DOM properties with the inheritted data
+    for (var prop in inherittedData) {
+      self.setDomProp(prop);
+    };
+  };
+
+  this.updateDom = function() {
+    //set properties in the DOM to express data
+    //used during initalization prior to setting modulation listener
+
+    for (var prop in self.data) {
+      self.setDomProp(prop);
+    };
+  };
+
+  this.setNodeValue = function(el, prop, value, attr) {
+    //sets node value to data property value
+    //core parser method 
+
+    if (el.type == "radio" && attr == "name") {
+      el.checked = (value == el.value);
+    } else if (el.type == "checkbox" && attr == "name") {
+      el.checked = (value.indexOf(el.value) != -1);
+    } else {
+      el.value = value;
+    }
+  };
+
+  this.setNodeText = function(el, prop, value) {
+    //sets node text to data property value
+    //core parser method
+    //if multple text nodes are present, clears to null string and sets last text node to value
+    var textNodes = [],
+      targetTextNode;
+
+    if (el) {
+      for (var i = 0; i < el.childNodes.length; i++) {
+        if (el.childNodes[i].nodeName === "#text") {
+          textNodes.push(el.childNodes[i]);
+          if (el.childNodes[i].nodeValue.replace(/^\s*$/g, "").length) {
+            el.childNodes[i].nodeValue = "";
+            targetTextNode = el.childNodes[i];
+          }
+        }
+      }
+      targetTextNode = targetTextNode || textNodes[0];
+      if (targetTextNode) {
+        targetTextNode.nodeValue = value;
+      } else {
+        targetTextNode = document.createTextNode(value);
+        el.appendChild(targetTextNode);
+      }
+    }
+  };
 
   //<<<<<< Listeners & Handlers >>>>>>
 
@@ -225,9 +333,7 @@ function SimpleDataBinding(el, startData, configs) {
     //listen for changes in the container element's dataset
     this.observer = new MutationObserver(this.mutationHandler);
     this.observer.observe(self.container, {
-      attributes: true,
-      childList: true,
-      characterData: true
+      attributes: true
     });
 
     //listen for form control changes within our container
@@ -255,10 +361,10 @@ function SimpleDataBinding(el, startData, configs) {
   this.changeHandler = function(e) {
     //handles changes to form control values within the container
     var val = self.getNodeValue(e.target),
-      prop = e.target.getAttribute(self.toPrefixedHyphenated("val")) || e.target.name;
+      prop = e.target.name || e.target.getAttribute(self.toPrefixedHyphenated("val"));
 
-    e.stopPropagation();
-    if (prop) {
+    //e.stopPropagation();
+    if (prop && self.get(prop) !== undefined) {
       return self.set(prop, val);
     }
   };
@@ -290,39 +396,77 @@ function SimpleDataBinding(el, startData, configs) {
     return fn.apply(this, args);
   };
 
-
   //<<<<<<<<< Initialization >>>>>>>>>>
+
+  this.initProps = function() {
+    //initialize properties
+
+    this.configs = configs || {};
+    this.nameSpace = typeof(this.configs.nameSpace) === "string" ? this.configs.nameSpace : "";
+    this.container = el && el.tagName ? el : document.querySelector(el || '[' + this.toPrefixedHyphenated('databind') + ']') || document.forms[0];
+    if (!this.container || this.configs.containInHiddenInput) {
+      this.container = document.createElement("input");
+      this.container.type = "hidden";
+      document.body.appendChild(this.container);
+    }
+    this.checkboxDataDelimiter = this.configs.checkboxDataDelimiter || ",";
+
+    this.parserMethods = this.assign({
+      name: {
+        fn: this.setNodeValue,
+        explicit: true
+      },
+      val: {
+        fn: this.setNodeValue
+      },
+      text: {
+        fn: this.setNodeText
+      }
+    }, this.configs.parserMethods || {});
+
+    //data binding instance family tree 
+    this.parentBranch = parentBranch;
+    if (this.parentBranch) {
+      this.ancestors = this.parentBranch.ancestors.slice();
+      this.ancestors.push(parentBranch);
+    } else {
+      this.ancestors = [];
+    }
+    this.root = this.ancestors[0] || this;
+    this.children = {};
+
+    return this
+  };
+
+  this.initData = function() {
+    //cascade initial data:
+    //first capture values in container data attributes if presentvalues 
+    //overwrite with values in form controls if present
+    //overwrite again with data argument if present
+
+    this.data = this.prefixData(this.container.dataset);
+    this.update(this.data);
+    this.getInitialNodeValues();
+    this.update(startData || {});
+    this.updateDom();
+
+    return this;
+  }
 
   this.init = function() {
     //sets core properties
     //inits listeners
     //processes initial data
-    this.configs = configs || {};
-    this.nameSpace = typeof(this.configs.nameSpace) === "string" ? this.configs.nameSpace : "";
-    this.container = el && el.tagName ? el : document.querySelector(el || '[' + this.toPrefixedHyphenated('databind') + ']');
-    if (!this.container) {
-      this.container = document.createElement("input");
-      this.container.type = "hidden";
-      document.body.appendChild(this.container);
-    }
-    this.data = this.container.dataset;
-    this.branches = {};
-    this.delimiter = configs.delimiter || ","; //used for checkbox data
 
+    this.initProps();
+    this.initData();
     this.setListeners();
-
-    //cascade initial data:
-    //first capture values in container data attributes if presentvalues 
-    //overwrite with values in form controls if present
-    //overwrite again with data argument if present
-    this.data = this.prefixData(this.data);
-    this.update(this.data);
-    this.getInitialNodeValues();
-    this.update(startData || {});
 
     setTimeout(function() {
       self.initialized = true;
     });
+
+    return this;
   };
 
   this.init();
