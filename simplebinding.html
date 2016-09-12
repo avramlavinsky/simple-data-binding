@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Simple Two Way Data Binding Example</title>
+    <title text="title">Simple Two Way Data Binding Example</title>
     <style>
 html, body {
   width: 100%;
@@ -23,6 +23,12 @@ body{
 
 *, *:after, *:before{
   box-sizing: border-box;
+}
+
+h1{
+  display: inline-block;
+  font-weight: normal;
+  font-size: 120%;
 }
 
 .next, .prev{
@@ -73,6 +79,7 @@ div.nav + div, iframe{
 </head>
 
 <body>
+   <h1 text="heading"></h1>
    <div class="nav">
   	<a class="prev" disabled><span class="navLinkLiner"><span class="icon">&#9668;</span> Previous</span></a>
   	<a class="next" disabled><span class="navLinkLiner">Next <span class="icon">&#9658<span></span></span></a>
