@@ -44,6 +44,18 @@ body{
   display: inline-block;
   padding: 10px 16px;
   margin: 10px;
+  cursor: pointer;
+}
+
+.navLinkLiner:hover {
+    background-color: #888888;
+}
+
+[disabled] .navLinkLiner,
+[disabled] .navLinkLiner:hover{
+    background-color: #444444;
+    color: #999999;
+    cursor: default;
 }
 
 .icon{
