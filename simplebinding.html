@@ -110,16 +110,7 @@ div.nav + div, iframe{
         }, 0);
       }
     }
-    
-    page.prevHrefChangeCallBack = function(el){
-      if(pageIndex == 0){
-        el.setAttribute("disabled", "");
-      }else{
-        el.removeAttribute("disabled");
-      }
-    }
-    
-    
+
     document.querySelector(".prev").addEventListener("click", changePage);
     document.querySelector(".next").addEventListener("click", changePage);
   })()
