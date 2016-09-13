@@ -105,7 +105,7 @@ div.nav + div, iframe{
       next = document.querySelector(".next"),
       pageIndex = 0;
     
-    pageData.foreach(setDataHrefs);
+    pageData.forEach(setDataHrefs);
     
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
