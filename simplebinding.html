@@ -100,17 +100,18 @@ div.nav + div, iframe{
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
-      
-      if( ! page.loading){
-        
-        page.loading = true;
-        pageIndex += e.target.dataset.increment;
-
+      if( ! e.target.getAttribute("disabled")){
         setTimeout(function(){
+          var increment = Number(e.target.dataset.increment);
+          pageIndex += increment;
           page.update(pageData[pageIndex]);
-          setTimeout(function(){
-            page.loading = false;
-          }, 0);
+          if(pageIndex == 0){
+            document.querySelector(".prev").setAttribute("disabled", "disabled");
+            document.querySelector(".next").removeAttribute("disabled");
+          }else{
+            document.querySelector(".next").setAttribute("disabled", "disabled");
+            document.querySelector(".prev").removeAttribute("disabled");
+          }
         }, 0);
       }
     }
