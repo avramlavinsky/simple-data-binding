@@ -78,7 +78,7 @@ div.nav + div, iframe{
 <body>
    <div class="nav">
     <h1 text="heading">Simplest Data Binding Ever</h1>
-  	<a class="navLink prev" data-increment="-1" target="CodePen Embed" attr="href, prevHref"><span class="icon">&#9668;</span> Previous</a>
+  	<a class="navLink prev" data-increment="-1" target="CodePen Embed" attr="href, prevHref" disabled><span class="icon">&#9668;</span> Previous</a>
   	<a class="navLink next" data-increment="1" target="CodePen Embed" attr="href, nextHref">Next <span class="icon">&#9658</span></a>
    </div>
 
@@ -110,7 +110,9 @@ div.nav + div, iframe{
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
-      if( ! e.target.getAttribute("disabled")){
+      if( e.target.getAttribute("disabled")){
+        e.preventDefault();
+      }else{
         setTimeout(function(){
           var increment = Number(e.target.dataset.increment);
           pageIndex += increment;
