@@ -100,16 +100,18 @@ div.nav + div, iframe{
     
     function changePage(e){
       if( ! e.target.getAttribute("disabled")){
-        var increment = Number(e.target.dataset.increment);
-        pageIndex += increment;
-        page.update(pageData[pageIndex]);
-        if(pageIndex == 0){
-          document.querySelector(".prev").setAttribute("disabled", "disabled");
-          document.querySelector(".next").removeAttribute("disabled");
-        }else{
-          document.querySelector(".next").setAttribute("disabled", "disabled");
-          document.querySelector(".prev").removeAttribute("disabled");
-        }
+        setTimeout(function(){
+          var increment = Number(e.target.dataset.increment);
+          pageIndex += increment;
+          page.update(pageData[pageIndex]);
+          if(pageIndex == 0){
+            document.querySelector(".prev").setAttribute("disabled", "disabled");
+            document.querySelector(".next").removeAttribute("disabled");
+          }else{
+            document.querySelector(".next").setAttribute("disabled", "disabled");
+            document.querySelector(".prev").removeAttribute("disabled");
+          }
+        }, 0);
       }
     }
     
