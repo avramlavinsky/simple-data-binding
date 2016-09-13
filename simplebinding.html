@@ -92,10 +92,20 @@ div.nav + div, iframe{
     
   
     var pageData = [
-        {title: "SimpleDataBinding Example 1", heading: "Simplest Data Binding Ever", prevHref: "#0", nextHref: "//codepen.io/cagerattler/embed/vXLEor?height=800&theme-id=0&slug-hash=vXLEor&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true"},
-        {title: "SimpleDataBinding Example 2", heading: "Simple Prefilling", prevHref: "//codepen.io/cagerattler/embed/XjXAYx?height=800&theme-id=0&slug-hash=XjXAYx&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true", nextHref: "#0"}
+        {title: "SimpleDataBinding Example 1", heading: "Simplest Two Way Data Binding Ever"},
+        {title: "SimpleDataBinding Example 2", heading: "Simple Prefilling"},
+        {title: "SimpleDataBinding Example 3", heading: "Data Binding Arrays"}
       ],
+      penHashes = [
+        "vXLEor",
+        "XjXAYx",
+        "mAVLKQ"
+      ],
+      prev = document.querySelector(".prev"),
+      next = document.querySelector(".next"),
       pageIndex = 0;
+    
+    pageData.foreach(setDataHrefs);
     
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
@@ -105,19 +115,26 @@ div.nav + div, iframe{
           var increment = Number(e.target.dataset.increment);
           pageIndex += increment;
           page.update(pageData[pageIndex]);
+          prev.removeAttribute("disabled");
+          next.removeAttribute("disabled");
           if(pageIndex == 0){
-            document.querySelector(".prev").setAttribute("disabled", "disabled");
-            document.querySelector(".next").removeAttribute("disabled");
-          }else{
-            document.querySelector(".next").setAttribute("disabled", "disabled");
-            document.querySelector(".prev").removeAttribute("disabled");
+            prev.setAttribute("disabled", "disabled");
+          }else if pageIndex == pageData.length - 1){
+            next.setAttribute("disabled", "disabled");
           }
         }, 0);
       }
     }
+    
+    function setDataHrefs(data, i){
+      var rawHref = "//codepen.io/cagerattler/embed/XjXAYx?height=800&theme-id=0&slug-hash=[[hash]]x&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true";
+      
+      data.prevHref = i == 0 ? "#0" : rawHref.replace("[[hash]]", penHashes[i-1]);
+      data.nextHref = i == penHashes.length - 1 ? "#0" : rawHref.replace("[[hash]]", penHashes[i+1]);
+    }
 
-    document.querySelector(".prev").addEventListener("click", changePage);
-    document.querySelector(".next").addEventListener("click", changePage);
+    prev.addEventListener("click", changePage);
+    next.addEventListener("click", changePage);
   })()
   
 </script>
