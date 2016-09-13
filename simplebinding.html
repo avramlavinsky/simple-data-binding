@@ -101,12 +101,16 @@ div.nav + div, iframe{
     
     function changePage(e){
       
-      if( ! e.target.getAttribute("disabled")){
+      if( ! page.loading){
         
+        page.loading = true;
         pageIndex += e.target.dataset.increment;
 
         setTimeout(function(){
           page.update(pageData[pageIndex]);
+          setTimeout(function(){
+            page.loading = false;
+          }, 0);
         }, 0);
       }
     }
