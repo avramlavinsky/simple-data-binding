@@ -177,8 +177,7 @@ function SimpleDataBinding(el, startData, configs, parentBranch) {
 
   this.setDomProp = function(prop, methods) {
     //looks for element attribute values matching data property name if provided and updates via parser method or all parser methods if none is provided
-
-    var parserMethodName, attr;
+     var parserMethodName, attr;
 
     if (typeof(methods) == "string") {
       parserMethodName = methods;
@@ -190,16 +189,17 @@ function SimpleDataBinding(el, startData, configs, parentBranch) {
 
     for (var key in methods) {
       attr = methods[key].explicit ? key : self.toPrefixedHyphenated(key);
-      self.eachDomNode(attr, prop, methods[key].fn || methods[key]);
+      self.eachDomNode(attr, prop, methods[key].fn || methods[key], methods[key].isJson);
     };
   };
 
-  this.eachDomNode = function(attr, value, fn) {
+  this.eachDomNode = function(attr, value, fn, isJson) {
     //iterates DOM collection matching attr value and invokes method fn 
-    var selector, nodes, attrValue, args;
+    var comparitor = isJson ? "*=" : "=",
+        selector, nodes, attrValue, args;
 
     if (value) {
-      selector = '[' + attr + '="' + value || "" + '"]';
+      selector = '[' + attr + comparitor + '"' + value + '"]';
     } else {
       selector = '[' + attr + ']';
     }
@@ -326,6 +326,22 @@ function SimpleDataBinding(el, startData, configs, parentBranch) {
       }
     }
   };
+  
+  this.setNodeAttr = function(el, prop, value){
+    var attrValue = el.getAttribute("attr"), attr, attrMap;
+    
+    if(attrValue.substring(0,1) == "{"){
+      attrMap = JSON.parse(attrValue);
+      for(attr in attrMap){
+        if(attrMap[attr] === prop){
+          el.setAttribute(attr, value);
+        }
+      }
+    }else if(attrValue){
+      el.setAttribute(attrValue.split(",")[0], value);
+    }
+  };
+  
 
   //<<<<<< Listeners & Handlers >>>>>>
 
@@ -421,6 +437,10 @@ function SimpleDataBinding(el, startData, configs, parentBranch) {
       },
       text: {
         fn: this.setNodeText
+      },
+      attr: {
+        fn: this.setNodeAttr,
+        isJson: true
       }
     }, this.configs.parserMethods || {});
 
