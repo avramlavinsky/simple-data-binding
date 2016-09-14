@@ -108,16 +108,19 @@ div.nav + div, iframe{
       ],
       prev = document.querySelector(".prev"),
       next = document.querySelector(".next"),
-      pageIndex = 0;
+      pageIndex = 0,
+      penIsLoading = false,
+      iframeListener;
     
     pageData.forEach(setDataHrefs);
     
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
-      if( e.target.hasAttribute("disabled")){
+      if( penIsLoading || e.target.hasAttribute("disabled")){
         e.preventDefault();
       }else{
+        penIsLoading = true;
         setTimeout(function(){
           var increment = Number(e.target.dataset.increment);
           pageIndex += increment;
@@ -129,6 +132,9 @@ div.nav + div, iframe{
           }else if (pageIndex == pageData.length - 1){
             next.setAttribute("disabled", "disabled");
           }
+          iframeListener = iframeListener || document.querySelector("iframe").addEventListener("load", function(){
+            penIsLoading = false;
+          }) || true
         }, 0);
       }
     }
