@@ -115,7 +115,7 @@ div.nav + div, iframe{
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
-      if( e.target.getAttribute("disabled")){
+      if( e.target.hasAttribute("disabled")){
         e.preventDefault();
       }else{
         setTimeout(function(){
