@@ -95,14 +95,16 @@ div.nav + div, iframe{
     
   
     var pageData = [
-        {title: "SimpleDataBinding Example 1", heading: "Simplest Two Way Data Binding Ever"},
-        {title: "SimpleDataBinding Example 2", heading: "Simple Prefilling"},
-        {title: "SimpleDataBinding Example 3", heading: "Data Binding Arrays"}
+        {heading: "Simplest Two Way Data Binding Ever"},
+        {heading: "Simple Prefilling"},
+        {heading: "Data Binding Arrays"},
+        {heading: "Configuring Callbacks"}
       ],
       penHashes = [
         "XjXAYx",
         "vXLEor",
-        "mAVLKQ"
+        "mAVLKQ",
+        "LRNNwK"
       ],
       prev = document.querySelector(".prev"),
       next = document.querySelector(".next"),
@@ -136,6 +138,7 @@ div.nav + div, iframe{
       
       data.prevHref = i == 0 ? "#0" : rawHref.replace("[[hash]]", penHashes[i-1]);
       data.nextHref = i == penHashes.length - 1 ? "#0" : rawHref.replace("[[hash]]", penHashes[i+1]);
+      data.title = "Simple Data Binding: " + data.heading;
     }
 
     prev.addEventListener("click", changePage);
