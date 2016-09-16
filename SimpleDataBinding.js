@@ -32,24 +32,19 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return value;
     };
 
-    this.update = function (newData) {
+    this.update = function (newData, additive) {
         //assigns all values present in newData object to data
-        var newBranchContainer, branch, clone;
+        var container = self.container.type == "hidden" ? document.body : self.container,
+            branchContainer, branch, clone;
 
         self.updating = true;
         for (var prop in newData) {
             if (typeof (newData[prop]) == "object") {
-                newBranchContainer = document.querySelector('[' + self.toPrefixedHyphenated('databind') + '="' + prop + '"]');
-                if (newData[prop] instanceof Array && newBranchContainer) {
-                    self.childArrays[prop] = [];
-                    for (var repeaterBranchIndex = 0, stop = newData[prop].length; repeaterBranchIndex < stop; repeaterBranchIndex++) {
-                        branch = self.createBranch(prop + repeaterBranchIndex, self.cloneInPlace(newBranchContainer), newData[prop][repeaterBranchIndex]);
-                        self.childArrays[prop].push(branch);
-                    };
-                    Object.defineProperty(newData[prop], "container", newBranchContainer); //put a reference to the container dom element template in the array itself
-                    newBranchContainer.parentElement.removeChild(newBranchContainer);
+                branchContainer = (self.childArrays[prop] && self.childArrays[prop].branchContainerTemplate) || container.querySelector('[' + self.toPrefixedHyphenated('databind') + '="' + prop + '"]');
+                if (newData[prop] instanceof Array && branchContainer) {
+                    self.updateChildArray(prop, branchContainer, newData, additive);
                 } else {
-                    self.createBranch(prop, newBranchContainer, newData[prop]);
+                    self.createBranch(prop, branchContainer, newData[prop]);
                 }
             } else {
                 self.set(prop, newData[prop]);
@@ -67,6 +62,23 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }, 0);
 
         return self.data;
+    };
+
+    this.updateChildArray = function (prop, branchContainerTemplate, newData, additive) {
+        if (self.childArrays[prop]) {
+            if (additive !== true) {
+                self.clearChildArrayHtml(prop);
+                self.childArrays[prop].length = 0;
+            }
+        } else {
+            self.childArrays[prop] = [];
+            self.prepChildArrayHtml(prop, branchContainerTemplate);
+        }
+        for (var repeaterBranchIndex = 0, stop = newData[prop].length; repeaterBranchIndex < stop; repeaterBranchIndex++) {
+            branch = self.createBranch(prop + repeaterBranchIndex, self.cloneInPlace(branchContainerTemplate, self.childArrays[prop].placeholder), newData[prop][repeaterBranchIndex]);
+            branch.index = repeaterBranchIndex;
+            self.childArrays[prop].push(branch);
+        };
     };
 
     this.assign = Object.assign || function (obj1, obj2) {
@@ -149,6 +161,34 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return obj;
     };
 
+    //<<< Parse Methods >>>
+
+    this.updateNodeProps = function (node) {
+        //recursively update node and its children's properties with double curly braces
+        
+        if (node.nodeType == 3) {
+            node.textTemplate = node.textTemplate || node.nodeValue;
+            node.nodeValue = self.updateDoubleCurlies(node.textTemplate);
+        } else if (node.nodeType == 1) {
+            for (var i = 0; i < node.attributes.length; i++) {
+                node.attributes[i].attrTemplate = node.attributes[i].attrTemplate || node[node.attributes[i].name] || node.attributes[i].value;
+                node.attributes[i].value = self.updateDoubleCurlies(node.attributes[i].attrTemplate);
+            }
+            if (!node.hasAttribute("databind")) {
+                for (var i = 0; i < node.childNodes.length; i++) {
+                    self.updateNodeProps(node.childNodes[i]);
+                }
+            }
+        }
+    }
+
+    this.updateDoubleCurlies = function (str) {
+        //replace text within double curly braces by corresponding value in data
+        return str.replace(/{{(.*?)}}/g, function ($0) {
+            return self.get($0.replace(/[}{]/g, ""), true);
+        });
+    };
+
     //<<< DOM Methods >>>
 
     this.is = function (el, selector) {
@@ -176,11 +216,11 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return el;
     };
 
-    this.cloneInPlace = function (el) {
-        //inserts a clone of an element before that element
+    this.cloneInPlace = function (el, placeholder) {
+        //inserts a clone of an element before a placeholder
         var clone = el.cloneNode(true);
 
-        el.parentElement.insertBefore(clone, el);
+        placeholder.parentElement.insertBefore(clone, placeholder);
         return clone;
     };
 
@@ -205,6 +245,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.eachDomNode = function (attr, value, fn, isJson) {
         //iterates DOM collection matching attr value and invokes method fn 
         var comparitor = isJson ? "*=" : "=",
+            container = self.container.type == "hidden" ? document.body : self.container,         
             selector, nodes, attrValue, args;
 
         if (value) {
@@ -213,7 +254,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             selector = '[' + attr + ']';
         }
 
-        nodes = Array.prototype.slice.call(self.container.querySelectorAll(selector));
+        nodes = Array.prototype.slice.call(container.querySelectorAll(selector));
 
         if (self.is(self.container, selector)) {
             nodes.push(self.container);
@@ -228,15 +269,15 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.getNodeValue = function (el) {
         //returns value of form control or selected value of radio or checkbox group
-        var val = "";
+        var val;
 
         if (el.type == "radio") {
             if (el.checked) {
                 val = el.value;
             }
         } else if (el.type == "checkbox") {
-            val = self.data[el.getAttribute("data-" + self.nameSpace + "value") || el.name] || "";
-            val = val ? val.split(self.checkboxDataDelimiter) : [];
+            val = self.get(el.name, true);
+            val = val !== undefined ? val.split(self.checkboxDataDelimiter) : [];
             if (el.checked) {
                 val.push(el.value);
             } else {
@@ -252,7 +293,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.getInitialNodeValues = function () {
         //assigns initial form values in elements with a name or a [namespace-]val attribute to data
         self.eachDomNode("name", null, function (el) {
-            if (el.getAttribute("value")) {
+            if (el.getAttribute("value")) {//NOT el.value since Chrome populates this with "on" by default in some contexts
                 self.set(el.name, self.getNodeValue(el));
             }
         }, [], true);
@@ -271,6 +312,21 @@ function SimpleDataBinding(el, startData, configs, parent) {
         for (var prop in self.data) {
             self.setDomProp(prop);
         };
+        self.updateNodeProps(self.container);
+    };
+
+    this.prepChildArrayHtml = function (prop, branchContainerTemplate) {
+        self.childArrays[prop].branchContainerTemplate = branchContainerTemplate;
+        self.childArrays[prop].placeholder = document.createComment("end " + prop);
+        branchContainerTemplate.parentNode.insertBefore(document.createComment("start " + prop), branchContainerTemplate);
+        branchContainerTemplate.parentNode.insertBefore(self.childArrays[prop].placeholder, branchContainerTemplate);
+        branchContainerTemplate.parentElement.removeChild(branchContainerTemplate);
+    };
+
+    this.clearChildArrayHtml = function (prop) {
+        self.eachDomNode("databind", prop, function (el) {
+            el.parentElement.removeChild(el);
+        });
     };
 
     this.setNodeValue = function (el, prop, value, attr) {
@@ -365,10 +421,14 @@ function SimpleDataBinding(el, startData, configs, parent) {
         var val = self.getNodeValue(e.target),
           prop = e.target.name || e.target.getAttribute(self.toPrefixedHyphenated("val"));
 
-        //e.stopPropagation();
-        if (prop && self.get(prop) !== undefined) {
+        e.stopPropagation();
+
+        if (self.index !== undefined && self.parent.get(prop) !== undefined && (e.target.type == "radio" || e.target.type =="checkbox")) {
+            //checkboxes and radios created in childArrays should change the value in the parent DataBinding instance
+            self.parent.set(prop, val);
+        } else {
             return self.set(prop, val);
-        }
+        } 
     };
 
     this.dataChangeHandler = function (prop) {
@@ -376,11 +436,11 @@ function SimpleDataBinding(el, startData, configs, parent) {
         var val = self.get(prop);
 
         if (self.initialized && self.previousData && self.previousData[prop] != val) {
-            if (self.configs.dataChangeCallBack) {
-                self.callBack("dataChange", [prop, val, self.data]);
+            if (self.configs.globalDKataChangeCallBack) {
+                self.callBack("globalDataChangeCallBack", [prop, val, self.data]);
             }
-            if (self.configs[prop + "CallBack"]) {
-                self.callBack(prop, [val]);
+            if (self.configs[prop + "ChangeCallBack"]) {
+                self.callBack(prop + "ChangeCallBack", [val, self.data]);
             }
         }
 
@@ -391,9 +451,9 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return val;
     };
 
-    this.callBack = function (stem, args) {
+    this.callBack = function (functionName, args) {
         //executes a callback function in the context of the data binder
-        var fn = self.configs[stem + "CallBack"];
+        var fn = self.configs[functionName];
 
         return fn.apply(this, args);
     };
