@@ -167,12 +167,12 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //recursively update node and its children's properties with double curly braces
         
         if (node.nodeType == 3) {
-            node.textTemplate = node.textTemplate || node.nodeValue;
-            self.updateDoubleCurlies(node, "nodeValue", node.textTemplate);
+            node.nodeTemplate = node.nodeTemplate || node.nodeValue;
+            self.updateDoubleCurlies(node);
         } else if (node.nodeType == 1) {
             for (var i = 0; i < node.attributes.length; i++) {
-                node.attributes[i].attrTemplate = node.attributes[i].attrTemplate || node.attributes[i].value || node[node.attributes[i].name];/* be ware of properties like node.href which may vary dramatically from the attribute value */
-                self.updateDoubleCurlies(node.attributes[i], "value", node.attributes[i].attrTemplate);
+                node.attributes[i].nodeTemplate = node.attributes[i].nodeTemplate || node.attributes[i].value || node[node.attributes[i].name];/* be ware of properties like node.href which may vary dramatically from the attribute value */
+                self.updateDoubleCurlies(node.attributes[i]);
             }
             if (!(node.hasAttribute("databind") && node != self.container)) {
                 //do not recurse if we have hit the container of a child SimpleDataBinding instance
@@ -184,20 +184,20 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }
     }
 
-    this.updateDoubleCurlies = function (obj, prop, str) {
+    this.updateDoubleCurlies = function (node) {
         //replace value (attribute value or text node value) in curly braces with corresponding data value
         var dataProp;
-        if (str && str.replace) {
-            obj[prop] = str.replace(/{{(.*?)}}/g, function ($0) {
+        if (node.nodeTemplate && node.nodeTemplate.replace) {
+            node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
                 dataProp = $0.slice(2, -2);
                 if (self.updating) {
                     self.watches[dataProp] = self.watches[dataProp] || [];
-                    self.watches[dataProp].push(obj);
+                    self.watches[dataProp].push(node);
                 }
                 return self.get(dataProp, true);
             });
         }
-        return obj[prop];
+        return node[prop];
     };
 
     //<<< DOM Methods >>>
@@ -461,7 +461,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         if (self.watches[prop]) {
             for (var i = 0; i < self.watches[prop].length; i++) {
-                self.updateNodeProps(prop);
+                self.updateDoubleCurlies(self.watches[prop][i]);
             }
         }
 
