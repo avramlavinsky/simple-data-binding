@@ -459,7 +459,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             self.previousData = JSON.parse(JSON.stringify(this.data));
         }
 
-        if (self.watche[prop]) {
+        if (self.watches[prop]) {
             for (var i = 0; i < self.watches[prop].length; i++) {
                 self.updateNodeProps(prop);
             }
