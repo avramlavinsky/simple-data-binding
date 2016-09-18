@@ -105,7 +105,7 @@ div.nav + div, iframe{
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
-      if( false ){//penIsLoading || e.target.hasAttribute("disabled")){
+      if( e.target.hasAttribute("disabled")){
         e.preventDefault();
       }else{
         penIsLoading = true;
