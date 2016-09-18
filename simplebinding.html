@@ -142,7 +142,7 @@ div.nav + div, iframe{
     function setDataHrefs(data, i){
       var rawHref = "//codepen.io/cagerattler/embed/[[hash]]?height=800&theme-id=0&slug-hash=[[hash]]&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true";
       
-      data.prevHref = i == 0 ? "#0" : rawHref.replace("[[hash]]", penHashes[i-1]);
+      data.prevHref = i == 0 ? "#0" : rawHref.replace(/\[\[hash\]\]/g, penHashes[i-1]);
       data.nextHref = i == penHashes.length - 1 ? "#0" : rawHref.replace("[[hash]]", penHashes[i+1]);
       data.title = "Simple Data Binding: " + data.heading;
     }
