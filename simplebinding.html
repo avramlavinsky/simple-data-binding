@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title text="title">{{title}}</title>
+    <title text="title">Simple Data Binding Examples</title>
     <style>
 html, body {
   width: 100%;
@@ -132,7 +132,6 @@ div.nav + div, iframe{
       
       data.prevHref = i == 0 ? "#0" : rawHref.replace(/\[\[hash\]\]/g, penHashes[i-1]);
       data.nextHref = i == penHashes.length - 1 ? "#0" : rawHref.replace(/\[\[hash\]\]/g, penHashes[i+1]);
-      data.title = "Simple Data Binding: " + data.heading;
     }
     prev.addEventListener("click", changePage);
     next.addEventListener("click", changePage);
