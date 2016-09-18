@@ -171,7 +171,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             self.updateDoubleCurlies(node, "nodeValue", node.textTemplate);
         } else if (node.nodeType == 1) {
             for (var i = 0; i < node.attributes.length; i++) {
-                node.attributes[i].attrTemplate = node.attributes[i].attrTemplate || node[node.attributes[i].name] || node.attributes[i].value;
+                node.attributes[i].attrTemplate = node.attributes[i].attrTemplate || node.attributes[i].value || node[node.attributes[i].name];/* be ware of properties like node.href which may vary dramatically from the attribute value */
                 self.updateDoubleCurlies(node.attributes[i], "value", node.attributes[i].attrTemplate);
             }
             if (!(node.hasAttribute("databind") && node != self.container)) {
