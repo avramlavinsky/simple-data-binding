@@ -114,7 +114,7 @@ div.nav + div, iframe{
     
     pageData.forEach(setDataHrefs);
     
-    window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
+    window.page = new SimpleDataBinding(".nav", pageData[0]);
     
     function changePage(e){
       if( penIsLoading || e.target.hasAttribute("disabled")){
