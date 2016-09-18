@@ -185,16 +185,18 @@ function SimpleDataBinding(el, startData, configs, parent) {
     }
 
     this.updateDoubleCurlies = function (obj, prop, str) {
-        //replace prop in curly braces with corresponding data value
+        //replace value (attribute value or text node value) in curly braces with corresponding data value
         var dataProp;
-        obj[prop] = str.replace(/{{(.*?)}}/g, function ($0) {
-            dataProp = $0.slice(2, -2);
-            if (self.updating) {
-                self.watches[dataProp] = self.watches[dataProp] || [];
-                self.watches[dataProp].push(obj);
-            }
-            return self.get(dataProp, true);
-        });
+        if (str && str.replace) {
+            obj[prop] = str.replace(/{{(.*?)}}/g, function ($0) {
+                dataProp = $0.slice(2, -2);
+                if (self.updating) {
+                    self.watches[dataProp] = self.watches[dataProp] || [];
+                    self.watches[dataProp].push(obj);
+                }
+                return self.get(dataProp, true);
+            });
+        }
         return obj[prop];
     };
 
