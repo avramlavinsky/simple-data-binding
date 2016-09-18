@@ -192,7 +192,9 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 prop = $0.slice(2, -2);
                 if (self.updating) {
                     self.watches[prop] = self.watches[prop] || [];
-                    self.watches[prop].push(node);
+                    if (self.watches[prop].indexOf(prop) == -1) {
+                        self.watches[prop].push(node);
+                    }
                 }
                 return self.get(prop, true);
             });
