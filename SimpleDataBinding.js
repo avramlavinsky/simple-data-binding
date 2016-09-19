@@ -34,13 +34,12 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.update = function (newData, additive) {
         //assigns all values present in newData object to data
-        var container = self.container.type == "hidden" ? document.body : self.container,
-            branchContainer, branch, clone;
+        var branchContainer, branch, clone;
 
         self.updating = true;
         for (var prop in newData) {
             if (typeof (newData[prop]) == "object") {
-                branchContainer = (self.childArrays[prop] && self.childArrays[prop].branchContainerTemplate) || container.querySelector('[' + self.toPrefixedHyphenated('databind') + '="' + prop + '"]');
+                branchContainer = (self.childArrays[prop] && self.childArrays[prop].branchContainerTemplate) || self.container.querySelector('[' + self.toPrefixedHyphenated('databind') + '="' + prop + '"]');
                 if (newData[prop] instanceof Array && branchContainer) {
                     self.updateChildArray(prop, branchContainer, newData, additive);
                 } else {
@@ -258,7 +257,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.eachDomNode = function (attr, value, fn, isJson) {
         //iterates DOM collection matching attr value and invokes method fn 
         var comparitor = isJson ? "*=" : "=",
-            container = self.container.type == "hidden" ? document.body : self.container,         
             selector, nodes, attrValue, args;
 
         if (value) {
@@ -267,7 +265,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             selector = '[' + attr + ']';
         }
 
-        nodes = Array.prototype.slice.call(container.querySelectorAll(selector));
+        nodes = Array.prototype.slice.call(self.container.querySelectorAll(selector));
 
         if (self.is(self.container, selector)) {
             nodes.push(self.container);
@@ -446,7 +444,8 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.dataChangeHandler = function (prop) {
         //verify changes to data and execute callbacks appropriately
-        var val = self.get(prop);
+        var val = self.get(prop),
+            node;
 
         if (self.initialized && self.previousData && self.previousData[prop] != val) {
             if (self.configs.globalDKataChangeCallBack) {
@@ -462,8 +461,13 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }
 
         if (self.watches[prop]) {
-            for (var i = 0; i < self.watches[prop].length; i++) {
-                self.updateDoubleCurlies(self.watches[prop][i]);
+            for (var i = self.watches[prop].length-1; i >= 0; i--) {
+                var node = self.watches[prop][i];
+                if(self.container.contains(node.ownerElement))
+                    self.updateDoubleCurlies(node);
+                else {
+                    self.watches[prop].splice(i, 1);
+                }
             }
         }
 
@@ -484,11 +488,11 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         this.configs = configs || {};
         this.nameSpace = typeof (this.configs.nameSpace) === "string" ? this.configs.nameSpace : "";
-        this.container = el && el.tagName ? el : document.querySelector(el || '[' + this.toPrefixedHyphenated('databind') + ']') || document.forms[0];
-        if (!this.container || this.configs.containInHiddenInput) {
-            this.container = document.createElement("input");
-            this.container.type = "hidden";
-            document.body.appendChild(this.container);
+        this.container = el && el.tagName ? el : document.querySelector(el || '[' + this.toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
+        if (this.configs.containInHiddenInput) {
+            this.boundHiddenInput = document.createElement("input");
+            this.boundHiddenInput.type = "hidden";
+            this.container.appendChild(this.boundHiddenInput);
         }
         this.watches = {};
         this.checkboxDataDelimiter = this.configs.checkboxDataDelimiter || ",";
@@ -531,7 +535,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //overwrite with values in form controls if present
         //overwrite again with data argument if present
 
-        this.data = this.prefixData(this.container.dataset);
+        this.data = this.prefixData((this.boundHiddenInput || this.container).dataset);
         this.update(this.data);
         this.getInitialNodeValues();
         this.update(startData || {});
