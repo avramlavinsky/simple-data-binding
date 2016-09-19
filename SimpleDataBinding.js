@@ -2,11 +2,11 @@ function SimpleDataBinding(el, startData, configs, parent) {
     //binds data to and from form controls or to static element text nodes
     //el:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
     //startData: object (optional)
-    //configs: object (optional) - contains callback functions and  static configuration properties
+    //configs: object (optional) - static configuration properties, watches
     //  nameSpace: string - appended to data prevent dataset name collisions"
-    //  dataChangeCallBack: function - is called on all data changes passing property name value, and aggregate data
-    //  [specificProperty]CallBack: function -  called when value of [specificProperty] within data changes
     //  delimmiter: string - separates selected checkbox values
+    //  watches: object - specifies watches in the form { props: [] /* optional string or array of strings */, fn: function }
+    //parent: parent SimpleDataBinding instance - used internally
 
     var self = this;
 
@@ -450,7 +450,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     };
 
     this.mutationHandler = function (mutations) {
-        //on mutation of the dataset updates dom and fire callbacks as needed 
+        //on mutation of the dataset calls into methods to update the DOM and fire watches
 
         mutations.forEach(function (mutation) {
             var prefix = "data-",
@@ -487,18 +487,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     };
 
     this.dataChangeHandler = function (prop) {
-        //verify changes to data and execute callbacks appropriately
-        var val = self.get(prop),
-            node;
-
-        if (self.initialized && self.previousData && self.previousData[prop] != val) {
-            if (self.configs.globalDataChangeCallBack) {
-                self.callBack("globalDataChangeCallBack", [prop, val, self.data]);
-            }
-            if (self.configs[prop + "ChangeCallBack"]) {
-                self.callBack(prop + "ChangeCallBack", [val, self.data]);
-            }
-        }
+        //on changes to data calls into appropriate watches
 
         if (!self.updating) {
             self.previousData = JSON.parse(JSON.stringify(this.data));
@@ -506,7 +495,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             self.checkWatches("*");
         }
   
-        return val;
+        return self;
     };
 
     this.checkWatches = function (prop) {
@@ -542,12 +531,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
         watch.fn.apply(self, args);
     };
 
-    this.callBack = function (functionName, args) {
-        //executes a callback function in the context of the data binder
-        var fn = self.configs[functionName];
-
-        return fn.apply(this, args);
-    };
 
     //<<<<<<<<< Initialization >>>>>>>>>>
 
