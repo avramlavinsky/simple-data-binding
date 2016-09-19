@@ -34,7 +34,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.update = function (newData, additive) {
         //assigns all values present in newData object to data
-        var branchContainer, branch, clone;
+        var branchContainer;
 
         self.updating = true;
         for (var prop in newData) {
@@ -54,6 +54,8 @@ function SimpleDataBinding(el, startData, configs, parent) {
         if (configs && configs.parserMethods) {
             self.setDomProp(configs.parserMethods);
         }
+
+        self.parseNode(self.container);
 
         setTimeout(function () {
             self.updating = false;
@@ -162,33 +164,55 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     //<<< Parse Methods >>>
 
-    this.updateNodeProps = function (node) {
+    this.watch = function (props, fn) {
+        var globalWatch = ["*"];
+
+        props = props || globalWatch;
+        if (typeof (props) == "function") {
+            fn = props;
+            props = globalWatch;
+        } else if (typeof (props) == "string") {
+            props = [props];
+        }
+        for (var i = 0, stop = props.length; i < stop; i++) {
+            self.watches[props[i]] = self.watches[props[i]] || [];
+            self.watches[props[i]].push({ fn: fn, props: props });
+        }
+    }
+
+    this.parseNode = function (node) {
         //recursively update node and its children's properties with double curly braces
-        
+
         if (node.nodeType == 3) {
-            node.nodeTemplate = node.nodeTemplate || node.nodeValue;
-            self.updateDoubleCurlies(node);
+            self.resolveDoubleCurlyBraces(node, node.nodeValue);
         } else if (node.nodeType == 1) {
             for (var i = 0; i < node.attributes.length; i++) {
-                node.attributes[i].nodeTemplate = node.attributes[i].nodeTemplate || node.attributes[i].value || node[node.attributes[i].name];/* be ware of properties like node.href which may vary dramatically from the attribute value */
-                self.updateDoubleCurlies(node.attributes[i]);
+                self.resolveDoubleCurlyBraces(node.attributes[i], node.attributes[i].value || node[node.attributes[i].name]);/* be ware of properties like node.href which may differ dramatically from the attribute value */
             }
             if (!(node.hasAttribute("databind") && node != self.container)) {
                 //do not recurse if we have hit the container of a child SimpleDataBinding instance
                 //let the instance handle it
                 for (var i = 0; i < node.childNodes.length; i++) {
-                    self.updateNodeProps(node.childNodes[i]);
+                    self.parseNode(node.childNodes[i]);
                 }
             }
         }
-    }
+    };
 
-    this.updateDoubleCurlies = function (node) {
+    this.resolveDoubleCurlyBraces = function (node, testTemplate) {
         //replace value (attribute value or text node value) in curly braces with corresponding data value
-        var prop;
-        if (node.nodeTemplate && node.nodeTemplate.replace) {
+
+        if (node.nodeTemplate === undefined) {
+            if (testTemplate && testTemplate.indexOf("{{") != -1) {
+                node.nodeTemplate = testTemplate;
+            } else {
+                node.nodeTemplate = null;
+            }
+        }
+
+        if (node.nodeTemplate) {
             node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
-                prop = $0.slice(2, -2);
+                var prop = $0.slice(2, -2);
                 if (self.updating) {
                     self.watches[prop] = self.watches[prop] || [];
                     if (self.watches[prop].indexOf(node) == -1) {
@@ -198,6 +222,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 return self.get(prop, true);
             });
         }
+
         return node.nodeValue;
     };
 
@@ -336,7 +361,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //set properties in the DOM to express data
         //used during initalization prior to setting modulation listener
 
-        self.updateNodeProps(self.container);
         for (var prop in self.data) {
             self.setDomProp(prop);
         };  
@@ -435,10 +459,14 @@ function SimpleDataBinding(el, startData, configs, parent) {
             if (self.nameSpace) {
                 prefix += self.nameSpace + "-";
             }
-            prop = self.toCamelCase(mutation.attributeName.substr(prefix.length));
 
-            self.setDomProp(prop);
-            self.dataChangeHandler(prop);
+            if (mutation.attributeName.substr(0, prefix.length) == prefix) {
+                //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
+                prop = self.toCamelCase(mutation.attributeName.substr(prefix.length));
+
+                self.setDomProp(prop);
+                self.dataChangeHandler(prop);
+            }
         });
         return mutations;
     };
@@ -474,20 +502,44 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         if (!self.updating) {
             self.previousData = JSON.parse(JSON.stringify(this.data));
+            self.checkWatches(prop);
+            self.checkWatches("*");
         }
+  
+        return val;
+    };
 
+    this.checkWatches = function (prop) {
         if (self.watches[prop]) {
-            for (var i = self.watches[prop].length-1; i >= 0; i--) {
-                var node = self.watches[prop][i];
-                if(self.container.contains(node.ownerElement || node.parentElement))
-                    self.updateDoubleCurlies(node);
-                else {
-                    self.watches[prop].splice(i, 1);
+            for (var i = self.watches[prop].length - 1; i >= 0; i--) {
+                if (self.watches[prop][i].fn) {
+                    self.executeWatchFn(self.watches[prop][i], prop)
+                } else {
+                    node = self.watches[prop][i];
+                    if (self.container.contains(node.ownerElement || node.parentElement))
+                        self.resolveDoubleCurlyBraces(node);
+                    else {
+                        //remove watches from elements that are no longer present in our container
+                        self.watches[prop].splice(i, 1);
+                    }
                 }
+
             }
         }
+    };
 
-        return val;
+    this.executeWatchFn = function (watch, prop) {
+        //execute a watch function in the context of the instance with designated arguments
+        var args = [];
+
+        for (var i = 0, stop = watch.props.length; i < stop; i++) {
+            args.push(self.get(watch.props[i]))
+        }
+        //global watch functions with no specified properties receive the chagned property value as the only argument
+        if (args.length == 0) {
+            args.push(self.get(prop));
+        }
+        watch.fn.apply(self, args);
     };
 
     this.callBack = function (functionName, args) {
@@ -510,7 +562,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             this.boundHiddenInput.type = "hidden";
             this.container.appendChild(this.boundHiddenInput);
         }
-        this.watches = {};
+        this.watches = this.assign((this.parent && this.parent.watches) || {}, this.configs.watches || {});
         this.checkboxDataDelimiter = this.configs.checkboxDataDelimiter || ",";
 
         this.parserMethods = this.assign({
@@ -530,7 +582,14 @@ function SimpleDataBinding(el, startData, configs, parent) {
             }
         }, this.configs.parserMethods || {});
 
-        //data binding instance family tree 
+        
+
+        return this
+    };
+
+    this.initFamilyTree = function () {
+        //establish SimpleDataBinding instance relationships with other SimpleDataBinding instances 
+
         this.parent = parent;
         if (this.parent) {
             this.ancestors = this.parent.ancestors.slice();
@@ -542,8 +601,8 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.children = {};
         this.childArrays = {};
 
-        return this
-    };
+        return this;
+    }
 
     this.initData = function () {
         //cascade initial data:
@@ -565,6 +624,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //inits listeners
         //processes initial data
 
+        this.initFamilyTree();
         this.initProps();
         this.initData();
         this.setListeners();
