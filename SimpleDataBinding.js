@@ -303,27 +303,43 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.getInitialNodeValues = function () {
         //assigns initial form values in elements with a name or a [namespace-]val attribute to data
-        self.eachDomNode("name", null, function (el) {
-            if (el.getAttribute("value")) {//NOT el.value since Chrome populates this with "on" by default in some contexts
-                self.set(el.name, self.getNodeValue(el));
+        var val;
+
+        if (self.container.tagName == "form") {
+            for (var controlName in self.container.elements) {
+                getControlValue(self.container.elements[controlName]);
             }
-        }, [], true);
+        } else {
+            self.eachDomNode("name", null, function (el) {
+                getControlValue(el);
+            }, [], true);
+        }
+        
         self.eachDomNode(self.toPrefixedHyphenated("val"), null, function (el) {
             if (el.getAttribute("value")) {
                 self.set(el.getAttribute(self.toPrefixedHyphenated("val")), el.value);
             }
         });
         return self.data;
+
+        function getControlValue(el) {
+            if (el.type != "radio" && el.type != "checkbox") {
+                var val = el.getAttribute("value");//NOT el.value since Chrome populates this with "on" by default in some contexts
+                if (val && val.substr(0, 2) !== "{{") {
+                    self.set(el.name, self.getNodeValue(el));
+                }
+            }
+        }
     };
 
     this.updateDom = function () {
         //set properties in the DOM to express data
         //used during initalization prior to setting modulation listener
 
+        self.updateNodeProps(self.container);
         for (var prop in self.data) {
             self.setDomProp(prop);
-        };
-        self.updateNodeProps(self.container);
+        };  
     };
 
     this.prepChildArrayHtml = function (prop, branchContainerTemplate) {
@@ -448,7 +464,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             node;
 
         if (self.initialized && self.previousData && self.previousData[prop] != val) {
-            if (self.configs.globalDKataChangeCallBack) {
+            if (self.configs.globalDataChangeCallBack) {
                 self.callBack("globalDataChangeCallBack", [prop, val, self.data]);
             }
             if (self.configs[prop + "ChangeCallBack"]) {
@@ -463,7 +479,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         if (self.watches[prop]) {
             for (var i = self.watches[prop].length-1; i >= 0; i--) {
                 var node = self.watches[prop][i];
-                if(self.container.contains(node.ownerElement))
+                if(self.container.contains(node.ownerElement || node.parentElement))
                     self.updateDoubleCurlies(node);
                 else {
                     self.watches[prop].splice(i, 1);
