@@ -3,7 +3,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     //el:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
     //startData: object (optional)
     //configs: object (optional) - static configuration properties, watches
-    //  nameSpace: string - appended to data prevent dataset name collisions"
+    //  nameSpace: string - appended to data prevent dataset name collisions
     //  delimmiter: string - separates selected checkbox values
     //  watches: object - specifies watches in the form { props: [] /* optional string or array of strings */, fn: function }
     //parent: parent SimpleDataBinding instance - used internally
