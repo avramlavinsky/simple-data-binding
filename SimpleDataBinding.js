@@ -290,7 +290,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.setNodeValue = function (el, prop, value, attr) {
         //sets node value to data property value
-        
+           
         if (value !== undefined) {
             if (el.type == "radio" && attr == "name") {
                 el.checked = (value == el.value);
@@ -304,12 +304,21 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.parseNode = function (node) {
         //recursively update node and its children's properties with double curly braces
+        var resolvedName;
 
         if (node.nodeType == 3) {
-            self.resolveDoubleCurlyBraces(node, node.nodeValue);
+            self.resolveDoubleCurlyBraces(node);
         } else if (node.nodeType == 1) {
             for (var i = 0; i < node.attributes.length; i++) {
                 self.resolveAttrNode(node.attributes[i]);
+                if (node.attributes[i].nodeName == "name") {
+                    resolvedName = true;
+                }
+                if (node.attributes[i].nodeName == "value" && resolvedName && node.attributes[i].nodeTemplate && (node.type == "radio" || node.type == "checkbox" || node.tagName == "select")) {
+                    //if we've attempted to resolve the selected value based on the name before resolving the value
+                    //checkboxes, radios, and options need some extra love here
+                    self.setNodeValue(node, node.name, self.get(node.name, true), "name");
+                }
             }
             if (!(node.hasAttribute("databind") && node != self.container)) {
                 //do not recurse if we have hit the container of a child SimpleDataBinding instance
@@ -320,14 +329,14 @@ function SimpleDataBinding(el, startData, configs, parent) {
             }
         }
     };
-
+    
     this.resolveAttrNode = function (node) {
         var methodName = node.nodeName == "name" ? "name" : self.toPrefixedHyphenated(node.nodeName),
             method = self.attrMethods[methodName],
-            value = node.value || node.ownerElement[node.name],
+            value = node.value || node.ownerElement[node.name],/* be ware of element properties like node.href which may differ dramatically from the attribute node value */
             watchName = value || "*";
 
-        self.resolveDoubleCurlyBraces(node, value);/* be ware of element properties like node.href which may differ dramatically from the attribute node value */
+        self.resolveDoubleCurlyBraces(node, value);
         if (method) {
             self.addWatch(watchName, node);
             //call method in context passing element, attribute value (possibly a data property), data value of that property, attribute name
@@ -337,9 +346,14 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.resolveDoubleCurlyBraces = function (node, testTemplate) {
         //replace value (attribute value or text node value) in curly braces with corresponding data value
+        if (!node) {
+            return "";
+        }
+
         var isInitialPass = node.nodeTemplate === undefined;
 
         if (isInitialPass) {
+            testTemplate = testTemplate || node.nodeValue;
             if (typeof(testTemplate) == "string" && testTemplate.indexOf("{{") != -1) {
                 node.nodeTemplate = testTemplate;
             } else {
