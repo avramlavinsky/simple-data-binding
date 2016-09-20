@@ -1,5 +1,7 @@
 function SimpleDataBinding(el, startData, configs, parent) {
-    //binds data to and from form controls or to static element text nodes
+    //binds data to and from form controls, text nodes, and attributes
+    //automatically repeats markup bound to arrays
+    //easily extended for templating and more complex DOM interaction
     //
     //arguments
     //
