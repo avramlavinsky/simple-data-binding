@@ -37,7 +37,8 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //assigns all values present in newData object to data
         var branchContainer;
 
-        self.updating = true;
+        self.turnOffBindings();
+
         for (var prop in newData) {
             if (typeof (newData[prop]) == "object") {
                 branchContainer = (self.childArrays[prop] && self.childArrays[prop].branchContainerTemplate) || self.container.querySelector('[' + self.toPrefixedHyphenated('databind') + '="' + prop + '"]');
@@ -53,10 +54,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         self.parseNode(self.container);
 
-        setTimeout(function () {
-            self.updating = false;
-            self.previousData = self.assign({}, self.data);
-        }, 0);
+        self.turnOnBindings();
 
         return self.data;
     };
@@ -336,8 +334,9 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.resolveDoubleCurlyBraces = function (node, testTemplate) {
         //replace value (attribute value or text node value) in curly braces with corresponding data value
+        var isInitialPass = node.nodeTemplate === undefined;
 
-        if (node.nodeTemplate === undefined) {
+        if (isInitialPass) {
             if (testTemplate && testTemplate.indexOf("{{") != -1) {
                 node.nodeTemplate = testTemplate;
             } else {
@@ -348,7 +347,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         if (node.nodeTemplate) {
             node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
                 var prop = $0.slice(2, -2);
-                if (self.updating) {
+                if (isInitialPass) {
                     self.addWatch(prop, node);
                 }
                 return self.get(prop, true);
@@ -363,14 +362,26 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.setListeners = function () {
         //listen for changes in the container element's dataset
-        this.observer = new MutationObserver(this.mutationHandler);
-        this.observer.observe(self.container, {
-            attributes: true
-        });
+        self.observer = new MutationObserver(self.mutationHandler);
+        self.turnOnBindings();
 
         //listen for form control changes within our container
-        this.container.addEventListener("change", this.changeHandler);
+        self.container.addEventListener("change", self.changeHandler);
     };
+
+    this.turnOnBindings = function () {
+        if (self.observer) {
+            self.observer.observe(self.container, {
+                attributes: true
+            });
+        }
+    };
+
+    this.turnOffBindings = function () {
+        if (self.observer) {
+            self.observer.disconnect();
+        }
+    }
 
     this.mutationHandler = function (mutations) {
         //on mutation of the dataset calls into methods to update the DOM and fire watches
@@ -411,11 +422,8 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.dataChangeHandler = function (prop) {
         //on changes to data calls into appropriate watches
 
-        if (!self.updating) {
-            self.previousData = JSON.parse(JSON.stringify(this.data));
-            self.checkWatches(prop);
-            self.checkWatches("*");
-        }
+        self.checkWatches(prop);
+        self.checkWatches("*");
   
         return self;
     };
@@ -541,10 +549,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.initProps();
         this.initData();
         this.setListeners();
-
-        setTimeout(function () {
-            self.initialized = true;
-        });
 
         return this;
     };
