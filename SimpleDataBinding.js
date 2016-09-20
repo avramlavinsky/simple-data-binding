@@ -10,6 +10,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     var self = this;
 
+
     //<<<< Core Data Methods >>>>
 
     this.set = function (prop, val) {
@@ -48,11 +49,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
             } else {
                 self.set(prop, newData[prop]);
             }
-        }
-
-        //call potentially unbound user parser methods
-        if (configs && configs.parserMethods) {
-            self.setDomProp(configs.parserMethods);
         }
 
         self.parseNode(self.container);
@@ -106,6 +102,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }
         return dataClone;
     };
+
 
     //<<<<< String Utilities >>>>>
 
@@ -162,69 +159,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return obj;
     };
 
-    //<<< Parse Methods >>>
-
-    this.watch = function (props, fn) {
-        var globalWatch = ["*"];
-
-        props = props || globalWatch;
-        if (typeof (props) == "function") {
-            fn = props;
-            props = globalWatch;
-        } else if (typeof (props) == "string") {
-            props = [props];
-        }
-        for (var i = 0, stop = props.length; i < stop; i++) {
-            self.watches[props[i]] = self.watches[props[i]] || [];
-            self.watches[props[i]].push({ fn: fn, props: props });
-        }
-    }
-
-    this.parseNode = function (node) {
-        //recursively update node and its children's properties with double curly braces
-
-        if (node.nodeType == 3) {
-            self.resolveDoubleCurlyBraces(node, node.nodeValue);
-        } else if (node.nodeType == 1) {
-            for (var i = 0; i < node.attributes.length; i++) {
-                self.resolveDoubleCurlyBraces(node.attributes[i], node.attributes[i].value || node[node.attributes[i].name]);/* be ware of properties like node.href which may differ dramatically from the attribute value */
-            }
-            if (!(node.hasAttribute("databind") && node != self.container)) {
-                //do not recurse if we have hit the container of a child SimpleDataBinding instance
-                //let the instance handle it
-                for (var i = 0; i < node.childNodes.length; i++) {
-                    self.parseNode(node.childNodes[i]);
-                }
-            }
-        }
-    };
-
-    this.resolveDoubleCurlyBraces = function (node, testTemplate) {
-        //replace value (attribute value or text node value) in curly braces with corresponding data value
-
-        if (node.nodeTemplate === undefined) {
-            if (testTemplate && testTemplate.indexOf("{{") != -1) {
-                node.nodeTemplate = testTemplate;
-            } else {
-                node.nodeTemplate = null;
-            }
-        }
-
-        if (node.nodeTemplate) {
-            node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
-                var prop = $0.slice(2, -2);
-                if (self.updating) {
-                    self.watches[prop] = self.watches[prop] || [];
-                    if (self.watches[prop].indexOf(node) == -1) {
-                        self.watches[prop].push(node);
-                    }
-                }
-                return self.get(prop, true);
-            });
-        }
-
-        return node.nodeValue;
-    };
 
     //<<< DOM Methods >>>
 
@@ -259,24 +193,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         placeholder.parentElement.insertBefore(clone, placeholder);
         return clone;
-    };
-
-    this.setDomProp = function (prop, methods) {
-        //looks for element attribute values matching data property name if provided and updates via parser method or all parser methods if none is provided
-        var parserMethodName, attr;
-
-        if (typeof (methods) == "string") {
-            parserMethodName = methods;
-            methods = {};
-            methods[parserMethodName] = self.parserMethods[parserMethodName];
-        } else if (!(methods instanceof Array)) {
-            methods = self.parserMethods;
-        }
-
-        for (var key in methods) {
-            attr = methods[key].explicit ? key : self.toPrefixedHyphenated(key);
-            self.eachDomNode(attr, prop, methods[key].fn || methods[key], methods[key].isJson);
-        };
     };
 
     this.eachDomNode = function (attr, value, fn, isJson) {
@@ -357,15 +273,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }
     };
 
-    this.updateDom = function () {
-        //set properties in the DOM to express data
-        //used during initalization prior to setting modulation listener
-
-        for (var prop in self.data) {
-            self.setDomProp(prop);
-        };  
-    };
-
     this.prepChildArrayHtml = function (prop, branchContainerTemplate) {
         self.childArrays[prop].branchContainerTemplate = branchContainerTemplate;
         self.childArrays[prop].placeholder = document.createComment("end " + prop);
@@ -382,61 +289,77 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.setNodeValue = function (el, prop, value, attr) {
         //sets node value to data property value
-        //core parser method 
-
-        if (el.type == "radio" && attr == "name") {
-            el.checked = (value == el.value);
-        } else if (el.type == "checkbox" && attr == "name") {
-            el.checked = (value.indexOf(el.value) != -1);
-        } else {
-            el.value = value;
-        }
-    };
-
-    this.setNodeText = function (el, prop, value) {
-        //sets node text to data property value
-        //core parser method
-        //if multple text nodes are present, clears to null string and sets last text node to value
-        var textNodes = [],
-          targetTextNode;
-
-        if (el) {
-            for (var i = 0; i < el.childNodes.length; i++) {
-                if (el.childNodes[i].nodeName === "#text") {
-                    textNodes.push(el.childNodes[i]);
-                    if (el.childNodes[i].nodeValue.replace(/^\s*$/g, "").length) {
-                        el.childNodes[i].nodeValue = "";
-                        targetTextNode = el.childNodes[i];
-                    }
-                }
-            }
-            targetTextNode = targetTextNode || textNodes[0];
-            if (targetTextNode) {
-                targetTextNode.nodeValue = value;
+        
+        if (value !== undefined) {
+            if (el.type == "radio" && attr == "name") {
+                el.checked = (value == el.value);
+            } else if (el.type == "checkbox" && attr == "name") {
+                el.checked = (value.indexOf(el.value) != -1);
             } else {
-                targetTextNode = document.createTextNode(value);
-                el.appendChild(targetTextNode);
+                el.value = value;
             }
         }
     };
 
-    this.setNodeAttr = function (el, prop, value) {
-        var attrValue = el.getAttribute("attr"), attr, attrMap;
+    this.parseNode = function (node) {
+        //recursively update node and its children's properties with double curly braces
 
-        if (attrValue.substring(0, 1) == "{") {
-            attrMap = JSON.parse(attrValue);
-            for (attr in attrMap) {
-                if (attrMap[attr] === prop) {
-                    el.setAttribute(attr, value);
+        if (node.nodeType == 3) {
+            self.resolveDoubleCurlyBraces(node, node.nodeValue);
+        } else if (node.nodeType == 1) {
+            for (var i = 0; i < node.attributes.length; i++) {
+                self.resolveAttrNode(node.attributes[i]);
+            }
+            if (!(node.hasAttribute("databind") && node != self.container)) {
+                //do not recurse if we have hit the container of a child SimpleDataBinding instance
+                //let the instance handle it
+                for (var i = 0; i < node.childNodes.length; i++) {
+                    self.parseNode(node.childNodes[i]);
                 }
             }
-        } else if (attrValue) {
-            el.setAttribute(attrValue.split(",")[0], value);
         }
     };
 
+    this.resolveAttrNode = function (node) {
+        var methodName = node.nodeName == "name" ? "name" : self.toPrefixedHyphenated(node.nodeName),
+            method = self.attrMethods[methodName],
+            value = node.value || node.ownerElement[node.name],
+            watchName = value || "*";
 
-    //<<<<<< Listeners & Handlers >>>>>>
+        self.resolveDoubleCurlyBraces(node, value);/* be ware of element properties like node.href which may differ dramatically from the attribute node value */
+        if (method) {
+            self.addWatch(watchName, node);
+            //call method in context passing element, attribute value (possibly a data property), data value of that property, attribute name
+            method.apply(self, [node.ownerElement, node.nodeValue, self.get(node.nodeValue, true), node.nodeName]);
+        }
+    };
+
+    this.resolveDoubleCurlyBraces = function (node, testTemplate) {
+        //replace value (attribute value or text node value) in curly braces with corresponding data value
+
+        if (node.nodeTemplate === undefined) {
+            if (testTemplate && testTemplate.indexOf("{{") != -1) {
+                node.nodeTemplate = testTemplate;
+            } else {
+                node.nodeTemplate = null;
+            }
+        }
+
+        if (node.nodeTemplate) {
+            node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
+                var prop = $0.slice(2, -2);
+                if (self.updating) {
+                    self.addWatch(prop, node);
+                }
+                return self.get(prop, true);
+            });
+        }
+
+        return node.nodeValue;
+    };
+
+
+    //<<<<<< Listeners, Handlers, and Watches >>>>>>
 
     this.setListeners = function () {
         //listen for changes in the container element's dataset
@@ -464,7 +387,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
                 prop = self.toCamelCase(mutation.attributeName.substr(prefix.length));
 
-                self.setDomProp(prop);
                 self.dataChangeHandler(prop);
             }
         });
@@ -498,6 +420,30 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return self;
     };
 
+    this.watch = function (props, fn) {
+        //adds a watch function to a data property or array of data properties
+        var globalWatch = ["*"];
+
+        props = props || globalWatch;
+        if (typeof (props) == "function") {
+            fn = props;
+            props = globalWatch;
+        } else if (typeof (props) == "string") {
+            props = [props];
+        }
+        for (var i = 0, stop = props.length; i < stop; i++) {
+            self.addWatch(props[i], { fn: fn, props: props });
+        }
+    };
+
+    this.addWatch = function (watchName, node) {
+        //adds a watch function or node with implicit function to a given data property
+        self.watches[watchName] = self.watches[watchName] || [];
+        if (self.watches[watchName].indexOf(node) == -1) {
+            self.watches[watchName].push(node);
+        }
+    };
+
     this.checkWatches = function (prop) {
         if (self.watches[prop]) {
             for (var i = self.watches[prop].length - 1; i >= 0; i--) {
@@ -505,14 +451,15 @@ function SimpleDataBinding(el, startData, configs, parent) {
                     self.executeWatchFn(self.watches[prop][i], prop)
                 } else {
                     node = self.watches[prop][i];
-                    if (self.container.contains(node.ownerElement || node.parentElement))
-                        self.resolveDoubleCurlyBraces(node);
-                    else {
-                        //remove watches from elements that are no longer present in our container
-                        self.watches[prop].splice(i, 1);
+                    if (self.container.contains(node.ownerElement || node.parentElement)) {
+                        //do not execute watches on document fragments or nodes outside of our container
+                        if (node.nodeType == 2) {
+                            self.resolveAttrNode(node);
+                        } else {
+                            self.resolveDoubleCurlyBraces(node);
+                        }      
                     }
                 }
-
             }
         }
     };
@@ -548,24 +495,9 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.watches = this.assign((this.parent && this.parent.watches) || {}, this.configs.watches || {});
         this.checkboxDataDelimiter = this.configs.checkboxDataDelimiter || ",";
 
-        this.parserMethods = this.assign({
-            name: {
-                fn: this.setNodeValue,
-                explicit: true
-            },
-            val: {
-                fn: this.setNodeValue
-            },
-            text: {
-                fn: this.setNodeText
-            },
-            attr: {
-                fn: this.setNodeAttr,
-                isJson: true
-            }
-        }, this.configs.parserMethods || {});
-
-        
+        this.attrMethods = this.assign({
+            name: this.setNodeValue
+        }, this.configs.attrMethods || {});
 
         return this
     };
@@ -591,14 +523,12 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //cascade initial data:
         //first capture values in container data attributes if presentvalues 
         //overwrite with values in form controls if present
-        //overwrite again with data argument if present
+        //overwrite again with start dataArgument if present
 
         this.data = this.prefixData((this.boundHiddenInput || this.container).dataset);
         this.update(this.data);
         this.getInitialNodeValues();
         this.update(startData || {});
-        this.updateDom();
-
         return this;
     }
 
