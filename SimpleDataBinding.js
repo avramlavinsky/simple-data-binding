@@ -237,6 +237,15 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 val.splice(val.indexOf(el.value), 1);
             }
             val = val.join(self.delimiter);
+        } else if (el.tagName == "OPTION") {
+            val = self.get(el.name, true);
+            val = val !== undefined ? val.split(self.checkboxDataDelimiter) : [];
+            if (el.selected) {
+                val.push(el.value);
+            } else {
+                val.splice(val.indexOf(el.value), 1);
+            }
+            val = val.join(self.delimiter);
         } else {
             val = el.value;
         }
@@ -265,7 +274,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return self.data;
 
         function getControlValue(el) {
-            if (el.type != "radio" && el.type != "checkbox") {
+            if (el.type != "radio" && el.type != "checkbox" && el.tagName != "OPTION") {
                 var val = el.getAttribute("value");//NOT el.value since Chrome populates this with "on" by default in some contexts
                 if (val && val.substr(0, 2) !== "{{") {
                     self.set(el.name, self.getNodeValue(el));
@@ -288,14 +297,18 @@ function SimpleDataBinding(el, startData, configs, parent) {
         });
     };
 
-    this.setNodeValue = function (el, prop, value, attr) {
+    this.setNodeValue = function (el, prop, attr) {
         //sets node value to data property value
-           
+        var value = self.get(prop, true);
+        
         if (value !== undefined) {
             if (el.type == "radio" && attr == "name") {
                 el.checked = (value == el.value);
             } else if (el.type == "checkbox" && attr == "name") {
                 el.checked = (value.indexOf(el.value) != -1);
+            } else if (el.tagName == "OPTION" && attr == "value") {
+                el.value = value;
+                el.selected = (value.indexOf(el.value) != -1);
             } else {
                 el.value = value;
             }
@@ -314,10 +327,14 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 if (node.attributes[i].nodeName == "name") {
                     resolvedName = true;
                 }
-                if (node.attributes[i].nodeName == "value" && resolvedName && node.attributes[i].nodeTemplate && (node.type == "radio" || node.type == "checkbox" || node.tagName == "select")) {
+                if (node.attributes[i].nodeName == "value" && resolvedName && node.attributes[i].nodeTemplate && (node.type == "radio" || node.type == "checkbox")) {
                     //if we've attempted to resolve the selected value based on the name before resolving the value
-                    //checkboxes, radios, and options need some extra love here
-                    self.setNodeValue(node, node.name, self.get(node.name, true), "name");
+                    //checkboxes && radios need some extra love here
+                    self.setNodeValue(node, node.name, "name");
+                } else if (node.tagName == "OPTION" && node.attributes[i].nodeName == "value") {
+                    //options probably don't have a name but must have a value
+                    //they need some extra love as well hinging on the parent's value
+                    self.setNodeValue(node, node.parentElement.name, "name");
                 }
             }
             if (!(node.hasAttribute("databind") && node != self.container)) {
@@ -339,7 +356,9 @@ function SimpleDataBinding(el, startData, configs, parent) {
         self.resolveDoubleCurlyBraces(node, value);
         if (method) {
             self.addWatch(watchName, node);
-            //call method in context passing element, attribute value (possibly a data property), data value of that property, attribute name
+            //call method passing element, attribute value (possibly a data property), data value of that property, attribute name
+            //context will always be this SimpleDataBinding instance
+            //even if the watch is triggered via methods from a parent instance
             method.apply(self, [node.ownerElement, node.nodeValue, self.get(node.nodeValue, true), node.nodeName]);
         }
     };
@@ -411,11 +430,11 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 prefix += self.nameSpace + "-";
             }
 
-            if (mutation.attributeName.substr(0, prefix.length) == prefix) {
-                //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
+            //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
+            if (mutation.target == (self.boundHiddenInput || self.container) && mutation.attributeName.substr(0, prefix.length) == prefix) {
                 prop = self.toCamelCase(mutation.attributeName.substr(prefix.length));
-
-                self.dataChangeHandler(prop);
+                self.checkWatches(prop);
+                self.checkWatches("*");
             }
         });
         return mutations;
@@ -434,15 +453,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
         } else {
             return self.set(prop, val);
         } 
-    };
-
-    this.dataChangeHandler = function (prop) {
-        //on changes to data calls into appropriate watches
-
-        self.checkWatches(prop);
-        self.checkWatches("*");
-  
-        return self;
     };
 
     this.watch = function (props, fn) {
@@ -487,6 +497,9 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 }
             }
         }
+        for (childKey in self.children) {
+            self.children[childKey].checkWatches(prop);
+        }
     };
 
     this.executeWatchFn = function (watch, prop) {
@@ -517,7 +530,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             this.boundHiddenInput.type = "hidden";
             this.container.appendChild(this.boundHiddenInput);
         }
-        this.watches = this.assign((this.parent && this.parent.watches) || {}, this.configs.watches || {});
+        this.watches = this.configs.watches || {};
         this.checkboxDataDelimiter = this.configs.checkboxDataDelimiter || ",";
 
         this.attrMethods = this.assign({
