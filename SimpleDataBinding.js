@@ -1,11 +1,14 @@
 function SimpleDataBinding(el, startData, configs, parent) {
     //binds data to and from form controls or to static element text nodes
-    //el:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
-    //startData: object (optional)
-    //configs: object (optional) - static configuration properties, watches
-    //  nameSpace: string - appended to data prevent dataset name collisions
-    //  delimmiter: string - separates selected checkbox values
-    //  watches: object - specifies watches in the form { props: [] /* optional string or array of strings */, fn: function }
+    //
+    //arguments
+    //
+    //  el:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
+    //  startData: object (optional)
+    //  configs: object (optional) - static configuration properties, watches
+    //    nameSpace: string - appended to data prevent dataset name collisions
+    //    delimmiter: string - separates selected checkbox values
+    //    watches: object - specifies watches in the form {watchName: { props: [] /* optional string or array of strings */, fn: function }} or just {watchName: function}
     //parent: parent SimpleDataBinding instance - used internally
 
     var self = this;
@@ -337,7 +340,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         var isInitialPass = node.nodeTemplate === undefined;
 
         if (isInitialPass) {
-            if (testTemplate && testTemplate.indexOf("{{") != -1) {
+            if (typeof(testTemplate) == "string" && testTemplate.indexOf("{{") != -1) {
                 node.nodeTemplate = testTemplate;
             } else {
                 node.nodeTemplate = null;
