@@ -38,14 +38,16 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return value;
     };
 
-    this.update = function (newData, additive) {
+    this.update = function (newData, bindDuringUpdate, additive) {
         //assigns all values present in newData object to data
         var childContainer;
 
         //data binding is asynchronous
-        //better to handle updates synchronously via the wathces
-        //so turn off the bindings
-        self.turnOffBindings();
+        //child updates will be handled synchronously via the wathces
+        //so better to turn off the bindings unless specified otherwise
+        if (!bindDuringUpdate) {
+            self.turnOffBindings();
+        }
 
         for (var prop in newData) {
             if (typeof (newData[prop]) == "object") {
@@ -56,6 +58,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                     self.createChild(prop, childContainer, newData[prop]);
                 }
             } else {
+                self.root.lastMutation = { value: newData[prop], oldValue: self.get(prop), prop: prop };
                 self.set(prop, newData[prop]);
                 self.checkWatches(prop);
             }
@@ -264,7 +267,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return self.data;
 
         function getControlValue(el) {
-            if (el.type != "radio" && el.type != "checkbox" && el.tagName != "OPTION") {
+            if (el.name != "undefined" && el.type != "radio" && el.type != "checkbox" && el.tagName != "OPTION") {
                 var val = el.getAttribute("value");//NOT el.value since Chrome populates this with "on" by default in some contexts
                 if (val && val.substr(0, 2) !== "{{") {
                     self.set(el.name, self.getNodeValue(el));
@@ -278,7 +281,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         obj.placeholder = document.createComment("end " + message);
         elementTemplate.parentNode.insertBefore(document.createComment("start " + message), elementTemplate);
         elementTemplate.parentNode.insertBefore(obj.placeholder, elementTemplate);
-        if ( ! retain) {
+        if (!retain) {
             elementTemplate.parentElement.removeChild(elementTemplate);
         }
     };
@@ -298,7 +301,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.setNodeValue = function (el, prop, attr) {
         //sets node value to data property value
         var value = self.get(prop, true);
-        
+
         if (value !== undefined) {
             if (el.type == "radio" && attr == "name") {
                 el.checked = (value == el.value);
@@ -332,7 +335,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                     node.selected = (self.get(node.parentElement.name) || "").indexOf(node.value) != -1;
                 }
             }
-                
+
             for (var i = 0; i < node.childNodes.length; i++) {
                 //do not recurse if we have hit the container of a child SimpleDataBinding instance
                 //let the instance handle it
@@ -342,7 +345,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             }
         }
     };
-    
+
     this.resolveAttrNode = function (node) {
         //resolve curly braces and call attribute based methods
         var methodName = node.nodeName == "name" ? "name" : self.toPrefixedHyphenated(node.nodeName),
@@ -367,7 +370,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         if (isInitialPass) {
             testTemplate = testTemplate || node.nodeValue;
-            if (typeof(testTemplate) == "string" && testTemplate.indexOf("{{") != -1) {
+            if (typeof (testTemplate) == "string" && testTemplate.indexOf("{{") != -1) {
                 node.nodeTemplate = testTemplate;
             } else {
                 node.nodeTemplate = null;
@@ -436,7 +439,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
             if (mutation.target == (self.boundHiddenInput || self.container) && mutation.attributeName.substr(0, prefix.length) == prefix && value != mutation.oldValue) {
                 prop = self.toCamelCase(mutation.attributeName.substr(prefix.length));
-                self.lastMutation = { prop: prop, value: value, oldValue: mutation.oldValue };
+                self.root.lastMutation = { prop: prop, value: value, oldValue: mutation.oldValue };
                 self.checkWatches(prop);
                 self.checkWatches("*");
             }
@@ -451,31 +454,33 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         e.stopPropagation();
 
-        if (self.index !== undefined && self.parent.get(prop) !== undefined && (e.target.type == "radio" || e.target.type =="checkbox")) {
+        if (self.index !== undefined && self.parent.get(prop) !== undefined && (e.target.type == "radio" || e.target.type == "checkbox")) {
             //checkboxes and radios created in childArrays should change the value in the parent DataBinding instance
             self.parent.set(prop, val);
         } else {
             return self.set(prop, val);
-        } 
+        }
     };
 
     this.watch = function (props, fn, recursive) {
         //adds a watch function to a data property or array of data properties
         var globalWatch = ["*"];
 
-        props = props || globalWatch;
         if (typeof (props) == "function") {
+            recursive = fn;
             fn = props;
             props = globalWatch;
         } else if (typeof (props) == "string") {
             props = [props];
         }
+        props = props || globalWatch;
+
         for (var i = 0, stop = props.length; i < stop; i++) {
-            self.addWatch(props[i], { fn: fn, props: props });
+            self.addWatch(props[i], { fn: fn, props: props, recursive: recursive });
         }
         if (recursive) {
             for (childKey in self.children) {
-                self.children[childKey].watch(props, fn);
+                self.children[childKey].watch(props, fn, recursive);
             }
         }
     };
@@ -501,7 +506,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                             self.resolveAttrNode(node);
                         } else {
                             self.resolveDoubleCurlyBraces(node);
-                        }      
+                        }
                     }
                 }
             }
@@ -510,22 +515,29 @@ function SimpleDataBinding(el, startData, configs, parent) {
             for (childKey in self.children) {
                 self.children[childKey].checkWatches(prop);
             }
-        }   
+        }
     };
 
     this.executeWatchFn = function (watch, prop) {
         //execute a watch function in the context of the instance with designated arguments
-        var args = [];
 
-        if (watch.props[0] == "*") {
-            args.push(self.lastMutation);
-        } else {
-            for (var i = 0, stop = watch.props.length; i < stop; i++) {
-                args.push(self.get(watch.props[i]))
+        var lastMut = self.root.lastMutation,
+            args = [lastMut.value, lastMut.oldValue, lastMut.prop],
+            watchProps = {};
+
+        //on recursive watch functions
+        //only execute once in the context that contains the changed property
+        if (self.get(lastMut.prop) != undefined || !watch.recursive) {
+
+            if (watch.props[0] != "*") {
+                for (var i = 0, stop = watch.props.length; i < stop; i++) {
+                    watchProps[watch.props[i]] = self.get(watch.props[i]);
+                }
+                args.push(watchProps);
             }
-        } 
 
-        watch.fn.apply(self, args);
+            watch.fn.apply(self, args);
+        }
     };
 
 
