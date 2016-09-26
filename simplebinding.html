@@ -109,12 +109,14 @@ div.nav + div, iframe{
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
+      var link = this;
+      
       if( this.hasAttribute("disabled") || penIsLoading){
         e.preventDefault();
       }else{
         penIsLoading = true;
         setTimeout(function(){
-          var increment = Number(this.dataset.increment);
+          var increment = Number(link.dataset.increment);
           pageIndex += increment;
           page.update(pageData[pageIndex]);
           prev.removeAttribute("disabled");
