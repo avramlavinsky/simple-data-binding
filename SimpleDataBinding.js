@@ -314,8 +314,8 @@ function SimpleDataBinding(el, startData, configs, parent) {
     };
 
     this.parseNode = function (node) {
-        //recursively update node and its children's properties with double curly braces
-        var resolvedName;
+        //recursively update node and its children's properties with dynamic values
+        var resolvedName, prop, attr;
 
         if (node.nodeType == 3) {
             self.resolveDoubleCurlyBraces(node);
@@ -347,7 +347,45 @@ function SimpleDataBinding(el, startData, configs, parent) {
     };
 
     this.resolveAttrNode = function (node) {
+        //resolve dynamic references in an attribute
+        if (node.nodeName.substr(0, 5) != "data-") {
+            self.resolveAttrNodeName(node);
+            self.resolveAttrNodeValue(node);
+            return node;
+        }
+    };
+
+    this.resolveAttrNodeName = function (node) {
+        //resolve dynamically populated attribute names
+        if (node.boundAttrNameProp === undefined) {
+            if (node.nodeName.substr(-2, 2) == "__") {
+                prop = node.nodeName.slice(2, -2);
+                if (prop) {
+                    node.boundAttrNameProp = prop;
+                    self.addWatch(node.boundAttrNameProp, node);
+                }
+            } else {
+                node.boundAttrNameProp = null;
+            }
+        }
+        if (node.boundAttrNameProp) {
+            attr = self.get(node.boundAttrNameProp, true);
+            if (attr) {
+                node.boundAttrName = attr;
+                setTimeout(function () {
+                //wait for our current dynamcally named node to resolve it's value
+                    node.ownerElement.setAttribute(attr, node.nodeValue);
+                });
+            } else if (node.boundAttrName) {
+                node.ownerElement.removeAttribute(node.boundAttrName);
+            }
+        }
+        return node;
+    };
+
+    this.resolveAttrNodeValue = function (node) {
         //resolve curly braces and call attribute based methods
+
         var methodName = node.nodeName == "name" ? "name" : self.toPrefixedHyphenated(node.nodeName),
             method = self.attrMethods[methodName],
             value = node.value || node.ownerElement[node.name],/* be ware of element properties like node.href which may differ dramatically from the attribute node value */
@@ -358,6 +396,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             self.addWatch(watchName, node);
             method.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, self.get(node.nodeValue)]);
         }
+        return node;
     };
 
     this.resolveDoubleCurlyBraces = function (node, testTemplate) {
@@ -462,60 +501,74 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }
     };
 
-    this.watch = function (props, fn, recursive) {
+    this.watch = function (props, fn, globalScope) {
         //adds a watch function to a data property or array of data properties
-        var globalWatch = ["*"];
+        var globalWatch = ["*"],
+            instance;
 
         if (typeof (props) == "function") {
-            recursive = fn;
+            globalScope = fn;
             fn = props;
             props = globalWatch;
         } else if (typeof (props) == "string") {
             props = [props];
         }
         props = props || globalWatch;
+        instance = globalScope ? self.root : self
 
         for (var i = 0, stop = props.length; i < stop; i++) {
-            self.addWatch(props[i], { fn: fn, props: props, recursive: recursive });
-        }
-        if (recursive) {
-            for (childKey in self.children) {
-                self.children[childKey].watch(props, fn, recursive);
-            }
+            instance.addWatch(props[i], { fn: fn, props: props }, globalScope);
         }
     };
 
-    this.addWatch = function (watchName, node) {
+    this.addWatch = function (prop, node, globalScope) {
         //adds a watch function or node with implicit function to a given data property
-        self.watches[watchName] = self.watches[watchName] || [];
-        if (self.watches[watchName].indexOf(node) == -1) {
-            self.watches[watchName].push(node);
+        var watchType = globalScope ? "globalScopeWatches" : "watches",
+            instance = globalScope ? self.root : self;
+
+        instance[watchType][prop] = instance[watchType][prop] || [];
+        if (instance[watchType][prop].indexOf(node) == -1) {
+            instance[watchType][prop].push(node);
         }
     };
 
     this.checkWatches = function (prop, recursive) {
-        if (self.watches[prop]) {
-            for (var i = self.watches[prop].length - 1; i >= 0; i--) {
-                if (self.watches[prop][i].fn) {
-                    self.executeWatchFn(self.watches[prop][i], prop)
-                } else {
-                    node = self.watches[prop][i];
-                    if (self.container.contains(node.ownerElement || node.parentElement)) {
-                        //do not execute watches on document fragments or nodes outside of our container
-                        if (node.nodeType == 2) {
-                            self.resolveAttrNode(node);
-                        } else {
-                            self.resolveDoubleCurlyBraces(node);
+        check(prop);
+        check(prop, true);
+
+        function check(prop, globalScope) {
+            var instance = globalScope ? self.root : self,
+            watchType = globalScope ? "globalScopeWatches" : "watches";
+
+            if (instance[watchType][prop]) {
+                for (var i = instance[watchType][prop].length - 1; i >= 0; i--) {
+                    if (instance[watchType][prop][i].fn) {
+                        //for watches of global scope we pull the function from the root instance
+                        //but execute it in the local instance
+                        self.executeWatchFn(instance[watchType][prop][i], prop)
+                    } else {
+                        node = instance[watchType][prop][i];
+                        if (self.container.contains(node.ownerElement || node.parentElement)) {
+                            //do not execute watches on document fragments or nodes outside of our container
+                            if (node.nodeType == 2) {
+                                self.resolveAttrNode(node);
+                            } else {
+                                self.resolveDoubleCurlyBraces(node);
+                            }
                         }
                     }
                 }
             }
         }
+
         if (recursive !== false) {
             for (childKey in self.children) {
+                //recurse through child instances in case the property is inheritted
                 self.children[childKey].checkWatches(prop);
             }
         }
+
+        return prop;
     };
 
     this.executeWatchFn = function (watch, prop) {
@@ -555,6 +608,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             this.container.appendChild(this.boundHiddenInput);
         }
         this.watches = this.configs.watches || {};
+        this.globalScopeWatches = this.configs.globalScopeWatches || {};
         this.checkboxDataDelimiter = this.configs.checkboxDataDelimiter || ",";
 
         this.attrMethods = this.assign({
