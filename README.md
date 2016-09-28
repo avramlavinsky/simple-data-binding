@@ -1,5 +1,5 @@
 # simple-data-binding
-Super light-weight, stand-alone, incredibly simple utility for two-way data binding.
+<strong>Super light-weight, stand-alone, incredibly simple utility for two-way data binding.</strong>
 
 <em>Frameworks are fine, but sometimes when you have a nail to drive in, you just want a hammer, not an aircraft carrier.</em>
 <p>
