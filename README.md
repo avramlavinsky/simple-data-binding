@@ -6,9 +6,10 @@ Super light-weight, stand-alone, incredibly simple utility for two-way data bind
 Two-way data-binding is a powerful tool.  Ideally, it can eliminate selectors and direct DOM references entirely, leading to code which is far more concise and better organized.
 </p>
 <p>
-Two-way data-binding has been a key selling point for many JavaScript frameworks, but it shouldn't be sufficient justification for adopting a framework.
+Two-way data-binding has been a key selling point for many JavaScript frameworks, but it shouldn't be sufficient justification for adopting a framework. Frameworks are increasingly complex, short-lived, and weighty. The Simple Data Binding project provides a very different kind of two-way data-binding solution.
 </p>
-The Simple Data Binding project provides a two-way data-binding solution which meets the following <h2>requirements</h2>:
+
+<h2>requirements:</h2>
 
 <ul>
   <li>
