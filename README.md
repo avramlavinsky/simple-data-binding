@@ -8,7 +8,7 @@ Two-way data-binding is a powerful tool.  Ideally, it can eliminate selectors an
 <p>
 Two-way data-binding has been a key selling point for many JavaScript frameworks, but it shouldn't be sufficient justification for adopting a framework.
 </p>
-The Simple Data Binding project attempts to provide a two-way data-binding with the following requirements:
+The Simple Data Binding project provides a two-way data-binding solution which meets the following <h2>requirements</h2>:
 
 <ul>
   <li>
