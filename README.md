@@ -26,4 +26,10 @@ The Simple Data Binding project attempts to provide a two-way data-binding with 
   <li>
   <strong>Powerful.</strong> Advanced form field operations like question branching and dynamic options should be easily implemented.
   </li>
+  <li>
+  <strong>Scaleable.</strong> Performant under conditions that exceed the upper limits of reasonable DOM size and complexity.
+  </li>
+  <li>
+  <strong>Extensible.</strong> Convenient and intuitive methods to extend functionality to unusual data-binding needs and beyond mere data-binding as well.
+  </li>
 </ul>
