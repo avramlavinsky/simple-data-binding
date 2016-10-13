@@ -1,0 +1,117 @@
+body {
+  font-family: tahoma, arial;
+  color: White;
+  background-color: #7D1935;
+  font-size: 16px;
+  line-height: 20px;
+  padding: 0;
+  margin: 0;
+}
+
+section, form{
+  margin: 20px;
+}
+
+section form,
+form section{
+  margin: 0;
+}
+
+h1{
+  font-size: 115%;
+  margin: 20px 0;
+  font-weight: normal;
+}
+
+h2{
+  font-size: 100%;
+  margin: 30px 0 20px;
+  font-weight: normal;
+}
+
+.instructions{
+  font-size: 90%;
+}
+
+.code{
+  font-style: normal;
+  color: #C6DBFF;
+}
+
+label {
+  display: block;
+  width: 100%;
+}
+
+input,
+button,
+span,
+fieldset,
+hr,
+textarea,
+select,
+option,
+button{
+  display: block;
+  margin: 0 0 20px;
+  box-sizing: border-box;
+  border-width: 1px;
+  border-color: white;
+}
+
+input,
+textarea,
+select,
+opton,
+button{
+  margin-top: 8px;
+  width: 200px;
+  max-width: 100%;
+  border-style: solid;
+  padding: 4px 8px;
+}
+option{
+  margin: 0;
+  border: none;
+}
+input[type=checkbox], input[type=radio]{
+  display: inline-block;
+  margin-top: 0;
+  margin-right: 8px;
+  width: auto;
+}
+
+fieldset{
+  padding-top: 15px;
+  width: 200px;
+  border-style: solid;
+}
+
+legend{
+  font-color: inherit;
+}
+
+textarea{
+  height: 200px;
+  width: 100%;
+  max-width: 600px;
+}
+
+button{
+  width: auto;
+  background-color: black;
+  border-radius: 3px;
+  border-color: black;
+  color: white;
+  padding: 6px 8px;
+  margin-top: 30px;
+}
+
+button:hover,
+button:focus{
+  border-color: white;
+}
+
+.templates{
+  display: none;
+}
