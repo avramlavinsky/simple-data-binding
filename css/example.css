@@ -1,3 +1,28 @@
+html, body {
+  width: 100%;
+}
+html, body, div, iframe {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+body{
+  font-family: tahoma, arial;
+  color: White;
+  background-color: #000000;
+  font-size: 16px;
+  line-height: 20px;
+}
+*, *:after, *:before{
+  box-sizing: border-box;
+}
+.nav{
+  text-align: right;
+}
+h1{
+  display: inline-block;
+  font-weight: normal;
+  font-size: 120%;
   padding: 8px 20px;
   float: left;
 }
