@@ -25,18 +25,18 @@ Check out the <a href="examples/examples.html">CODEPEN examples</a>.
   <strong>Light-weight.</strong> Under one tenth the size of common frameworks.
   </li>
   <li>
-  <strong>Jargon-free.</strong> All method and property names easily understood and inherently meaningful. 
+  <strong>Jargon-free.</strong> Simple, meaningful method and property names that don't feel like learning a foreign language. 
   </li>
   <li>
   <strong>Intuitive.</strong> Geared towards rapid time to market.  A learning curve that feels comfortable in minutes, not months. 
   </li>
   <li>
-  <strong>Powerful.</strong> Easily facilating advanced form field operations like question branching and dynamic options.
+  <strong>Powerful.</strong> Geared towards advanced form field operations like question branching and dynamic options.
   </li>
   <li>
   <strong>Scaleable.</strong> Performant under conditions that exceed the upper limits of reasonable DOM size and complexity.
   </li>
   <li>
-  <strong>Extensible.</strong> Conveniently extended to support to unusual data-binding needs and beyond.
+  <strong>Extensible.</strong> Conveniently extended for unique data-binding needs and beyond.
   </li>
 </ul>
