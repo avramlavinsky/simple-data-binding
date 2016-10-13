@@ -19,24 +19,24 @@ Check out the <a href="examples/examples.html">CODEPEN examples</a>.
 
 <ul>
   <li>
-  <strong>Dependency-free.</strong> Built in vanilla JavaScript. 
+  <strong>Dependency-free</strong> – Built in vanilla JavaScript. 
   </li>
   <li>
-  <strong>Light-weight.</strong> Under one tenth the size of common frameworks.
+  <strong>Light-weight</strong> – Under one tenth the size of common frameworks.
   </li>
   <li>
-  <strong>Jargon-free.</strong> Simple, meaningful method and property names that don't feel like learning a foreign language. 
+  <strong>Jargon-free</strong> – Simple, meaningful method and property names that don't feel like learning a foreign language. 
   </li>
   <li>
-  <strong>Intuitive.</strong> Geared towards rapid time to market.  A learning curve that feels comfortable in minutes, not months. 
+  <strong>Intuitive</strong> – Geared towards rapid time to market.  A learning curve that feels comfortable in minutes, not months. 
   </li>
   <li>
-  <strong>Powerful.</strong> Geared towards advanced form field operations like question branching and dynamic options.
+  <strong>Powerful</strong> – Geared towards advanced form field operations like question branching and dynamic options.
   </li>
   <li>
-  <strong>Scaleable.</strong> Performant under conditions that exceed the upper limits of reasonable DOM size and complexity.
+  <strong>Scaleable</strong> – Performant under conditions that exceed the upper limits of reasonable DOM size and complexity.
   </li>
   <li>
-  <strong>Extensible.</strong> Conveniently extended for unique data-binding needs and beyond.
+  <strong>Extensible</strong> – Conveniently extended for unique data-binding needs and beyond.
   </li>
 </ul>
