@@ -1,1 +1,154 @@
 
+<!DOCTYPE html>
+<html>
+  <head>
+    <title text="title">Simple Data Binding Examples</title>
+    <style>
+html, body {
+  width: 100%;
+}
+html, body, div, iframe {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+body{
+  font-family: tahoma, arial;
+  color: White;
+  background-color: #000000;
+  font-size: 16px;
+  line-height: 20px;
+}
+*, *:after, *:before{
+  box-sizing: border-box;
+}
+.nav{
+  text-align: right;
+}
+h1{
+  display: inline-block;
+  font-weight: normal;
+  font-size: 120%;
+  padding: 8px 20px;
+  float: left;
+}
+.navLink{
+  background: #4d4d50;
+  border-radius: 3px;
+  font-size: 15px;
+  display: inline-block;
+  padding: 10px 16px;
+  margin: 10px;
+  cursor: pointer;
+  color: white;
+  text-decoration: none;
+}
+.navLink:hover {
+    background-color: #888888;
+}
+.navLink:focus {
+  border: solid thin white;
+}
+.navLink[disabled]{
+  opacity: .7;
+  cursor: default;
+  background-color: #4d4d50;
+  border: none;
+}
+.icon{
+  color: #AEAEAE;
+}
+div.nav + div, iframe{
+  width: 100%;
+}
+  </style>
+  
+  <script type="text/javascript" src="../build/simpledatabinding.js"></script>
+  
+</head>
+
+<body>
+   <div class="nav">
+    <h1 text="heading">{{heading}}</h1>
+  	<a class="navLink prev" data-increment="-1" target="CodePen Embed" href="{{prevHref}}" disabled><span class="icon">&#9668;</span> Previous</a>
+  	<a class="navLink next" data-increment="1" target="CodePen Embed" href="{{nextHref}}">Next <span class="icon">&#9658</span></a>
+   </div>
+
+  <p data-height="850" data-theme-id="0" data-slug-hash="XjXAYx" data-default-tab="js,result" data-user="cagerattler" data-embed-version="2" data-editable="true" class="codepen">See the Pen <a href="http://codepen.io/cagerattler/pen/XjXAYx/">Simplest Two Way Data-binding Ever</a> by Avram Lavinsky (<a href="http://codepen.io/cagerattler">@cagerattler</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+
+<script async type="text/javascript">
+  
+  
+  (function(){
+    
+  
+    var pageData = [
+        {heading: "Simplest Two Way Data Binding Ever"},
+        {heading: "Simple Prefilling"},
+        {heading: "Easy Data Binding: Nested Objects"},
+        {heading: "Easy Data Binding: Arrays"},
+        {heading: "Watches Made Incredibly Simple"},
+        {heading: "Dynamic Options Made Incredibly Simple"},
+        {heading: "Dynamic Options II"},
+        {heading: "Easy Live Arrays"}
+      ],
+      penHashes = [
+        "XjXAYx",
+        "vXLEor",
+        "rrWVjN",
+        "mAVLKQ",
+        "ammKWJ",
+        "vXyQaw",
+        "XjNvQL",
+        "NRXvjr"
+      ],
+      prev = document.querySelector(".prev"),
+      next = document.querySelector(".next"),
+      pageIndex = 0,
+      penIsLoading = false,
+      iframeListener;
+    
+    pageData.forEach(setDataHrefs);
+    
+    window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
+    
+    function changePage(e){
+      var link = this;
+      
+      if( this.hasAttribute("disabled") || penIsLoading){
+        e.preventDefault();
+      }else{
+        penIsLoading = true;
+        setTimeout(function(){
+          var increment = Number(link.dataset.increment);
+          pageIndex += increment;
+          page.update(pageData[pageIndex]);
+          prev.removeAttribute("disabled");
+          next.removeAttribute("disabled");
+          if(pageIndex == 0){
+            prev.setAttribute("disabled", "disabled");
+          }else if (pageIndex == pageData.length - 1){
+            next.setAttribute("disabled", "disabled");
+          }
+          iframeListener = iframeListener || document.querySelector("iframe").addEventListener("load", function(){
+            penIsLoading = false;
+          }) || true
+        }, 0);
+      }
+    }
+    
+    function setDataHrefs(data, i){
+      var rawHref = "//codepen.io/cagerattler/embed/[[hash]]?height=800&theme-id=0&slug-hash=[[hash]]&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true";
+      
+      data.prevHref = i == 0 ? "#0" : rawHref.replace(/\[\[hash\]\]/g, penHashes[i-1]);
+      data.nextHref = i == penHashes.length - 1 ? "#0" : rawHref.replace(/\[\[hash\]\]/g, penHashes[i+1]);
+    }
+    prev.addEventListener("click", changePage);
+    next.addEventListener("click", changePage);
+  })()
+  
+</script>
+
+</body>
+</html>
