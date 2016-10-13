@@ -3,65 +3,7 @@
 <html>
   <head>
     <title text="title">Simple Data Binding Examples</title>
-    <style>
-html, body {
-  width: 100%;
-}
-html, body, div, iframe {
-  margin: 0;
-  padding: 0;
-  border: none;
-}
-body{
-  font-family: tahoma, arial;
-  color: White;
-  background-color: #000000;
-  font-size: 16px;
-  line-height: 20px;
-}
-*, *:after, *:before{
-  box-sizing: border-box;
-}
-.nav{
-  text-align: right;
-}
-h1{
-  display: inline-block;
-  font-weight: normal;
-  font-size: 120%;
-  padding: 8px 20px;
-  float: left;
-}
-.navLink{
-  background: #4d4d50;
-  border-radius: 3px;
-  font-size: 15px;
-  display: inline-block;
-  padding: 10px 16px;
-  margin: 10px;
-  cursor: pointer;
-  color: white;
-  text-decoration: none;
-}
-.navLink:hover {
-    background-color: #888888;
-}
-.navLink:focus {
-  border: solid thin white;
-}
-.navLink[disabled]{
-  opacity: .7;
-  cursor: default;
-  background-color: #4d4d50;
-  border: none;
-}
-.icon{
-  color: #AEAEAE;
-}
-div.nav + div, iframe{
-  width: 100%;
-}
-  </style>
+    <link rel="stylesheet" type="text/css" href="../css/example.css">
   
   <script type="text/javascript" src="../build/simpledatabinding.js"></script>
   
@@ -75,9 +17,9 @@ div.nav + div, iframe{
    </div>
 
   <p data-height="850" data-theme-id="0" data-slug-hash="XjXAYx" data-default-tab="js,result" data-user="cagerattler" data-embed-version="2" data-editable="true" class="codepen">See the Pen <a href="http://codepen.io/cagerattler/pen/XjXAYx/">Simplest Two Way Data-binding Ever</a> by Avram Lavinsky (<a href="http://codepen.io/cagerattler">@cagerattler</a>) on <a href="http://codepen.io">CodePen</a>.</p>
-<script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+  <script async src="//assets.codepen.io/assets/embed/ei.js"></script>
 
-<script async type="text/javascript">
+  <script async type="text/javascript">
   
   
   (function(){
@@ -148,7 +90,7 @@ div.nav + div, iframe{
     next.addEventListener("click", changePage);
   })()
   
-</script>
+  </script>
 
 </body>
 </html>
