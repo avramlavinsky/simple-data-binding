@@ -7,8 +7,12 @@ Two-way data-binding is a powerful tool.  Ideally, it can eliminate selectors an
 </p>
 <p>
 Two-way data-binding has been a key selling point for many JavaScript frameworks, but it shouldn't be sole justification for adopting a framework. Frameworks have their costs.  They are increasingly complex, short-lived, and weighty.
-
+</p>
+<p>
 Simple Data Binding offers two-way data-binding à la carte.
+</p>
+<p>
+Check out the <a href="">CODEPEN examples</a>.
 </p>
 
 <h2>Objectives:</h2>
