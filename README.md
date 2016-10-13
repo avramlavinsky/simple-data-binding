@@ -3,7 +3,7 @@
 
 <em>Frameworks are fine, but sometimes when you have a nail to drive in, you just want a hammer, not an aircraft carrier.</em>
 <p>
-Two-way data-binding is a powerful tool.  Ideally, it can eliminate selectors and direct DOM references entirely, leading to code which is far more concise and better organized.
+Two-way data-binding is a powerful tool.  Ideally, it can eliminate direct DOM references entirely, leading to script which is concise, well organized, and in sync with server-side code.
 </p>
 <p>
 Two-way data-binding has been a key selling point for many JavaScript frameworks, but it shouldn't be sole justification for adopting a framework. Frameworks have their costs.  They are increasingly complex, short-lived, and weighty.
