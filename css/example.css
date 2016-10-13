@@ -1,0 +1,32 @@
+  padding: 8px 20px;
+  float: left;
+}
+.navLink{
+  background: #4d4d50;
+  border-radius: 3px;
+  font-size: 15px;
+  display: inline-block;
+  padding: 10px 16px;
+  margin: 10px;
+  cursor: pointer;
+  color: white;
+  text-decoration: none;
+}
+.navLink:hover {
+    background-color: #888888;
+}
+.navLink:focus {
+  border: solid thin white;
+}
+.navLink[disabled]{
+  opacity: .7;
+  cursor: default;
+  background-color: #4d4d50;
+  border: none;
+}
+.icon{
+  color: #AEAEAE;
+}
+div.nav + div, iframe{
+  width: 100%;
+}
