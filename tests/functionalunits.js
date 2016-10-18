@@ -146,7 +146,7 @@ describe("data methods - question branching setup", function () {
         expect(binding.createChild("newProp", null, { a: 1, b: 2 }).data.b).toEqual("2");
     });
 
-    it("assign", function () {
+    it("export", function () {
         expect(binding.export().firstName).toEqual("John");
     });
 });
