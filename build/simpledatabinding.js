@@ -41,7 +41,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             parent[repository][self.toPrefixedCamel(prop)] = val;
         }
 
-        return prop;
+        return self[repository][prop];
     };
 
     this.get = function (prop, inherit, repository) {
