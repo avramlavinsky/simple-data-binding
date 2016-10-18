@@ -1,0 +1,74 @@
+﻿Merge branch 'master' of https://github.com/avramlavinsky/simple-data-binding
+
+# Conflicts:
+#	tests/basicbinding.js
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please remove the file
+#	.git/MERGE_HEAD
+# and try again.
+
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Your branch and 'origin/master' have diverged,
+# and have 2 and 1 different commits each, respectively.
+#   (use "git pull" to merge the remote branch into yours)
+#
+# All conflicts fixed but you are still merging.
+#
+# Changes not staged for commit:
+#	modified:   ../package.json
+#
+# Untracked files:
+#	../node_modules/gulp-jshint/README.md
+#	../node_modules/gulp-jshint/node_modules/gulp-util/README.md
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/Readme.md
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/normalize-package-data/README.md
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/normalize-package-data/node_modules/is-builtin-module/node_modules/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/normalize-package-data/node_modules/is-builtin-module/package.json
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/normalize-package-data/node_modules/is-builtin-module/readme.md
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/normalize-package-data/node_modules/semver/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/normalize-package-data/node_modules/validate-npm-package-license/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/normalize-package-data/package.json
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/normalize-package-data/test/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/object-assign/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/read-pkg-up/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/redent/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/node_modules/trim-newlines/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/package.json
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/node_modules/meow/readme.md
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/package.json
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/dateformat/test/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/fancy-log/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/gulplog/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/has-gulplog/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/lodash._reescape/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/lodash._reevaluate/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/lodash._reinterpolate/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/lodash.template/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/minimist/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/multipipe/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/object-assign/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/replace-ext/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/through2/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/node_modules/vinyl/
+#	../node_modules/gulp-jshint/node_modules/gulp-util/package.json
+#	../node_modules/gulp-jshint/node_modules/lodash/
+#	../node_modules/gulp-jshint/node_modules/minimatch/
+#	../node_modules/gulp-jshint/node_modules/rcloader/
+#	../node_modules/gulp-jshint/node_modules/through2/
+#	../node_modules/gulp-jshint/package.json
+#	../node_modules/gulp-jshint/src/
+#	../node_modules/gulp/
+#	../node_modules/jasmine-core/
+#	../node_modules/jasmine/
+#	../node_modules/jshint-stylish/
+#	../node_modules/jshint/
+#	../node_modules/karma-chrome-launcher/
+#	../node_modules/karma-jasmine/
+#	../node_modules/karma/
+#	../tests/scaling.js
+#
+
