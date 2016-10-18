@@ -33,7 +33,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             existingValue = parent[repository][prop];
         }
 
-        if (existingValue == undefined) {
+        if (existingValue === undefined) {
             //if there is no reference, set our existingValue in this instance
             self[repository][self.toPrefixedCamel(prop)] = val;
         } else {
@@ -73,7 +73,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }
 
         for (var prop in newData) {
-            if (typeof (newData[prop]) == "object") {
+            if (typeof (newData[prop]) === "object") {
                 childContainer = (self.childArrays[prop] && self.childArrays[prop].elementTemplate) || self.container.querySelector('[' + self.toPrefixedHyphenated('databind') + '="' + prop + '"]');
                 if (newData[prop] instanceof Array && childContainer) {
                     self.updateChildArray(prop, childContainer, newData, additive);
@@ -99,7 +99,8 @@ function SimpleDataBinding(el, startData, configs, parent) {
     };
 
     this.updateChildArray = function (prop, childContainerTemplate, newData, additive) {
-        var id;
+        var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
+            parent, parentPlaceholder, grandparent;
 
         if (self.childArrays[prop]) {
             if (additive !== true) {
@@ -114,14 +115,29 @@ function SimpleDataBinding(el, startData, configs, parent) {
             self.surroundByComments(self.childArrays[prop], "child array " + prop, childContainerTemplate);
         }
 
+        if (ASSEMBLEASFRAGMENT) {
+            parent = self.childArrays[prop].placeholder.parentElement;
+            parentPlaceholder = parent.nextElementSibling;
+            grandparent = parent.parentElement;
+            grandparent.removeChild(parent);
+        }
+
         for (var i = 0, stop = newData[prop].length; i < stop; i++) {
             self.childArrays[prop].push(self.createChildArrayMember(self.childArrays[prop], newData[prop][i], childContainerTemplate));
-        };
+        }
 
         if (self.arrayEnhancer) {
             self.arrayEnhancer.enhance(self.childArrays[prop]);
         }
 
+        if (ASSEMBLEASFRAGMENT) {
+            if (parentPlaceholder) {
+                parentPlaceholder.parentElement.insertBefore(parent, parentPlaceholder);
+            } else {
+                grandparent.appendChild(parent);
+            }
+        }
+        
         return self.childArrays[prop];
     };
 
@@ -149,7 +165,9 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.assign = Object.assign || function (obj1, obj2) {
         //polyfill for Object.assign
         for (var prop in obj2) {
-            obj1[prop] = obj2[prop];
+            if (obj1.hasOwnProperty(prop)) {
+                obj1[prop] = obj2[prop];
+            }
         }
         return obj1;
     };
@@ -165,8 +183,10 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //removes namespace from property names
         var dataClone = self.unprefixData(self.assign({}, self.data));
 
-        for (childKey in self.children) {
-            dataClone[childKey] = self.children[childKey].export();
+        for (var childKey in self.children) {
+            if (self.hasOwnProperty(childKey)) {
+                dataClone[childKey] = self.children[childKey].export();
+            }
         }
         return dataClone;
     };
@@ -188,7 +208,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.toPrefixedCamel = function (str) {
         //prefixes camel case string with namespace if not already prefixed
-        if (str && str.substring(0, self.nameSpace.length) != self.nameSpace) {
+        if (str && str.substring(0, self.nameSpace.length) !== self.nameSpace) {
             str = self.nameSpace + str.charAt(0).toUpperCase() + str.slice(1);
         }
         return str;
@@ -208,7 +228,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.prefixData = function (dataset) {
         //prefix data property names with namespace as needed
         for (var prop in dataset) {
-            if (prop.substring(0, self.nameSpace.length) != self.nameSpace) {
+            if (prop.substring(0, self.nameSpace.length) !== self.nameSpace) {
                 self.set(prop, dataset[prop]);
                 delete dataset[prop];
             }
@@ -220,8 +240,10 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //remove namespace prefix from data property names
         if (self.nameSpace) {
             for (var prop in obj) {
-                obj[self.toUnprefixedCamel(prop)] = obj[prop];
-                delete obj[prop];
+                if (obj.hasOwnProperty(prop)) {
+                    obj[self.toUnprefixedCamel(prop)] = obj[prop];
+                    delete obj[prop];
+                }
             }
         }
         return obj;
@@ -249,12 +271,12 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.closest = function (el, selector) {
         //returns closest selector match in el or ancestors
         while (!self.is(el, selector) && el !== document.body) {
-            el == el.parentElement;
+            el = el.parentElement;
         }
         return el;
     };
 
-    this.cloneInPlace = function (el, placeholder, index) {
+    this.cloneInPlace = function (el, placeholder) {
         //inserts a clone of an element before a placeholder
         var clone = el.cloneNode(true);
 
@@ -266,11 +288,11 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //returns value of form control or selected value of radio or checkbox group
         var val;
 
-        if (el.type == "radio") {
+        if (el.type === "radio") {
             if (el.checked) {
                 val = el.value;
             }
-        } else if (el.type == "checkbox") {
+        } else if (el.type === "checkbox") {
             val = self.get(el.name, true);
             val = val !== undefined ? val.split(self.checkboxDataDelimiter) : [];
             if (el.checked) {
@@ -279,7 +301,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 val.splice(val.indexOf(el.value), 1);
             }
             val = val.join(self.delimiter);
-        } else if (el.tagName == "OPTION") {
+        } else if (el.tagName === "OPTION") {
             val = self.get(el.name, true);
             val = val !== undefined ? val.split(self.checkboxDataDelimiter) : [];
             if (el.selected) {
@@ -298,9 +320,11 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //assigns initial form values in elements with a name or a [namespace-]val attribute to data
         var selector = "[name]", nodes;
 
-        if (self.container.tagName == "form") {
+        if (self.container.tagName === "form") {
             for (var controlName in self.container.elements) {
-                getControlValue(self.container.elements[controlName]);
+                if (self.container.elements.hasOwnProperty(controlName)) {
+                    getControlValue(self.container.elements[controlName]);
+                }
             }
         } else {
             nodes = Array.prototype.slice.call(self.container.querySelectorAll(selector));
@@ -317,7 +341,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return self.data;
 
         function getControlValue(el) {
-            if (el.name != "undefined" && el.type != "radio" && el.type != "checkbox" && el.tagName != "OPTION") {
+            if (el.name !== "undefined" && el.type !== "radio" && el.type !== "checkbox" && el.tagName !== "OPTION") {
                 var val = el.getAttribute("value");//NOT el.value since Chrome populates this with "on" by default in some contexts
                 if (val && val.substr(0, 2) !== "{{") {
                     self.set(el.name, self.getNodeValue(el));
@@ -330,18 +354,23 @@ function SimpleDataBinding(el, startData, configs, parent) {
         if (!obj.placeholder) {
             obj.elementTemplate = elementTemplate;
             obj.placeholder = document.createComment("end " + message);
+            elementTemplate.placeholder = obj.placeholder;
             elementTemplate.parentNode.insertBefore(document.createComment("start " + message), elementTemplate);
-            elementTemplate.parentNode.insertBefore(obj.placeholder, elementTemplate);
+            if (elementTemplate.nextElementSibling) {
+                elementTemplate.parentNode.insertBefore(obj.placeholder, elementTemplate.nextElementSibling);
+            } else {
+                elementTemplate.parentNode.appendChild(obj.placeholder);
+            }
             if (!retain) {
                 elementTemplate.parentElement.removeChild(elementTemplate);
             }
         }
-        return obj;
+        return obj.placeholder;
     };
 
     this.removeCommentedElements = function (placeholder, attr, value) {
-        while (placeholder.previousSibling && placeholder.previousSibling.nodeType != 8) {
-            if (placeholder.previousSibling.nodeType == 1 && placeholder.previousSibling.getAttribute(attr) == value) {
+        while (placeholder.previousSibling && placeholder.previousSibling.nodeType !== 8) {
+            if (placeholder.previousSibling.nodeType === 1 && placeholder.previousSibling.getAttribute(attr) === value) {
                 placeholder.parentElement.removeChild(placeholder.previousSibling);
             } else {
                 placeholder = placeholder.previousSibling;
@@ -353,19 +382,19 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.parseNode = function (node) {
         //recursively update node and its children's properties with dynamic values
-        var resolvedName, prop, attr;
+        var i;
 
         if (node.parsed) {
             return false;
         } else {
-            if (node.nodeType == 3) {
+            if (node.nodeType === 3) {
                 self.resolveDoubleCurlyBraces(node);
-            } else if (node.nodeType == 1) {
-                for (var i = 0; i < node.attributes.length; i++) {
+            } else if (node.nodeType === 1) {
+                for (i = 0; i < node.attributes.length; i++) {
                     self.resolveAttrNode(node.attributes[i]);
                 }
 
-                for (var i = 0; i < node.childNodes.length; i++) {
+                for (i = 0; i < node.childNodes.length; i++) {
                     //do not recurse if we have hit the container of a child SimpleDataBinding instance
                     //let the instance handle it
                     if (!(node.childNodes[i].hasAttribute && node.childNodes[i].hasAttribute("databind"))) {
@@ -380,7 +409,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.resolveAttrNode = function (node) {
         //resolve dynamic references in an attribute
-        if (node.nodeName.substr(0, 5) != "data-") {
+        if (node.nodeName.substr(0, 5) !== "data-") {
             self.resolveAttrNodeName(node);
             self.resolveAttrNodeValue(node);
             return node;
@@ -389,8 +418,10 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.resolveAttrNodeName = function (node) {
         //resolve dynamically populated attribute names
+        var prop, attr;
+
         if (node.boundAttrNameProp === undefined) {
-            if (node.nodeName.substr(-2, 2) == "__") {
+            if (node.nodeName.substr(-2, 2) === "__") {
                 prop = node.nodeName.slice(2, -2);
                 if (prop) {
                     node.boundAttrNameProp = prop;
@@ -418,13 +449,13 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.resolveAttrNodeValue = function (node) {
         //resolve curly braces and call attribute based methods
 
-        var methodName = node.nodeName == "name" ? "name" : self.toPrefixedHyphenated(node.nodeName),
+        var methodName = node.nodeName === "name" ? "name" : self.toPrefixedHyphenated(node.nodeName),
             method = self.attrMethods[methodName], value, watchName;
             
         self.resolveDoubleCurlyBraces(node, node.nodeValue);
         value = node.value || node.ownerElement[node.name];/* be ware of element properties like node.href which may differ dramatically from the attribute node value */
         watchName = value || "*";
-        if (methodName == "value" && (node.ownerElement.type == "radio" || node.ownerElement.type == "radio" || node.ownerElement.tagName == "OPTION")) {
+        if (methodName === "value" && (node.ownerElement.type === "radio" || node.ownerElement.type === "radio" || node.ownerElement.tagName === "OPTION")) {
             self.setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
         }
         if (method) {
@@ -444,7 +475,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         if (isInitialPass) {
             testTemplate = testTemplate || node.nodeValue;
-            if (typeof (testTemplate) == "string" && testTemplate.indexOf("{{") != -1) {
+            if (typeof (testTemplate) === "string" && testTemplate.indexOf("{{") !== -1) {
                 node.nodeTemplate = testTemplate;
             } else {
                 node.nodeTemplate = null;
@@ -459,7 +490,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 if (isInitialPass) {
                     self.addWatch(prop, node);
                 }
-                if (node.nodeName == "name" && value) {
+                if (node.nodeName === "name" && value) {
                     self.addWatch(value, node);
                 }
                 return value;
@@ -473,12 +504,13 @@ function SimpleDataBinding(el, startData, configs, parent) {
     //<<<<<<<<<< attribute based methods >>>>>>>>>>
 
     function childTemplate(el, rawValue, prop, dataValue) {
-        if (dataValue) {
-            var template = self.templates[dataValue] || document.getElementById(dataValue),
-                clone;
+        var clone;
 
-            if (template) {
-                clone = template.cloneNode(true);
+        if (dataValue) {
+            self.templates[dataValue] = self.templates[dataValue] || document.getElementById(dataValue);
+
+            if (self.templates[dataValue]) {
+                clone = self.templates[dataValue].cloneNode(true);
                 clone.removeAttribute("id");
                 el.appendChild(clone);
                 this.parseNode(clone);
@@ -503,16 +535,16 @@ function SimpleDataBinding(el, startData, configs, parent) {
         var value = self.get(prop, true);
 
         if (value !== undefined) {
-            if (el.type == "radio" && attr == "name") {
-                el.checked = (value == el.value);
-            } else if (el.type == "checkbox" && attr == "name") {
-                el.checked = (value.indexOf(el.value) != -1);
-            } else if (el.tagName == "SELECT" && !value) {
+            if (el.type === "radio" && attr === "name") {
+                el.checked = (value === el.value);
+            } else if (el.type === "checkbox" && attr === "name") {
+                el.checked = (value.indexOf(el.value) !== -1);
+            } else if (el.tagName === "SELECT" && !value) {
                 setTimeout(function () {
                     el.selectedIndex = "-1";
                 }, 0);
-            } else if (el.tagName == "OPTION" && attr == "value") {
-                el.selected = (self.get(node.parentElement.name) || "").indexOf(node.value) != -1;
+            } else if (el.tagName === "OPTION" && attr === "value") {
+                el.selected = (self.get(el.parentElement.name) || "").indexOf(el.value) !== -1;
             } else {
                 el.value = value;
             }
@@ -523,7 +555,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         name: this.setNodeValue,
         renderif: renderIf,
         childtemplate: childTemplate
-    }
+    };
 
 
     //<<<<<< Listeners, Handlers, and Watches >>>>>>
@@ -547,16 +579,18 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.turnOnAllBindings = function () {
         self.turnOnBindings();
-        for (childKey in self.children) {
-            self.children[childKey].turnOnAllBindings();
+        for (var childKey in self.children) {
+            if (self.children.hasOwnProperty(childKey)) {
+                self.children[childKey].turnOnAllBindings();
+            }
         }
-    }
+    };
 
     this.turnOffBindings = function () {
         if (self.observer) {
             self.observer.disconnect();
         }
-    }
+    };
 
     this.mutationHandler = function (mutations) {
         //on mutation of the dataset calls into methods to update the DOM and fire watches
@@ -571,7 +605,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             }
 
             //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
-            if (mutation.target == (self.boundHiddenInput || self.container) && mutation.attributeName.substr(0, prefix.length) == prefix && value != mutation.oldValue) {
+            if (mutation.target === (self.boundHiddenInput || self.container) && mutation.attributeName.substr(0, prefix.length) === prefix && value !== mutation.oldValue) {
                 prop = self.toCamelCase(mutation.attributeName.substr(prefix.length));
                 self.root.lastMutation = { prop: prop, value: value, oldValue: mutation.oldValue };
                 self.checkWatches(prop);
@@ -588,7 +622,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         e.stopPropagation();
 
-        if (self.containingArray && self.parent.get(prop) !== undefined && (e.target.type == "radio" || e.target.type == "checkbox")) {
+        if (self.containingArray && self.parent.get(prop) !== undefined && (e.target.type === "radio" || e.target.type === "checkbox")) {
             //checkboxes and radios created in childArrays should change the value in the parent DataBinding instance
             self.parent.set(prop, val);
         } else {
@@ -601,15 +635,15 @@ function SimpleDataBinding(el, startData, configs, parent) {
         var globalWatch = ["*"],
             instance;
 
-        if (typeof (props) == "function") {
+        if (typeof (props) === "function") {
             globalScope = fn;
             fn = props;
             props = globalWatch;
-        } else if (typeof (props) == "string") {
+        } else if (typeof (props) === "string") {
             props = [props];
         }
         props = props || globalWatch;
-        instance = globalScope ? self.root : self
+        instance = globalScope ? self.root : self;
 
         for (var i = 0, stop = props.length; i < stop; i++) {
             instance.addWatch(props[i], { fn: fn, props: props }, globalScope);
@@ -622,7 +656,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
             instance = globalScope ? self.root : self;
 
         instance[watchType][prop] = instance[watchType][prop] || [];
-        if (instance[watchType][prop].indexOf(node) == -1) {
+        if (instance[watchType][prop].indexOf(node) === -1) {
             instance[watchType][prop].push(node);
         }
     };
@@ -643,9 +677,11 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }
 
         if (recursive !== false) {
-            for (childKey in self.children) {
-                //recurse through child instances in case the property is inheritted
-                self.children[childKey].checkWatches(prop);
+            for (var childKey in self.children) {
+                if (self.children.hasOwnProperty(childKey)) {
+                    //recurse through child instances in case the property is inheritted
+                    self.children[childKey].checkWatches(prop);
+                }
             }
         }
 
@@ -653,17 +689,17 @@ function SimpleDataBinding(el, startData, configs, parent) {
             //iterate watches related to property and exectute
             var instance = globalScope ? self.root : self,
                 watchType = globalScope ? "globalScopeWatches" : "watches",
-                watches = instance[watchType][prop];
+                watches = instance[watchType][prop], node;
 
             if (watches) {
                 for (var i = watches.length - 1; i >= 0; i--) {
                     if (watches[i].fn) {
                         //for watches of global scope we pull the function from the root instance
                         //but execute it in the context of local instance
-                        self.executeWatchFn(watches[i], prop)
+                        self.executeWatchFn(watches[i], prop);
                     } else {
                         node = watches[i];
-                        if (node.nodeType == 2) {
+                        if (node.nodeType === 2) {
                             self.resolveAttrNode(node);
                         } else {
                             self.resolveDoubleCurlyBraces(node);
@@ -676,7 +712,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return prop;
     };
 
-    this.executeWatchFn = function (watch, prop) {
+    this.executeWatchFn = function (watch) {
         //execute a watch function in the context of the instance with designated arguments
 
         var lastMut = self.root.lastMutation,
@@ -685,9 +721,9 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         //on recursive watch functions
         //only execute once in the context that contains the changed property
-        if (self.get(lastMut.prop) != undefined || !watch.recursive) {
+        if (self.get(lastMut.prop) !== undefined || !watch.recursive) {
 
-            if (watch.props[0] != "*") {
+            if (watch.props[0] !== "*") {
                 for (var i = 0, stop = watch.props.length; i < stop; i++) {
                     watchProps[watch.props[i]] = self.get(watch.props[i]);
                 }
@@ -721,7 +757,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.attrMethods = this.assign(this.attrMethods, this.configs.attrMethods || {});
         this.templates = this.assign({}, this.configs.templates || {});
 
-        return this
+        return this;
     };
 
     this.initFamilyTree = function () {
@@ -739,7 +775,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.childArrays = {};
 
         return this;
-    }
+    };
 
     this.initData = function () {
         //cascade initial data:
@@ -752,7 +788,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.getInitialNodeValues();
         this.update(startData || {});
         return this;
-    }
+    };
 
     this.init = function () {
         //sets core properties
@@ -763,7 +799,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.initProps();
         this.initData();
         this.setListeners();
-        if (this == this.root) {
+        if (this === this.root) {
             this.turnOnAllBindings();
         }
 

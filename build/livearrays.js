@@ -25,12 +25,12 @@ function LiveArrayFactory(MemberClass, createMethodName, moveMethodName, removeM
     //our main callback to be executed after array method calls
     var array = this,
         args = Array.prototype.slice.call(arguments),
-        member, callBackArgs;
+        member, callBackArgs, i, stop;
     
     if (removeMethodName && array.priorState) {
-      for(var i = 0, stop = array.priorState.length; i < stop; i++){
+      for(i = 0, stop = array.priorState.length; i < stop; i++){
         member = array.priorState[i];
-        if (member instanceof MemberClass && array.indexOf(member) == -1) {
+        if (member instanceof MemberClass && array.indexOf(member) === -1) {
           callBackArgs = args.slice();
           callBackArgs.unshift(i);
           callBackArgs.unshift(array);
@@ -38,7 +38,7 @@ function LiveArrayFactory(MemberClass, createMethodName, moveMethodName, removeM
         }
       }
     }
-    for(var i = 0, stop = array.length; i < stop; i++){    
+    for(i = 0, stop = array.length; i < stop; i++){    
       callBackArgs = args.slice(); 
       
       member = array[i];
@@ -50,7 +50,7 @@ function LiveArrayFactory(MemberClass, createMethodName, moveMethodName, removeM
             callBackArgs.unshift(array);
             member[moveMethodName].apply(member, callBackArgs);
           }
-        } else if(member != undefined){
+        } else if(member !== undefined){
           if(createMethodName){
             callBackArgs.unshift.apply(callBackArgs, [member, array, i]);
             array[i] = MemberClass.prototype[createMethodName].apply(array, callBackArgs);
@@ -71,7 +71,7 @@ function LiveArrayFactory(MemberClass, createMethodName, moveMethodName, removeM
     var methods = ["pop", "push", "reverse", "shift", "unshift", "splice", "sort", "filter", "forEach", "reduce", "reduceRight", "copyWithin", "fill"];
     
     for(var i = 0, stop = methods.length; i < stop; i++){
-      if(typeof(array[methods[i]]) == "function"){
+      if(typeof(array[methods[i]]) === "function"){
         self.addCallBack(array, methods[i], array.update);
       }
     }
@@ -80,8 +80,7 @@ function LiveArrayFactory(MemberClass, createMethodName, moveMethodName, removeM
 
   this.addCallBack = function(obj, originalMethodName, callBackMethod, context) {
     //generically add callback method in context
-    var fnOriginal = obj[originalMethodName],
-      outcome;
+    var fnOriginal = obj[originalMethodName];
 
     context = context || obj;
 
@@ -97,22 +96,24 @@ function LiveArrayFactory(MemberClass, createMethodName, moveMethodName, removeM
 
 
 (function () {
-    if (typeof (SimpleDataBinding) == "function") {
-        SimpleDataBinding.prototype.createLiveArrayMember = function (data, array, i) {
+    var liveArrayFactory;
+
+    if (window.SimpleDataBinding) {
+        window.SimpleDataBinding.prototype.createLiveArrayMember = function (data, array, i) {
             //called in the context of the array since no instance exists yet
             var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholder;
             return array.ownerInstance.createChildArrayMember(array, data, null, placeholder);
         };
-        SimpleDataBinding.prototype.moveLiveArrayMember = function (array, i) {
+        window.SimpleDataBinding.prototype.moveLiveArrayMember = function (array, i) {
             var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholder;
             this.container.parentElement.insertBefore(this.container, placeholder);
             return this;
         };
-        SimpleDataBinding.prototype.removeLiveArrayMember = function (array, i) {
+        window.SimpleDataBinding.prototype.removeLiveArrayMember = function () {
             this.container.parentElement.removeChild(this.container);
             return this;
         };
-        liveArrayFactory = new LiveArrayFactory(SimpleDataBinding, "createLiveArrayMember", "moveLiveArrayMember", "removeLiveArrayMember");
-        SimpleDataBinding.prototype.arrayEnhancer = liveArrayFactory;
+        liveArrayFactory = new LiveArrayFactory(window.SimpleDataBinding, "createLiveArrayMember", "moveLiveArrayMember", "removeLiveArrayMember");
+        window.SimpleDataBinding.prototype.arrayEnhancer = liveArrayFactory;
     }
 })();

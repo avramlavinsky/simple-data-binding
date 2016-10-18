@@ -1,5 +1,7 @@
 var gulp = require('gulp');
 var Server = require('karma').Server;
+var jshint = require('gulp-jshint');
+var stylish = require('jshint-stylish');//not working
 
 gulp.task('hello', function () {
     console.log('Hello Avram');
@@ -12,4 +14,12 @@ gulp.task('test', function (done) {
         singleRun: true
     }, done).start();
 });
+
+gulp.task('jshint', function () {
+    return gulp.src(['./build/*.js'])
+        .pipe(jshint())
+        .pipe(jshint.reporter('default'));
+});
+
+gulp.task('default', ['jshint', 'test']);
 
