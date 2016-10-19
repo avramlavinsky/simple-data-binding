@@ -8,7 +8,7 @@ describe("init - no args", function () {
     // an individual test is typically written in an action-data format. 
 
 
-  document.write('<form name="myForm" id="myForm">' + 
+  document.write('<form name="scalingForm" id="scalingForm">' + 
 
   '<label databind="jobQuestions" childtemplate="questionType">{{label}}</label>' + 
 
@@ -90,7 +90,7 @@ describe("init - no args", function () {
     console.log('Number of Fields:', startData.jobQuestions.length);
 
     var t1 = new Date().getTime();
-    var binding = new SimpleDataBinding("#myForm", startData);
+    var binding = new SimpleDataBinding("#scalingForm", startData);
     var t2 = new Date().getTime();
 
     console.log("Render Time: ", t2 - t1);
@@ -110,7 +110,7 @@ describe("init - no args", function () {
     it("propterties initalized", function () {
         expect(typeof (binding.configs)).toEqual("object");
         expect(binding.nameSpace).toEqual("");
-        expect(binding.container).toEqual(document.forms[0]);
+        expect(binding.container).toEqual(document.forms.scalingForm);
         expect(typeof (binding.watches)).toEqual("object");
         expect(typeof (binding.globalScopeWatches)).toEqual("object");
         expect(binding.checkboxDataDelimiter).toEqual(",");

@@ -216,7 +216,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.toPrefixedHyphenated = function (str) {
         //prefixes hyphenated string with namespace
-        return self.nameSpace ? self.hyphenated(self.nameSpace) + "-" : "" + str;
+        return (self.nameSpace ? self.toHyphenated(self.nameSpace) + "-" : "") + str;
     };
 
     this.toUnprefixedCamel = function (str) {
@@ -228,7 +228,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.prefixData = function (dataset) {
         //prefix data property names with namespace as needed
         for (var prop in dataset) {
-            if (prop.substring(0, self.nameSpace.length) !== self.nameSpace) {
+            if (self.nameSpace && prop.substring(0, self.nameSpace.length) !== self.nameSpace) {
                 self.set(prop, dataset[prop]);
                 delete dataset[prop];
             }

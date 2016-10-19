@@ -1,14 +1,6 @@
-// First argument to 'describe' (which is defined by Jasmine) is the testing module that will
-// appear in test reports. The second argument is a callback containing the individual tests.
-
 describe("data methods - question branching setup", function () {
-    // The 'it' function of Jasmine defined an individual test. The first argument is
-    // a description of the test that's appended to the module name. Because a module name
-    // is typically a noun, like the name of the function being tested, the description for
-    // an individual test is typically written in an action-data format. 
 
-
-  document.write('<form name="myForm" id="myForm">' + 
+    document.write('<form name="dataMethodTestForm" id="dataMethodTestForm">' +
 
   '<label databind="jobQuestions" childtemplate="questionType">{{label}}</label>' + 
 
@@ -86,7 +78,7 @@ describe("data methods - question branching setup", function () {
           jobQuestions: [questionData.firstName, questionData.middleName, questionData.lastName, questionData.criminalRecord],
           firstName: "John"
       },
-      binding = new SimpleDataBinding("#myForm", startData),
+      binding = new SimpleDataBinding("#dataMethodTestForm", startData),
       questionTemplate = binding.childArrays.jobQuestions.elementTemplate,
       childArray;
 
@@ -149,4 +141,194 @@ describe("data methods - question branching setup", function () {
     it("export", function () {
         expect(binding.export().firstName).toEqual("John");
     });
+});
+
+
+
+describe("string methods - question branching setup - no namespace", function () {
+
+    document.write('<form name="stringMethodTestForm" id="stringMethodTestForm">' +
+
+  '<label databind="jobQuestions" childtemplate="questionType">{{label}}</label>' +
+
+  '</form>' +
+
+
+
+  '<div class="templates">' +
+
+  '<input id="text" name="{{name}}" />' +
+
+  '<textarea id="textarea" name="{{name}}" >{{value}}</textarea>' +
+
+  '<select id="select" name="{{name}}" >' +
+      '<option databind="options" value="{{value}}">{{text}}</option>' +
+  '</select>' +
+
+  '</div>');
+
+
+    //a repository of questions
+    var questionData = {
+        firstName: {
+            name: "firstName",
+            label: "First Name",
+            questionType: "text",
+        },
+        middleName: {
+            name: "middleName",
+            label: "Middle Name",
+            questionType: "text",
+        },
+        lastName: {
+            name: "lastName",
+            label: "Last Name",
+            questionType: "text",
+        },
+        criminalRecord: {
+            name: "criminalRecord",
+            label: "Have you ever been convicted of a felony?",
+            criminalRecord: "",
+            questionType: "select",
+            options: [{
+                text: "Never",
+                value: "never"
+            }, {
+                text: "Over five years ago",
+                value: "over5",
+                childQuestions: "offense"
+            }, {
+                text: "Within the last five years",
+                value: "recent",
+                childQuestions: "offense,yearOfOffense,offenseDetails"
+            }]
+        },
+        offense: {
+            name: "offense",
+            label: "Offense",
+            questionType: "text",
+        },
+        yearOfOffense: {
+            name: "yearOfOffense",
+            label: "Year",
+            questionType: "text",
+        },
+        offenseDetails: {
+            name: "offenseDetails",
+            label: "Details",
+            questionType: "textarea",
+        }
+    }
+
+    //some intital values
+    var startData = {
+        jobQuestions: [questionData.firstName, questionData.middleName, questionData.lastName, questionData.criminalRecord],
+        firstName: "John"
+    },
+        binding = new SimpleDataBinding("#stringMethodTestForm", startData),
+        questionTemplate = binding.childArrays.jobQuestions.elementTemplate,
+        childArray;
+
+    binding.data.lastName = "Smith";
+
+    it("toCamelCase", function () {
+        expect(binding.toCamelCase("we-the-people")).toEqual("weThePeople");
+    });
+
+    it("toHyphenated", function () {
+        expect(binding.toHyphenated("weThePeople")).toEqual("we-the-people");
+    });
+});
+
+
+
+describe("string methods - question branching setup - WITH NAMESPACE", function () {
+    //nameSpace functionality is under construction
+
+
+    document.write('<form name="nameSpacedStringMethodTestForm" id="nameSpacedStringMethodTestForm">' +
+
+  '<label databind="jobQuestions" childtemplate="questionType">{{label}}</label>' +
+
+  '</form>' +
+
+
+
+  '<div class="templates">' +
+
+  '<input id="text" name="{{name}}" />' +
+
+  '<textarea id="textarea" name="{{name}}" >{{value}}</textarea>' +
+
+  '<select id="select" name="{{name}}" >' +
+      '<option databind="options" value="{{value}}">{{text}}</option>' +
+  '</select>' +
+
+  '</div>');
+
+
+    //a repository of questions
+    var questionData = {
+        firstName: {
+            name: "firstName",
+            label: "First Name",
+            questionType: "text",
+        },
+        middleName: {
+            name: "middleName",
+            label: "Middle Name",
+            questionType: "text",
+        },
+        lastName: {
+            name: "lastName",
+            label: "Last Name",
+            questionType: "text",
+        },
+        criminalRecord: {
+            name: "criminalRecord",
+            label: "Have you ever been convicted of a felony?",
+            criminalRecord: "",
+            questionType: "select",
+            options: [{
+                text: "Never",
+                value: "never"
+            }, {
+                text: "Over five years ago",
+                value: "over5",
+                childQuestions: "offense"
+            }, {
+                text: "Within the last five years",
+                value: "recent",
+                childQuestions: "offense,yearOfOffense,offenseDetails"
+            }]
+        },
+        offense: {
+            name: "offense",
+            label: "Offense",
+            questionType: "text",
+        },
+        yearOfOffense: {
+            name: "yearOfOffense",
+            label: "Year",
+            questionType: "text",
+        },
+        offenseDetails: {
+            name: "offenseDetails",
+            label: "Details",
+            questionType: "textarea",
+        }
+    }
+
+    //some intital values
+    var startData = {
+        jobQuestions: [questionData.firstName, questionData.middleName, questionData.lastName, questionData.criminalRecord]
+    }
+    //var binding = new SimpleDataBinding("#nameSpacedStringMethodTestForm", startData, { nameSpace: "sdb" });
+
+
+    /*
+    it("toPrefixedCamel", function () {
+        expect(binding.toPrefixedCamel("weThePeople")).toEqual("sdbWeThePeople");
+    });
+    */
 });
