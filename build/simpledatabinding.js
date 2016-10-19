@@ -11,7 +11,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     //    nameSpace: string - appended to data prevent dataset name collisions
     //    delimmiter: string - separates selected checkbox values
     //    watches: object - specifies watches in the form {watchName: { props: [] /* optional string or array of strings */, fn: function }} or just {watchName: function}
-    //parent: parent SimpleDataBinding instance - used internally
+    //    parent: parent SimpleDataBinding instance - used internally
 
     var self = this;
 
@@ -503,7 +503,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     //<<<<<<<<<< attribute based methods >>>>>>>>>>
 
-    function childTemplate(el, rawValue, prop, dataValue) {
+    this.childTemplate = function(el, rawValue, prop, dataValue) {
         var clone;
 
         if (dataValue) {
@@ -520,7 +520,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return el;
     }
 
-    function renderIf(el, rawValue, prop, dataValue) {
+    this.renderIf = function (el, rawValue, prop, dataValue) {
         this.surroundByComments(el, "render if " + rawValue, el, true);
         if (dataValue && !el.parentElement) {
             el.placeholder.parentElement.insertBefore(el, el.placeholder);
@@ -549,12 +549,14 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 el.value = value;
             }
         }
+
+        return el;
     };
 
     this.attrMethods = {
         name: this.setNodeValue,
-        renderif: renderIf,
-        childtemplate: childTemplate
+        renderif: this.renderIf,
+        childtemplate: this.childTemplate
     };
 
 
