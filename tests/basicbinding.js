@@ -39,4 +39,20 @@ describe("init - no args", function () {
         expect(binding.observer instanceof MutationObserver).toEqual(true);
         expect(binding.initialized).toEqual(true);
     });
+
+    it("initProps return value", function () {
+        expect(binding.initProps()).toEqual(binding);
+    });
+
+    it("initData return value", function () {
+        expect(binding.initData()).toEqual(binding);
+    });
+
+    it("initFamilyTree return value", function () {
+        expect(binding.initFamilyTree()).toEqual(binding);
+    });
+
+    it("init return value", function () {
+        expect(binding.init()).toEqual(binding);
+    });
 });
