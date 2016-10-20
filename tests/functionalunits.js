@@ -289,3 +289,105 @@ describe("attr methods - question branching setup", function () {
         })).toEqual(true);
     });
 });
+
+
+
+
+
+describe("listeners/handlers/watches - question branching setup", function () {
+
+    document.write(markup);
+    setForm("attrMethodsTestForm");
+    
+
+    var binding = new SimpleDataBinding("#attrMethodsTestForm", startData);
+    var mutations = [{ target: binding.container, value: 1, oldValue: 0, attributeName: "attr" }];
+    var firstNameInput = binding.container.querySelector("input");
+    var e = { target: firstNameInput, stopPropagation: function () { } };
+    var testFn = function(){};
+        
+
+    beforeEach(function (done) {
+        setTimeout(function () {
+            done();
+        }, 0);
+    });
+
+    it("setListeners", function () {
+        expect(binding.setListeners().observer instanceof MutationObserver).toEqual(true);
+    });
+
+    it("turnOffBindings return value", function () {
+        expect(binding.turnOffBindings()).toEqual(binding.observer);
+    });
+
+    it("turnOffBindings functionality", function () {
+        binding.data.firstName = "Sam";
+        expect(firstNameInput.value).toEqual("John");
+    });
+
+    it("turnOnBindings completes execution", function () {
+        expect(binding.turnOnBindings()).toEqual(binding.observer);
+    });
+
+    it("mutationHandler", function () {
+        expect(binding.mutationHandler(mutations)).toEqual(mutations);
+    });
+
+    it("changeHandler unit", function () {
+        firstNameInput.value = "Joe";
+        expect(binding.changeHandler(e)).toEqual("Joe");
+        binding.data.firstName = "Sam";
+    });
+
+    it("turnOnBindings binding functionality", function () {
+        expect(firstNameInput.value).toEqual("Sam");
+    });
+
+    it("changeHandler binding functionality", function () {
+        firstNameInput.value = "David";
+        e = document.createEvent('HTMLEvents');
+        e.initEvent('change', true, false);
+        firstNameInput.dispatchEvent(e);
+        expect(binding.data.firstName).toEqual("David");
+    });
+
+    it("general watch", function () {
+        expect(binding.watch(testFn)["*"][0].fn).toEqual(testFn);
+    });
+
+    it("property watch", function () {
+        expect(binding.watch("test", testFn).test[0].fn).toEqual(testFn);
+    });
+
+    it("global property watch", function () {
+        expect(binding.children.firstName.watch("globalTest", testFn, true).globalTest[0].fn).toEqual(testFn);
+        expect(binding.globalScopeWatches.globalTest[0].fn).toEqual(testFn);
+    });
+
+    it("global general watch", function () {
+        expect(binding.children.firstName.watch(testFn, true)["*"][0].fn).toEqual(testFn);
+        expect(binding.globalScopeWatches["*"][0].fn).toEqual(testFn);
+    });
+
+    it("addWatch", function () {
+        expect(binding.addWatch("addedWatch", { fn: testFn }).fn).toEqual(testFn);
+    });
+
+    it("addWatch duplicate", function () {
+        var input = createInput();
+        binding.addWatch("addedInputWatch", input);
+        binding.addWatch("addedInputWatch", input);
+        expect(binding.watches.addedInputWatch.length).toEqual(1);
+    });
+
+    it("checkWatches", function () {
+        expect(binding.checkWatches("addedInputWatch")).toEqual("addedInputWatch");
+    });
+
+    it("executeWatchFn supplied method and context", function () {
+        var insertedWatch = { props: [], fn: function () { return this; } };
+        expect(binding.executeWatchFn(insertedWatch)).toEqual(binding);
+    });
+});
+

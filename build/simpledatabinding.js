@@ -568,6 +568,8 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         //listen for form control changes within our container
         self.container.addEventListener("change", self.changeHandler);
+
+        return self;
     };
 
     this.turnOnBindings = function () {
@@ -577,6 +579,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 attributeOldValue: true
             });
         }
+        return self.observer;
     };
 
     this.turnOnAllBindings = function () {
@@ -586,12 +589,14 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 self.children[childKey].turnOnAllBindings();
             }
         }
+        return self;
     };
 
     this.turnOffBindings = function () {
         if (self.observer) {
             self.observer.disconnect();
         }
+        return self.observer;
     };
 
     this.mutationHandler = function (mutations) {
@@ -626,7 +631,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         if (self.containingArray && self.parent.get(prop) !== undefined && (e.target.type === "radio" || e.target.type === "checkbox")) {
             //checkboxes and radios created in childArrays should change the value in the parent DataBinding instance
-            self.parent.set(prop, val);
+            return self.parent.set(prop, val);
         } else {
             return self.set(prop, val);
         }
@@ -650,17 +655,21 @@ function SimpleDataBinding(el, startData, configs, parent) {
         for (var i = 0, stop = props.length; i < stop; i++) {
             instance.addWatch(props[i], { fn: fn, props: props }, globalScope);
         }
+
+        return instance[globalScope ? "globalScopeWatches" : "watches"];
     };
 
-    this.addWatch = function (prop, node, globalScope) {
-        //adds a watch function or node with implicit function to a given data property
+    this.addWatch = function (prop, nodeOrObj, globalScope) {
+        //adds a watch object with a function or node with implicit function to a given data property
         var watchType = globalScope ? "globalScopeWatches" : "watches",
             instance = globalScope ? self.root : self;
 
         instance[watchType][prop] = instance[watchType][prop] || [];
-        if (instance[watchType][prop].indexOf(node) === -1) {
-            instance[watchType][prop].push(node);
+        if (instance[watchType][prop].indexOf(nodeOrObj) === -1) {
+            instance[watchType][prop].push(nodeOrObj);
         }
+
+        return nodeOrObj;
     };
 
     this.checkWatches = function (prop, recursive) {
@@ -732,7 +741,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 args.push(watchProps);
             }
 
-            watch.fn.apply(self, args);
+            return watch.fn.apply(self, args);
         }
     };
 
