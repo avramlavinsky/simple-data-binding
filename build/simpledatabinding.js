@@ -63,7 +63,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.update = function (newData, bindDuringUpdate, additive) {
         //assigns all values present in newData object to data
-        var childContainer;
+        var childContainer, val;
 
         //data binding is asynchronous
         //child updates will be handled synchronously via the wathces
@@ -81,8 +81,10 @@ function SimpleDataBinding(el, startData, configs, parent) {
                     self.createChild(prop, childContainer, newData[prop]);
                 }
             } else {
-                self.root.lastMutation = { value: newData[prop], oldValue: self.get(prop), prop: prop };
-                self.set(prop, newData[prop]);
+                val = newData[prop];
+                prop = self.toPrefixedCamel(prop);
+                self.root.lastMutation = { value: val, oldValue: self.get(prop), prop: prop };
+                self.set(prop, val);
                 self.checkWatches(prop);
             }
         }
@@ -177,11 +179,15 @@ function SimpleDataBinding(el, startData, configs, parent) {
         return self.children[prop];
     };
 
-    this.export = function () {
+    this.export = function (unprefix) {
         //creates an (unbound) clone of data
         //recreates nesting via recursion
         //removes namespace from property names
-        var dataClone = self.unprefixData(self.assign({}, self.data));
+        var dataClone = self.assign({}, self.data);
+
+        if(unprefix){
+            dataClone = self.unprefixData(dataClone);
+        }
 
         for (var childKey in self.children) {
             if (self.hasOwnProperty(childKey)) {
@@ -208,7 +214,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.toPrefixedCamel = function (str) {
         //prefixes camel case string with namespace if not already prefixed
-        if (str && str.substring(0, self.nameSpace.length) !== self.nameSpace) {
+        if (self.nameSpace && str && str.substring(0, self.nameSpace.length) !== self.nameSpace) {
             str = self.nameSpace + str.charAt(0).toUpperCase() + str.slice(1);
         }
         return str;
@@ -216,21 +222,27 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     this.toPrefixedHyphenated = function (str) {
         //prefixes hyphenated string with namespace
-        return (self.nameSpace ? self.toHyphenated(self.nameSpace) + "-" : "") + str;
+        return (self.attrPrefix ? self.toHyphenated(self.attrPrefix) + "-" : "") + str;
     };
 
     this.toUnprefixedCamel = function (str) {
         //strips the namespace from camel strings
-        str = str.substring(self.nameSpace.length);
-        return str.charAt(0).toLowerCase() + str.slice(1);
+        if (self.nameSpace) {
+            str = str.substring(self.nameSpace.length);
+            return str.charAt(0).toLowerCase() + str.slice(1);
+        } else {
+            return str;
+        }
     };
 
     this.prefixData = function (dataset) {
         //prefix data property names with namespace as needed
-        for (var prop in dataset) {
-            if (self.nameSpace && prop.substring(0, self.nameSpace.length) !== self.nameSpace) {
-                self.set(prop, dataset[prop]);
-                delete dataset[prop];
+        if(self.nameSpace){
+            for (var prop in dataset) {
+                if (prop.substring(0, self.nameSpace.length) !== self.nameSpace) {
+                    self.set(prop, dataset[prop]);
+                    delete dataset[prop];
+                }
             }
         }
         return dataset;
@@ -422,7 +434,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         if (node.boundAttrNameProp === undefined) {
             if (node.nodeName.substr(-2, 2) === "__") {
-                prop = node.nodeName.slice(2, -2);
+                prop = self.toPrefixedCamel(node.nodeName.slice(2, -2));
                 if (prop) {
                     node.boundAttrNameProp = prop;
                     self.addWatch(node.boundAttrNameProp, node);
@@ -449,17 +461,17 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.resolveAttrNodeValue = function (node) {
         //resolve curly braces and call attribute based methods
 
-        var methodName = node.nodeName === "name" ? "name" : self.toPrefixedHyphenated(node.nodeName),
+        var methodName = node.nodeName,
             method = self.attrMethods[methodName], value, watchName;
             
         self.resolveDoubleCurlyBraces(node, node.nodeValue);
-        value = node.value || node.ownerElement[node.name];/* be ware of element properties like node.href which may differ dramatically from the attribute node value */
+        value = node.value || node.ownerElement[node.name];//be ware of element properties like node.href which may differ dramatically from the attribute node value
         watchName = value || "*";
-        if (methodName === "value" && (node.ownerElement.type === "radio" || node.ownerElement.type === "radio" || node.ownerElement.tagName === "OPTION")) {
+        if (methodName === "value" && (node.ownerElement.type === "radio" || node.ownerElement.type === "checkbox" || node.ownerElement.tagName === "OPTION")) {
             self.setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
         }
         if (method) {
-            self.addWatch(watchName, node);
+            self.addWatch(self.toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
             method.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, self.get(node.nodeValue)]);
         }
         return node;
@@ -484,7 +496,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         if (node.nodeTemplate) {
             node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
-                var prop = $0.slice(2, -2),
+                var prop = self.toPrefixedCamel($0.slice(2, -2)),
                     value = self.get(prop, true) || "";
 
                 if (isInitialPass) {
@@ -605,23 +617,21 @@ function SimpleDataBinding(el, startData, configs, parent) {
     };
 
     this.mutationHandler = function (mutations) {
-        //on mutation of the dataset calls into methods to update the DOM and fire watches
+        //upon mutation of the dataset calls into methods to update the DOM and fire watches
 
         mutations.forEach(function (mutation) {
-            var prefix = "data-",
+            if (mutation.target === (self.boundHiddenInput || self.container)) {
+                var prefix = "data-",
                 value = mutation.target.getAttribute(mutation.attributeName),
                 prop;
 
-            if (self.nameSpace) {
-                prefix += self.nameSpace + "-";
-            }
-
-            //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
-            if (mutation.target === (self.boundHiddenInput || self.container) && mutation.attributeName.substr(0, prefix.length) === prefix && value !== mutation.oldValue) {
-                prop = self.toCamelCase(mutation.attributeName.substr(prefix.length));
-                self.root.lastMutation = { prop: prop, value: value, oldValue: mutation.oldValue };
-                self.checkWatches(prop);
-                self.checkWatches("*");
+                //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
+                if (mutation.attributeName.substr(0, prefix.length) === prefix && value !== mutation.oldValue) {
+                    prop = self.toCamelCase(mutation.attributeName.substr(prefix.length));
+                    self.root.lastMutation = { prop: prop, value: value, oldValue: mutation.oldValue };
+                    self.checkWatches(prop);
+                    self.checkWatches("*");
+                }
             }
         });
         return mutations;
@@ -639,7 +649,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.changeHandler = function (e) {
         //handles changes to form control values within the container
         var val = self.getNodeValue(e.target),
-          prop = e.target.name || e.target.getAttribute(self.toPrefixedHyphenated("val"));
+          prop = e.target.name;
 
         e.stopPropagation();
 
@@ -767,6 +777,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         this.configs = configs || {};
         this.nameSpace = typeof (this.configs.nameSpace) === "string" ? this.configs.nameSpace : "";
+        this.attrPrefix = typeof (this.configs.attrPrefix) === "string" ? this.configs.attrPrefix : "";
         this.container = el && el.tagName ? el : document.querySelector(el || '[' + this.toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
         if (this.configs.containInHiddenInput) {
             this.boundHiddenInput = document.createElement("input");

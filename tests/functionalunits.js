@@ -182,18 +182,36 @@ describe("string methods - question branching setup - no namespace", function ()
 
 
 describe("string methods - question branching setup - WITH NAMESPACE", function () {
-    //nameSpace functionality is under construction
+    //nameSpace functionality adds a prefix to all data
 
     setForm("nameSpacedStringMethodTestForm");
 
-    //var binding = new SimpleDataBinding("#nameSpacedStringMethodTestForm", startData, { nameSpace: "sdb" });
+    var binding = new SimpleDataBinding("#nameSpacedStringMethodTestForm", startData, { nameSpace: "sdb" });
 
-
-    /*
     it("toPrefixedCamel", function () {
         expect(binding.toPrefixedCamel("weThePeople")).toEqual("sdbWeThePeople");
     });
-    */
+
+    it("toPrefixedHyphenated", function () {
+        expect(binding.toUnprefixedHyphenated("a")).toEqual("sdb-a");
+    });
+
+    it("toUnprefixedCamel", function () {
+        expect(binding.toUnprefixedCamel("sdbA")).toEqual("a");
+    });
+
+    it("prefixData delete", function () {
+        expect(binding.prefixData({a: "success"}).a).toEqual(undefined);
+    });
+
+    it("prefixData prefix", function () {
+        expect(binding.data.sdbA).toEqual("success");
+    });
+
+    it("unprefixData", function () {
+        expect(binding.unprefixData({sdbA: "success"}).a).toEqual("success");
+    });
+    
 });
 
 
