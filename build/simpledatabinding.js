@@ -562,12 +562,17 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     //<<<<<< Listeners, Handlers, and Watches >>>>>>
 
-    this.setListeners = function () {
+    this.setListeners = function (handleKeyUp) {
         //listen for changes in the container element's dataset
         self.observer = new MutationObserver(self.mutationHandler);
 
         //listen for form control changes within our container
         self.container.addEventListener("change", self.changeHandler);
+
+        if (handleKeyUp !== false) {
+            //update data on keyup if desired
+            self.container.addEventListener("keyup", self.keyUpHandler); 
+        }
 
         return self;
     };
@@ -620,6 +625,15 @@ function SimpleDataBinding(el, startData, configs, parent) {
             }
         });
         return mutations;
+    };
+
+    this.keyUpHandler = function (e) {
+        //triggers change if desired
+        var changeEvent = document.createEvent('HTMLEvents');
+
+        changeEvent.initEvent('change', true, false);
+        e.target.dispatchEvent(changeEvent);
+        return changeEvent;
     };
 
     this.changeHandler = function (e) {
@@ -809,7 +823,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.initFamilyTree();
         this.initProps();
         this.initData();
-        this.setListeners();
+        this.setListeners(this.configs.keyUp);
         if (this === this.root) {
             this.turnOnAllBindings();
         }

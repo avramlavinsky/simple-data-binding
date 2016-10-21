@@ -330,10 +330,14 @@ describe("listeners/handlers/watches - question branching setup", function () {
         expect(binding.mutationHandler(mutations)).toEqual(mutations);
     });
 
-    it("changeHandler unit", function () {
+    it("changeHandler", function () {
         firstNameInput.value = "Joe";
         expect(binding.changeHandler(e)).toEqual("Joe");
         binding.data.firstName = "Sam";
+    });
+
+    it("keyUpHandler", function () {
+        expect(binding.keyUpHandler(e).type).toEqual("change");
     });
 
     it("turnOnBindings binding functionality", function () {
