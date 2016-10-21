@@ -71,9 +71,7 @@ function LiveArrayFactory(MemberClass, createMethodName, moveMethodName, removeM
     var methods = ["pop", "push", "reverse", "shift", "unshift", "splice", "sort", "filter", "forEach", "reduce", "reduceRight", "copyWithin", "fill"];
     
     for(var i = 0, stop = methods.length; i < stop; i++){
-      if(typeof(array[methods[i]]) === "function"){
-        self.addCallBack(array, methods[i], array.update);
-      }
+      self.addCallBack(array, methods[i], array.update);
     }
     return array;
   };

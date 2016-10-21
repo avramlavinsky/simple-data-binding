@@ -3,10 +3,6 @@ var Server = require('karma').Server;
 var jshint = require('gulp-jshint');
 var stylish = require('jshint-stylish');//not working
 
-gulp.task('hello', function () {
-    console.log('Hello Avram');
-});
-
 // Run test once and exit
 gulp.task('test', function (done) {
     new Server({

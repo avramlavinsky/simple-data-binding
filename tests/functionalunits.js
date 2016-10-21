@@ -1,10 +1,10 @@
+//unit testing for core simple data binding logic using markup from question branching example
+
 var markup = '<form>' +
 
   '<label databind="jobQuestions" childtemplate="questionType">{{label}}</label>' +
 
   '</form>' +
-
-
 
   '<div class="templates">' +
 
