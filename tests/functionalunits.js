@@ -86,6 +86,7 @@ var createInput = function (attr, value) {
 }
 
 var setForm = function (id) {
+    document.write(markup);
     document.forms[document.forms.length - 1].id = id;
     document.forms[document.forms.length - 1].name = id;
 }
@@ -94,7 +95,6 @@ var setForm = function (id) {
 
 describe("data methods - question branching setup", function () {
 
-    document.write(markup);
     setForm("dataMethodTestForm");
 
     var binding = new SimpleDataBinding("#dataMethodTestForm", startData),
@@ -162,7 +162,6 @@ describe("data methods - question branching setup", function () {
 
 describe("string methods - question branching setup - no namespace", function () {
 
-    document.write(markup);
     setForm("stringMethodTestForm");
 
     var binding = new SimpleDataBinding("#stringMethodTestForm", startData),
@@ -185,7 +184,7 @@ describe("string methods - question branching setup - no namespace", function ()
 describe("string methods - question branching setup - WITH NAMESPACE", function () {
     //nameSpace functionality is under construction
 
-    document.write(markup);
+    setForm("nameSpacedStringMethodTestForm");
 
     //var binding = new SimpleDataBinding("#nameSpacedStringMethodTestForm", startData, { nameSpace: "sdb" });
 
@@ -201,7 +200,6 @@ describe("string methods - question branching setup - WITH NAMESPACE", function 
 
 describe("DOM methods - question branching setup", function () {
 
-    document.write(markup);
     setForm("domMethodsTestForm");
 
     var binding = new SimpleDataBinding("#domMethodsTestForm", startData);
@@ -265,7 +263,6 @@ describe("DOM methods - question branching setup", function () {
 
 describe("attr methods - question branching setup", function () {
 
-    document.write(markup);
     setForm("attrMethodsTestForm");
 
     var binding = new SimpleDataBinding("#attrMethodsTestForm", startData);
@@ -296,7 +293,6 @@ describe("attr methods - question branching setup", function () {
 
 describe("listeners/handlers/watches - question branching setup", function () {
 
-    document.write(markup);
     setForm("attrMethodsTestForm");
     
 
