@@ -22,7 +22,10 @@ Two-way data-binding has been a key selling point for many JavaScript frameworks
   <strong>Dependency-free</strong> – Built in vanilla JavaScript. 
   </li>
   <li>
-  <strong>Light-weight</strong> – Under one tenth the size of common frameworks.
+  <strong>No polling</strong> – So timing is transparent and straightforward. 
+  </li>
+  <li>
+  <strong>Light-weight</strong> – A fraction of the size of common frameworks.
   </li>
   <li>
   <strong>Jargon-free</strong> – Simple, meaningful method and property names that don't feel like learning a foreign language. 
