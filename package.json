@@ -26,8 +26,10 @@
   "homepage": "https://github.com/avramlavinsky/simple-data-binding#readme",
   "devDependencies": {
     "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
     "gulp-jshint": "^2.0.1",
     "gulp-minify": "0.0.14",
+    "gulp-strip-code": "^0.1.4",
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.5.2",
     "jshint": "^2.9.3",
