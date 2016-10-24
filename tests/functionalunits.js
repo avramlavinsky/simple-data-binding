@@ -192,10 +192,6 @@ describe("string methods - question branching setup - WITH NAMESPACE", function 
         expect(binding.toPrefixedCamel("weThePeople")).toEqual("sdbWeThePeople");
     });
 
-    it("toPrefixedHyphenated", function () {
-        expect(binding.toUnprefixedHyphenated("a")).toEqual("sdb-a");
-    });
-
     it("toUnprefixedCamel", function () {
         expect(binding.toUnprefixedCamel("sdbA")).toEqual("a");
     });
@@ -212,6 +208,20 @@ describe("string methods - question branching setup - WITH NAMESPACE", function 
         expect(binding.unprefixData({sdbA: "success"}).a).toEqual("success");
     });
     
+});
+
+
+
+describe("string methods - question branching setup - WITH ATTR PREFIX", function () {
+    //nameSpace functionality adds a prefix to attributes corresponding to simple data binding methods
+    //EXCEPT the name attribute
+
+    var binding = new SimpleDataBinding(null, null, { attrPrefix: "sdb" });
+
+
+    it("toPrefixedHyphenated", function () {
+        expect(binding.toPrefixedHyphenated("a")).toEqual("sdb-a");
+    });
 });
 
 

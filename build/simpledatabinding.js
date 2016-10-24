@@ -134,7 +134,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
         if (ASSEMBLEASFRAGMENT) {
             if (parentPlaceholder) {
-                parentPlaceholder.parentElement.insertBefore(parent, parentPlaceholder);
+                parentPlaceholder.parentNode.insertBefore(parent, parentPlaceholder);
             } else {
                 grandparent.appendChild(parent);
             }
@@ -167,7 +167,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.assign = Object.assign || function (obj1, obj2) {
         //polyfill for Object.assign
         for (var prop in obj2) {
-            if (obj1.hasOwnProperty(prop)) {
+            if (obj2.hasOwnProperty(prop)) {
                 obj1[prop] = obj2[prop];
             }
         }
@@ -292,7 +292,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
         //inserts a clone of an element before a placeholder
         var clone = el.cloneNode(true);
 
-        placeholder.parentElement.insertBefore(clone, placeholder);
+        placeholder.parentNode.insertBefore(clone, placeholder);
         return clone;
     };
 
@@ -374,7 +374,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
                 elementTemplate.parentNode.appendChild(obj.placeholder);
             }
             if (!retain) {
-                elementTemplate.parentElement.removeChild(elementTemplate);
+                elementTemplate.parentNode.removeChild(elementTemplate);
             }
         }
         return obj.placeholder;
@@ -383,7 +383,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
     this.removeCommentedElements = function (placeholder, attr, value) {
         while (placeholder.previousSibling && placeholder.previousSibling.nodeType !== 8) {
             if (placeholder.previousSibling.nodeType === 1 && placeholder.previousSibling.getAttribute(attr) === value) {
-                placeholder.parentElement.removeChild(placeholder.previousSibling);
+                placeholder.parentNode.removeChild(placeholder.previousSibling);
             } else {
                 placeholder = placeholder.previousSibling;
             }
@@ -515,7 +515,7 @@ function SimpleDataBinding(el, startData, configs, parent) {
 
     //<<<<<<<<<< attribute based methods >>>>>>>>>>
 
-    this.childTemplate = function(el, rawValue, prop, dataValue) {
+    this.childTemplate = function (el, rawValue, prop, dataValue) {
         var clone;
 
         if (dataValue) {
@@ -530,17 +530,17 @@ function SimpleDataBinding(el, startData, configs, parent) {
             }
         }
         return el;
-    }
+    };
 
     this.renderIf = function (el, rawValue, prop, dataValue) {
         this.surroundByComments(el, "render if " + rawValue, el, true);
         if (dataValue && !el.parentElement) {
-            el.placeholder.parentElement.insertBefore(el, el.placeholder);
+            el.placeholder.parentNode.insertBefore(el, el.placeholder);
         } else if (!dataValue && el.parentElement) {
             el.parentElement.removeChild(el);
         }
         return el;
-    }
+    };
 
     this.setNodeValue = function (el, prop, attr) {
         //sets node value to data property value
@@ -563,12 +563,6 @@ function SimpleDataBinding(el, startData, configs, parent) {
         }
 
         return el;
-    };
-
-    this.attrMethods = {
-        name: this.setNodeValue,
-        renderif: this.renderIf,
-        childtemplate: this.childTemplate
     };
 
 
@@ -790,7 +784,10 @@ function SimpleDataBinding(el, startData, configs, parent) {
         this.watches = this.configs.watches || {};
         this.globalScopeWatches = this.configs.globalScopeWatches || {};
         this.checkboxDataDelimiter = this.configs.checkboxDataDelimiter || ",";
-        this.attrMethods = this.assign(this.attrMethods, this.configs.attrMethods || {});
+        this.attrMethods = this.assign({}, this.configs.attrMethods || {});
+        this.attrMethods.name = this.setNodeValue;
+        this.attrMethods[this.toPrefixedHyphenated("renderif")] = this.renderIf;
+        this.attrMethods[this.toPrefixedHyphenated("childtemplate")] = this.childTemplate;
         this.templates = this.assign({}, this.configs.templates || {});
 
         return this;
