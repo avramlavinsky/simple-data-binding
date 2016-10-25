@@ -101,7 +101,7 @@
             return self.data;
         };
 
-        var updateChildArray = function (prop, childContainerTemplate, newData, additive) {
+        this.updateChildArray = function (prop, childContainerTemplate, newData, additive) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
                 parent, parentPlaceholder, grandparent;
 
@@ -193,7 +193,7 @@
             }
 
             for (var childKey in self.children) {
-                if (self.hasOwnProperty(childKey)) {
+                if (self.children.hasOwnProperty(childKey)) {
                     dataClone[childKey] = self.children[childKey].export();
                 }
             }
@@ -201,10 +201,9 @@
         };
 
         /* test-code */
-        this.updateChildArray = updateChildArray;
         this.assign = assign;
         this.generateChildArrayMemberId = generateChildArrayMemberId;
-        /* end test-code */
+        /* end-test-code */
 
 
         //<<<<< String Utilities >>>>>
@@ -625,7 +624,7 @@
             return self.observer;
         };
 
-        var turnOnAllBindings = function () {
+        this.turnOnAllBindings = function () {
             turnOnBindings();
             for (var childKey in self.children) {
                 if (self.children.hasOwnProperty(childKey)) {
@@ -799,7 +798,6 @@
         /* test-code */
         this.setListeners = setListeners;
         this.turnOnBindings = turnOnBindings;
-        this.turnOnAllBindings = turnOnAllBindings;
         this.turnOffBindings = turnOffBindings;
         this.mutationHandler = mutationHandler;
         this.keyUpHandler = keyUpHandler;
@@ -885,7 +883,7 @@
             initData();
             setListeners(this.configs.keyUp);
             if (this === this.root) {
-                turnOnAllBindings();
+                this.turnOnAllBindings();
             }
 
             self.initialized = true;

@@ -47,5 +47,5 @@ gulp.task('make', ['clean'], function () {
 
 gulp.task('make', ['clean', 'compress']);
 
-gulp.task('default', ['jshint', 'test', 'compress']);
+gulp.task('default', ['lint', 'test', 'compress']);
 

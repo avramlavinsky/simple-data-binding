@@ -101,7 +101,7 @@
             return self.data;
         };
 
-        var updateChildArray = function (prop, childContainerTemplate, newData, additive) {
+        this.updateChildArray = function (prop, childContainerTemplate, newData, additive) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
                 parent, parentPlaceholder, grandparent;
 
@@ -193,11 +193,77 @@
             }
 
             for (var childKey in self.children) {
-                if (self.hasOwnProperty(childKey)) {
+                if (self.children.hasOwnProperty(childKey)) {
                     dataClone[childKey] = self.children[childKey].export();
                 }
             }
             return dataClone;
+        };
+
+
+
+
+        //<<<<< String Utilities >>>>>
+
+        var toCamelCase = function (str) {
+            //converts hyphenated to camel case
+            return str.replace(/-([a-z])/gi, function (s, group1) {
+                return group1.toUpperCase();
+            });
+        };
+
+        var toHyphenated = function (str) {
+            //converts camel case to hyphenated lower case
+            return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        };
+
+        var toPrefixedCamel = function (str) {
+            //prefixes camel case string with namespace if not already prefixed
+            if (self.nameSpace && str && str.substring(0, self.nameSpace.length) !== self.nameSpace) {
+                str = self.nameSpace + str.charAt(0).toUpperCase() + str.slice(1);
+            }
+            return str;
+        };
+
+        var toPrefixedHyphenated = function (str) {
+            //prefixes hyphenated string with namespace
+            return (self.attrPrefix ? toHyphenated(self.attrPrefix) + "-" : "") + str;
+        };
+
+        var toUnprefixedCamel = function (str) {
+            //strips the namespace from camel strings
+            if (self.nameSpace) {
+                str = str.substring(self.nameSpace.length);
+                return str.charAt(0).toLowerCase() + str.slice(1);
+            } else {
+                return str;
+            }
+        };
+
+        var prefixData = function (dataset) {
+            //prefix data property names with namespace as needed
+            if (self.nameSpace) {
+                for (var prop in dataset) {
+                    if (prop.substring(0, self.nameSpace.length) !== self.nameSpace) {
+                        self.set(prop, dataset[prop]);
+                        delete dataset[prop];
+                    }
+                }
+            }
+            return dataset;
+        };
+
+        var unprefixData = function (obj) {
+            //remove namespace prefix from data property names
+            if (self.nameSpace) {
+                for (var prop in obj) {
+                    if (obj.hasOwnProperty(prop)) {
+                        obj[toUnprefixedCamel(prop)] = obj[prop];
+                        delete obj[prop];
+                    }
+                }
+            }
+            return obj;
         };
 
 
@@ -537,7 +603,7 @@
             return self.observer;
         };
 
-        var turnOnAllBindings = function () {
+        this.turnOnAllBindings = function () {
             turnOnBindings();
             for (var childKey in self.children) {
                 if (self.children.hasOwnProperty(childKey)) {
@@ -784,7 +850,7 @@
             initData();
             setListeners(this.configs.keyUp);
             if (this === this.root) {
-                turnOnAllBindings();
+                this.turnOnAllBindings();
             }
 
             self.initialized = true;

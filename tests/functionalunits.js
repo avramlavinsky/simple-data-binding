@@ -154,7 +154,7 @@ describe("data methods - question branching setup", function () {
     });
 
     it("export", function () {
-        expect(binding.export().firstName).toEqual("John");
+        expect(binding.export().firstName.name).toEqual("firstName");
     });
 });
 
