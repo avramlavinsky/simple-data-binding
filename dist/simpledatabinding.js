@@ -274,17 +274,7 @@
         var is = function (el, selector) {
             //polyfill for matches method
             var matchesTest = (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector);
-            if (matchesTest) {
-                return matchesTest.call(el, selector);
-            } else {
-                //ie8 polyfill
-                var nodes = el.parentNode.querySelectorAll(selector);
-                for (var i = nodes.length; i--;) {
-                    if (nodes[i] === el)
-                        return true;
-                }
-                return false;
-            }
+            return matchesTest && matchesTest.call(el, selector);
         };
 
         var closest = function (el, selector) {
@@ -367,6 +357,19 @@
                     }
                 }
             }
+        };
+
+        var setContainer = function () {
+            self.container = el && el.tagName ? el : document.querySelector(el || '[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
+            if (self.configs.containInHiddenInput) {
+                self.boundHiddenInput = document.createElement("input");
+                self.boundHiddenInput.type = "hidden";
+                self.container.appendChild(self.boundHiddenInput);
+            }
+            if (!self.container.getAttribute("databind")) {
+                self.container.setAttribute("databind", "");
+            }
+            return self.container;
         };
 
         this.surroundByComments = function (obj, message, elementTemplate, retain) {
@@ -785,15 +788,7 @@
             self.configs = configs || {};
             self.nameSpace = typeof (self.configs.nameSpace) === "string" ? self.configs.nameSpace : "";
             self.attrPrefix = typeof (self.configs.attrPrefix) === "string" ? self.configs.attrPrefix : "";
-            self.container = el && el.tagName ? el : document.querySelector(el || '[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
-            if (self.configs.containInHiddenInput) {
-                self.boundHiddenInput = document.createElement("input");
-                self.boundHiddenInput.type = "hidden";
-                self.container.appendChild(self.boundHiddenInput);
-            }
-            if (!self.container.getAttribute("databind")) {
-                self.container.setAttribute("databind", "");
-            }
+            self.container = setContainer();
             self.watches = self.configs.watches || {};
             self.globalScopeWatches = self.configs.globalScopeWatches || {};
             self.checkboxDataDelimiter = self.configs.checkboxDataDelimiter || ",";

@@ -253,6 +253,10 @@ describe("DOM methods - question branching setup", function () {
         expect(binding.getInitialNodeValues().firstName).toEqual("John");
     });
 
+    it("setContainer", function () {
+        expect(binding.setContainer().tagName).toEqual("FORM");
+    });
+
     it("surroundByComments", function () {
         span = binding.container.previousElementSibling;
         expect(binding.surroundByComments({}, "surroundByCommentsTest", span, true).nodeValue).toEqual("end surroundByCommentsTest");
