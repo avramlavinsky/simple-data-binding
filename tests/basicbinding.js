@@ -46,6 +46,10 @@ describe("initProps - no args", function () {
         expect(binding.container).toEqual(document.body);
     });
 
+    it("id", function () {
+        expect(binding.id.indexOf("binding")).toEqual(0);
+    });
+
     it("watches", function () {
         expect(typeof (binding.watches)).toEqual("object");
     });

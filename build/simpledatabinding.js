@@ -1,5 +1,5 @@
 (function () {
-    function SimpleDataBinding(el, startData, configs, parent) {
+    function SimpleDataBinding(el, startData, configs, id, parent) {
         //binds data to and from form controls, text nodes, and attributes
         //automatically repeats markup bound to arrays
         //includes basic templating and easily extended for more complex DOM interaction
@@ -62,9 +62,9 @@
             return value;
         };
 
-        this.update = function (newData, bindDuringUpdate, additive) {
+        this.update = function (newData, bindDuringUpdate) {
             //assigns all values present in newData object to data
-            var childContainer, val;
+            var datum, val;
 
             //data binding is asynchronous
             //child updates will be handled synchronously via the wathces
@@ -74,19 +74,21 @@
             }
 
             for (var prop in newData) {
-                if (typeof (newData[prop]) === "object") {
-                    childContainer = (self.childArrays[prop] && self.childArrays[prop].elementTemplate) || self.container.querySelector('[' + toPrefixedHyphenated('databind') + '="' + prop + '"]');
-                    if (newData[prop] instanceof Array && childContainer) {
-                        self.updateChildArray(prop, childContainer, newData, additive);
+                if (newData.hasOwnProperty(prop)) {
+                    datum = newData[prop];
+                    if (typeof (datum) === "object") {
+                        if (datum instanceof Array) {
+                            self.createChildArray(prop, datum);
+                        } else {
+                            self.createChild(prop, getContainer(prop), datum);
+                        }
                     } else {
-                        self.createChild(prop, childContainer, newData[prop]);
+                        val = datum;
+                        prop = toPrefixedCamel(prop);
+                        self.root.lastMutation = { value: val, oldValue: self.get(prop), prop: prop };
+                        self.set(prop, val);
+                        self.checkWatches(prop);
                     }
-                } else {
-                    val = newData[prop];
-                    prop = toPrefixedCamel(prop);
-                    self.root.lastMutation = { value: val, oldValue: self.get(prop), prop: prop };
-                    self.set(prop, val);
-                    self.checkWatches(prop);
                 }
             }
 
@@ -101,21 +103,21 @@
             return self.data;
         };
 
-        this.updateChildArray = function (prop, childContainerTemplate, newData, additive) {
+        var createChildArray = function (prop, data) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
-                parent, parentPlaceholder, grandparent;
+                ar, parent, parentPlaceholder, grandparent;
 
             if (self.childArrays[prop]) {
-                if (additive !== true) {
-                    self.removeCommentedElements(self.childArrays[prop].placeholder, "databind", prop);
-                    self.childArrays[prop].length = 0;
-                }
+                ar = self.childArrays[prop];
+                self.removeCommentedElements(ar.placeholder, "databind", prop);
+                ar.length = 0;
             } else {
-                self.childArrays[prop] = [];
-                self.childArrays[prop].idIndex = 0;
-                self.childArrays[prop].ownerInstance = self;
-                self.childArrays[prop].key = prop;
-                self.surroundByComments(self.childArrays[prop], "child array " + prop, childContainerTemplate);
+                ar = self.configs.modifyInputArrays === true ? data : [],
+                self.childArrays[prop] = ar;
+                ar.idIndex = 0;
+                ar.ownerInstance = self;
+                ar.key = prop;
+                self.surroundByComments(ar, "child array " + prop, getContainer(prop));
             }
 
             if (ASSEMBLEASFRAGMENT) {
@@ -125,12 +127,8 @@
                 grandparent.removeChild(parent);
             }
 
-            for (var i = 0, stop = newData[prop].length; i < stop; i++) {
-                self.childArrays[prop].push(self.createChildArrayMember(self.childArrays[prop], newData[prop][i], childContainerTemplate));
-            }
-
-            if (self.arrayEnhancer) {
-                self.arrayEnhancer.enhance(self.childArrays[prop]);
+            for (var i = 0, stop = data.length; i < stop; i++) {
+                ar[i] = (self.createChildArrayMember(ar, data[i]));    
             }
 
             if (ASSEMBLEASFRAGMENT) {
@@ -141,19 +139,27 @@
                 }
             }
 
-            return self.childArrays[prop];
+            if (self.arrayEnhancer && ! ar.update) {
+                self.arrayEnhancer.enhance(ar);
+            }
+
+            return ar;
         };
 
-
-        this.createChildArrayMember = function (childArray, data, template, placeholder) {
+        this.createChildArrayMember = function (childArray, data, placeholder) {
             //creates a member of child array
-            //accessed externally by live array logic
-            var id = generateChildArrayMemberId(childArray, data),
-                el = cloneInPlace(template || childArray.elementTemplate, placeholder || childArray.placeholder),
-                child = self.createChild(id, el, data);
+            //accessed externally by live array methods
 
-            child.containingArray = childArray;
-            return child;
+            if (data instanceof SimpleDataBinding) {
+                return data;
+            } else {
+                var id = generateChildArrayMemberId(childArray, data),
+                    el = cloneInPlace(childArray.elementTemplate, placeholder || childArray.placeholder),
+                    child = self.createChild(id, el, data);
+
+                child.containingArray = childArray;
+                return child;
+            }
         };
 
         var generateChildArrayMemberId = function (childArray, data) {
@@ -161,8 +167,8 @@
             var id = data.name || data.id || data.value;
 
             if (!id || self.children[id]) {
-                id = (id || childArray.key) + childArray.idIndex;
-                childArray.idIndex++;
+               childArray.idIndex++;
+               id = (id || childArray.key) + childArray.idIndex;    
             }
             return id;
         };
@@ -177,9 +183,11 @@
             return obj1;
         };
 
-        this.createChild = function (prop, el, data) {
-            self.children[prop] = new SimpleDataBinding(el, data, self.configs, self);
-            return self.children[prop];
+        this.createChild = function (id, el, data) {
+            var child = new SimpleDataBinding(el, data, self.configs, id, self);
+
+            self.children[id] = child;
+            return child;
         };
 
         this.export = function (unprefix) {
@@ -201,6 +209,7 @@
         };
 
         /* test-code */
+        this.createChildArray = createChildArray;
         this.assign = assign;
         this.generateChildArrayMemberId = generateChildArrayMemberId;
         /* end-test-code */
@@ -384,8 +393,18 @@
             return self.container;
         };
 
+        var getContainer = function (prop) {
+            //finds the appropriate container for a child instance or element template for an array
+            var container = self.container.querySelector('[' + toPrefixedHyphenated('databind') + '="' + prop + '"]');
+            return container;
+        };
+
         this.surroundByComments = function (obj, message, elementTemplate, retain) {
             //surround an element by comments
+            //add properties to an associated object:
+            //   elementTemplate:  the element
+            //   placeholder:  the new trailing comment
+
             if (!obj.placeholder) {
                 obj.elementTemplate = elementTemplate;
                 obj.placeholder = document.createComment("end " + message);
@@ -821,6 +840,7 @@
             self.nameSpace = typeof (self.configs.nameSpace) === "string" ? self.configs.nameSpace : "";
             self.attrPrefix = typeof (self.configs.attrPrefix) === "string" ? self.configs.attrPrefix : "";
             self.container = setContainer();
+            self.id = id || self.container.id || self.container.name || "binding-" + new Date().getTime();
             self.watches = self.configs.watches || {};
             self.globalScopeWatches = self.configs.globalScopeWatches || {};
             self.checkboxDataDelimiter = self.configs.checkboxDataDelimiter || ",";
@@ -885,7 +905,7 @@
             }
 
             self.initialized = true;
-
+            
             return this;
         };
 

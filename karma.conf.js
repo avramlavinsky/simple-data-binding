@@ -17,6 +17,8 @@ module.exports = function(config) {
     files: [
       'build/simpledatabinding.js',
       'build/**/*.js',
+      'tests/basicbinding.js',
+      'tests/functionalunits.js',
       'tests/**/*.js'
     ],
 

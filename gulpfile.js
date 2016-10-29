@@ -5,9 +5,12 @@ var stylish = require('jshint-stylish');//not working
 var minify = require('gulp-minify');
 var stripCode = require('gulp-strip-code');
 var clean = require('gulp-clean');
+var gzip = require('gulp-gzip');
+var concat = require('gulp-concat');
 
-// Delete the dist directory
+
 gulp.task('clean', function () {
+    // Delete the dist directory
     return gulp.src('./dist')
     .pipe(clean());
 });
@@ -32,20 +35,30 @@ gulp.task('strip', function () {
 });
 
 gulp.task('compress', function () {
-    gulp.src(['build/*.js'])
+    gulp.src(['build/simpleDataBinding.js', 'dist/simpleDataBindingFull.js'])
       .pipe(stripCode())
       .pipe(minify())
-      .pipe(gulp.dest('dist'))
+      .pipe(gulp.dest('dist'));
+    
+    gulp.src(['dist/*min.js'])
+      .pipe(gzip())
+      .pipe(gulp.dest('dist'));
 });
 
-gulp.task('make', ['clean'], function () {
-    gulp.src(['build/*.js'])
+gulp.task('zip', function () {
+    gulp.src(['dist/*min.js'])
+      .pipe(gzip())
+      .pipe(gulp.dest('dist'));
+});
+
+gulp.task('concat', function () {
+    gulp.src(['build/simpleDataBinding.js', 'build/liveArrays.js'])
+      .pipe(concat('simpleDataBindingFull.js'))
       .pipe(stripCode())
-      .pipe(minify())
-      .pipe(gulp.dest('dist'))
+      .pipe(gulp.dest('dist'));
 });
 
-gulp.task('make', ['clean', 'compress']);
+gulp.task('make', ['concat', 'compress', 'zip']);
 
-gulp.task('default', ['lint', 'test', 'compress']);
+gulp.task('default', ['lint', 'test', 'make']);
 

@@ -6,8 +6,8 @@
         //ARGUMENTS
         //MemberClass: function (constructor)
         //createMethodName: string (must correspond to name method of MemberClass PROTOTYPE, not just a method within the constructor)
-        //moveMethodName: function (MemberClass method)
-        //removeMethodName: function (MemberClass method)
+        //moveMethodName: string (MemberClass method name)
+        //removeMethodName: string (MemberClass method name)
 
         var self = this;
 
@@ -105,16 +105,24 @@
 
     if (Bind) {
         Bind.prototype.createLiveArrayMember = function (data, array, i) {
-            //called in the context of the array since no instance exists yet
+            //transforms the array member from data to object instance
+            //context of the array
+            //since no member instance exists yet
             var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholder;
-            return array.ownerInstance.createChildArrayMember(array, data, null, placeholder);
+
+            return array.ownerInstance.createChildArrayMember(array, data, placeholder);
         };
         Bind.prototype.moveLiveArrayMember = function (array, i) {
+            //move the member instance within the array
+            //context of the member instance
             var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholder;
+
             this.container.parentElement.insertBefore(this.container, placeholder);
             return this;
         };
         Bind.prototype.removeLiveArrayMember = function () {
+            //remove the member instance from the array
+            //context of the member instance
             this.container.parentElement.removeChild(this.container);
             return this;
         };
