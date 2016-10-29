@@ -69,9 +69,16 @@ var questionData = {
     }
 };
 
-var startData = {
-    jobQuestions: [questionData.firstName, questionData.middleName, questionData.lastName, questionData.criminalRecord],
-    firstName: "John"
+var jobQuestions = [questionData.firstName, questionData.middleName, questionData.lastName, questionData.criminalRecord];
+
+var startData = function () {
+    //clone all data arrays
+    var data = {
+        jobQuestions: jobQuestions.slice(),
+        firstName: "John"
+    };
+    data.jobQuestions[3].options = data.jobQuestions[3].options.slice();
+    return data;
 };
 
 var createEl = function (tagName, attr, value) {
@@ -92,82 +99,77 @@ var setForm = function (id) {
 }
 
 
+var testDataMethods = function (config, configDescription, formId) {
 
-describe("data methods - question branching setup", function () {
+    describe("data methods - question branching setup " + configDescription, function () {
 
-    setForm("dataMethodTestForm");
+        setForm(formId);
 
-    var binding = new SimpleDataBinding("#dataMethodTestForm", startData),
-        questionTemplate = binding.childArrays.jobQuestions.elementTemplate,
-        childArray;
+        var binding = new SimpleDataBinding("#" + formId, startData(), config),
+            questionTemplate = binding.childArrays.jobQuestions.elementTemplate,
+            childArray;
 
-    binding.data.lastName = "Smith";
+        binding.data.lastName = "Smith";
 
+        it("get initial data value", function () {
+            expect(binding.get("firstName")).toEqual("John");
+        });
 
-    it("get initial data value", function () {
-        expect(binding.get("firstName")).toEqual("John");
+        it("get value declared after init", function () {
+            expect(binding.get("lastName")).toEqual("Smith");
+        });
+
+        it("set new value", function () {
+            expect(binding.set("newProperty", "newValue")).toEqual("newValue");
+        });
+
+        it("set existing value prior null", function () {
+            expect(binding.set("middleName", "Jay")).toEqual("Jay");
+        });
+
+        it("set / get inheritted value", function () {
+            expect(binding.set("lastName", "Inheritted")).toEqual(binding.children.firstName.get("lastName"));
+        });
+
+        it("update", function () {
+            expect(binding.update({ middleName: "Harrison" }).middleName).toEqual("Harrison");
+        });
+
+        it("generateChildArrayMemberId", function () {
+            expect(binding.generateChildArrayMemberId([], questionData.offense)).toEqual("offense");
+        });
+
+        it("createChildArrayMember", function () {
+            expect(binding.createChildArrayMember(binding.childArrays.jobQuestions, questionData.offense).data.questionType).toEqual("text");
+        });
+
+        it("generateChildArrayMemberId - duplicate", function () {
+            expect(binding.generateChildArrayMemberId(binding.childArrays.jobQuestions, questionData.offense)).toEqual("offense1");
+        });
+
+        it("assign", function () {
+            expect(binding.assign({ a: 1, b: 2 }, { c: 3, d: 4 }).c).toEqual(3);
+        });
+
+        it("createChild - no container", function () {
+            expect(binding.createChild("newProp", null, { a: 1, b: 2 }).data.b).toEqual("2");
+        });
+
+        it("export", function () {
+            expect(binding.export().firstName.name).toEqual("firstName");
+        });
     });
+};
 
-    it("get value declared after init", function () {
-        expect(binding.get("lastName")).toEqual("Smith");
-    });
-
-    it("set new value", function () {
-        expect(binding.set("newProperty", "newValue")).toEqual("newValue");
-    });
-
-    it("set existing value prior null", function () {
-        expect(binding.set("middleName", "Jay")).toEqual("Jay");
-    });
-
-    it("set / get inheritted value", function () {
-        expect(binding.set("lastName", "Inheritted")).toEqual(binding.children.firstName.get("lastName"));
-    });
-
-    it("update", function () {
-        expect(binding.update({ middleName: "Harrison" }).middleName).toEqual("Harrison");
-    });
-
-    it("generateChildArrayMemberId", function () {
-        expect(binding.generateChildArrayMemberId(childArray, questionData.offense)).toEqual("offense");
-    });
-
-    it("createChildArrayMember", function () {
-        childArray = binding.updateChildArray("jobQuestions", questionTemplate, { jobQuestions: [questionData.offense] }, true);
-        expect(binding.createChildArrayMember(childArray, questionData.offense).data.questionType).toEqual("text");
-    });
-
-    it("updateChildArray", function () {
-        expect(childArray[childArray.length - 1].data.questionType).toEqual("text");
-    });
-
-    it("generateChildArrayMemberId - duplicate", function () {
-        expect(binding.generateChildArrayMemberId(childArray, questionData.offense)).toEqual("offense1");
-    });
-
-    it("assign", function () {
-        expect(binding.assign({ a: 1, b: 2 }, { c: 3, d: 4 }).c).toEqual(3);
-    });
-
-    it("createChild - no container", function () {
-        expect(binding.createChild("newProp", null, { a: 1, b: 2 }).data.b).toEqual("2");
-    });
-
-    it("export", function () {
-        expect(binding.export().firstName.name).toEqual("firstName");
-    });
-});
-
-
+testDataMethods({}, "default config", "dataMethodTestForm");
+testDataMethods({ modifyInputArrays: true }, "modifyInputArrays", "dataMethodTestFormModInputArrays");
 
 describe("string methods - question branching setup - no namespace", function () {
 
     setForm("stringMethodTestForm");
-
-    var binding = new SimpleDataBinding("#stringMethodTestForm", startData),
-        questionTemplate = binding.childArrays.jobQuestions.elementTemplate,
-        childArray;
-
+    
+    var binding = new SimpleDataBinding("#stringMethodTestForm", startData());
+    
     binding.data.lastName = "Smith";
 
     it("toCamelCase", function () {
@@ -180,13 +182,12 @@ describe("string methods - question branching setup - no namespace", function ()
 });
 
 
-
 describe("string methods - question branching setup - WITH NAMESPACE", function () {
     //nameSpace functionality adds a prefix to all data
 
     setForm("nameSpacedStringMethodTestForm");
 
-    var binding = new SimpleDataBinding("#nameSpacedStringMethodTestForm", startData, { nameSpace: "sdb" });
+    var binding = new SimpleDataBinding("#nameSpacedStringMethodTestForm", startData(), { nameSpace: "sdb" });
 
     it("toPrefixedCamel", function () {
         expect(binding.toPrefixedCamel("weThePeople")).toEqual("sdbWeThePeople");
@@ -211,9 +212,8 @@ describe("string methods - question branching setup - WITH NAMESPACE", function 
 });
 
 
-
 describe("string methods - question branching setup - WITH ATTR PREFIX", function () {
-    //nameSpace functionality adds a prefix to attributes corresponding to simple data binding methods
+    //config property attrPrefix adds a prefix to attributes corresponding to simple data binding methods
     //EXCEPT the name attribute
 
     var binding = new SimpleDataBinding(null, null, { attrPrefix: "sdb" });
@@ -225,14 +225,13 @@ describe("string methods - question branching setup - WITH ATTR PREFIX", functio
 });
 
 
-
 describe("DOM methods - question branching setup", function () {
 
     setForm("domMethodsTestForm");
 
-    var binding = new SimpleDataBinding("#domMethodsTestForm", startData);
+    var binding = new SimpleDataBinding("#domMethodsTestForm", startData());
     var span;
-
+    
     it("is", function () {
         expect(binding.is(binding.container, "form#domMethodsTestForm")).toEqual(true);
     });
@@ -292,12 +291,11 @@ describe("DOM methods - question branching setup", function () {
 
 
 
-
 describe("attr methods - question branching setup", function () {
 
     setForm("attrMethodsTestForm");
 
-    var binding = new SimpleDataBinding("#attrMethodsTestForm", startData);
+    var binding = new SimpleDataBinding("#attrMethodsTestForm", startData());
 
     it("childTemplate", function () {
         expect(binding.childTemplate(createEl("p"), null, null, "text").firstElementChild.tagName).toEqual("INPUT");
@@ -321,14 +319,12 @@ describe("attr methods - question branching setup", function () {
 
 
 
-
-
 describe("listeners/handlers/watches - question branching setup", function () {
 
     setForm("attrMethodsTestForm");
     
 
-    var binding = new SimpleDataBinding("#attrMethodsTestForm", startData);
+    var binding = new SimpleDataBinding("#attrMethodsTestForm", startData());
     var mutations = [{ target: binding.container, value: 1, oldValue: 0, attributeName: "attr" }];
     var firstNameInput = binding.container.querySelector("input");
     var e = { target: firstNameInput, stopPropagation: function () { } };
@@ -422,4 +418,3 @@ describe("listeners/handlers/watches - question branching setup", function () {
         expect(binding.executeWatchFn(insertedWatch)).toEqual(binding);
     });
 });
-
