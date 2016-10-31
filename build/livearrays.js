@@ -79,16 +79,31 @@
 
         var addCallBack = function (obj, originalMethodName, callBackMethod, context) {
             //generically add callback method in context
-            var fnOriginal = obj[originalMethodName];
+            var fnOriginal = obj[originalMethodName], args;
 
             context = context || obj;
 
             obj[originalMethodName] = function () {
-                var outcome = fnOriginal.apply(this, arguments);
-
-                callBackMethod.apply(this, arguments);
-                return outcome;
+                args = arguments;
+                newMethod();
             };
+            obj[originalMethodName].apply = function () {
+                args = arguments[0];
+                newMethod();
+            };
+
+            function newMethod() {
+                var outcome;
+
+                if (this.callingBack !== true) {
+                    this.callingBack = true;
+                    outcome = fnOriginal.apply(context, args);
+                    callBackMethod.apply(context, arguments);
+                    this.callingBack = false;
+                    return outcome;
+                }
+            }
+
             return obj[originalMethodName];
         };
 
