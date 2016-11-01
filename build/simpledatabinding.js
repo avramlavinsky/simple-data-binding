@@ -78,7 +78,7 @@
                     datum = newData[prop];
                     if (typeof (datum) === "object") {
                         if (datum instanceof Array) {
-                            self.createChildArray(prop, datum);
+                            createChildArray(prop, datum);
                         } else {
                             self.createChild(prop, getContainer(prop), datum);
                         }

@@ -78,11 +78,7 @@
                     datum = newData[prop];
                     if (typeof (datum) === "object") {
                         if (datum instanceof Array) {
-                            if (self.childArrays[prop]) {
-                                self.updateChildArray(prop, datum);
-                            } else {
-                                self.createChildArray(prop, datum);
-                            }
+                            createChildArray(prop, datum);
                         } else {
                             self.createChild(prop, getContainer(prop), datum);
                         }
@@ -109,24 +105,30 @@
 
         var createChildArray = function (prop, data) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
-                ar = self.configs.modifyInputArrays === true ? data : [],
-                parent, parentPlaceholder, grandparent;
+                ar, parent, parentPlaceholder, grandparent;
 
-            self.childArrays[prop] = ar;
-            ar.idIndex = 0;
-            ar.ownerInstance = self;
-            ar.key = prop;
-            self.surroundByComments(ar, "child array " + prop, getContainer(prop));
+            if (self.childArrays[prop]) {
+                ar = self.childArrays[prop];
+                self.removeCommentedElements(ar.placeholder, "databind", prop);
+                ar.length = 0;
+            } else {
+                ar = self.configs.modifyInputArrays === true ? data : [],
+                self.childArrays[prop] = ar;
+                ar.idIndex = 0;
+                ar.ownerInstance = self;
+                ar.key = prop;
+                self.surroundByComments(ar, "child array " + prop, getContainer(prop));
+            }
 
             if (ASSEMBLEASFRAGMENT) {
-                parent = self.childArrays[prop].placeholder.parentElement;
+                parent = self.childArrays[prop].placeholder.parentNode;
                 parentPlaceholder = parent.nextElementSibling;
                 grandparent = parent.parentElement;
                 grandparent.removeChild(parent);
             }
 
             for (var i = 0, stop = data.length; i < stop; i++) {
-                ar[i] = (self.createChildArrayMember(ar, data[i]));    
+                ar[i] = (self.createChildArrayMember(ar, data[i]));
             }
 
             if (ASSEMBLEASFRAGMENT) {
@@ -137,7 +139,7 @@
                 }
             }
 
-            if (self.arrayEnhancer) {
+            if (self.arrayEnhancer && !ar.update) {
                 self.arrayEnhancer.enhance(ar);
             }
 
@@ -165,8 +167,8 @@
             var id = data.name || data.id || data.value;
 
             if (!id || self.children[id]) {
-               childArray.idIndex++;
-               id = (id || childArray.key) + childArray.idIndex;    
+                childArray.idIndex++;
+                id = (id || childArray.key) + childArray.idIndex;
             }
             return id;
         };
@@ -868,7 +870,7 @@
             }
 
             self.initialized = true;
-            
+
             return this;
         };
 
@@ -958,16 +960,31 @@
 
         var addCallBack = function (obj, originalMethodName, callBackMethod, context) {
             //generically add callback method in context
-            var fnOriginal = obj[originalMethodName];
+            var fnOriginal = obj[originalMethodName], args;
 
             context = context || obj;
 
             obj[originalMethodName] = function () {
-                var outcome = fnOriginal.apply(this, arguments);
-
-                callBackMethod.apply(this, arguments);
-                return outcome;
+                args = arguments;
+                newMethod();
             };
+            obj[originalMethodName].apply = function () {
+                args = arguments[1];
+                newMethod();
+            };
+
+            function newMethod() {
+                var outcome;
+
+                if (this.callingBack !== true) {
+                    this.callingBack = true;
+                    outcome = fnOriginal.apply(context, args);
+                    callBackMethod.apply(context, arguments);
+                    this.callingBack = false;
+                    return outcome;
+                }
+            }
+
             return obj[originalMethodName];
         };
 

@@ -35,7 +35,7 @@ gulp.task('strip', function () {
 });
 
 gulp.task('compress', function () {
-    gulp.src(['build/simpleDataBinding.js', 'dist/simpleDataBindingFull.js'])
+    gulp.src(['build/simpledatabinding.js', 'dist/simpledatabinding-full.js'])
       .pipe(stripCode())
       .pipe(minify())
       .pipe(gulp.dest('dist'));
@@ -52,8 +52,8 @@ gulp.task('zip', function () {
 });
 
 gulp.task('concat', function () {
-    gulp.src(['build/simpleDataBinding.js', 'build/liveArrays.js'])
-      .pipe(concat('simpleDataBindingFull.js'))
+    gulp.src(['build/simpledatabinding.js', 'build/livearrays.js'])
+      .pipe(concat('simpledatabinding-full.js'))
       .pipe(stripCode())
       .pipe(gulp.dest('dist'));
 });
