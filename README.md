@@ -22,7 +22,7 @@ Two-way data-binding has been a key selling point for many JavaScript frameworks
   <strong>Dependency-free</strong> – Built in vanilla JavaScript. 
   </li>
   <li>
-  <strong>Straightforward timing mechanisms</strong> – no polling, no intervals. 
+  <strong>Straightforward timing mechanisms</strong> – No polling, no intervals. 
   </li>
   <li>
   <strong>Light-weight</strong> – Currently weighing in at 11.4kb (3.8kb zipped) for the full version with live arrays.
