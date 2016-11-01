@@ -22,10 +22,10 @@ Two-way data-binding has been a key selling point for many JavaScript frameworks
   <strong>Dependency-free</strong> – Built in vanilla JavaScript. 
   </li>
   <li>
-  <strong>No polling</strong> – So timing is transparent and straightforward. 
+  <strong>Straightforward timing mechanisms</strong> – no polling, no intervals. 
   </li>
   <li>
-  <strong>Light-weight</strong> – A fraction of the size of common frameworks.
+  <strong>Light-weight</strong> – Currently weighing in at 11.4kb (3.8kb zipped) for the full version with live arrays.
   </li>
   <li>
   <strong>Jargon-free</strong> – Simple, meaningful method and property names that don't feel like learning a foreign language. 
@@ -34,7 +34,10 @@ Two-way data-binding has been a key selling point for many JavaScript frameworks
   <strong>Intuitive</strong> – Geared towards rapid time to market.  A learning curve that feels comfortable in minutes, not months. 
   </li>
   <li>
-  <strong>Powerful</strong> – Geared towards advanced form field operations like question branching and dynamic options.
+  <strong>Powerful</strong> – Geared towards advanced form field operations likedynamic options and question branching.
+  </li>
+  <li>
+  <strong>Extensible</strong> – Create your own watches and attribute based methods easily.
   </li>
   <li>
   <strong>Scaleable</strong> – Performant under conditions that exceed the upper limits of reasonable DOM size and complexity.
