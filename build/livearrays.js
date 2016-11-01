@@ -88,7 +88,7 @@
                 newMethod();
             };
             obj[originalMethodName].apply = function () {
-                args = arguments[0];
+                args = arguments[1];
                 newMethod();
             };
 
