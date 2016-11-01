@@ -37,12 +37,9 @@ Two-way data-binding has been a key selling point for many JavaScript frameworks
   <strong>Powerful</strong> – Geared towards advanced form field operations likedynamic options and question branching.
   </li>
   <li>
-  <strong>Extensible</strong> – Create your own watches and attribute based methods easily.
+  <strong>Extensible</strong> – Create your own templates, watches and attribute based methods easily for unique data-binding needs and beyond.
   </li>
   <li>
   <strong>Scaleable</strong> – Performant under conditions that exceed the upper limits of reasonable DOM size and complexity.
-  </li>
-  <li>
-  <strong>Extensible</strong> – Conveniently extended for unique data-binding needs and beyond.
   </li>
 </ul>
