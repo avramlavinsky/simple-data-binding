@@ -121,14 +121,14 @@
             }
 
             if (ASSEMBLEASFRAGMENT) {
-                parent = self.childArrays[prop].placeholder.parentElement;
+                parent = self.childArrays[prop].placeholder.parentNode;
                 parentPlaceholder = parent.nextElementSibling;
                 grandparent = parent.parentElement;
                 grandparent.removeChild(parent);
             }
 
             for (var i = 0, stop = data.length; i < stop; i++) {
-                ar[i] = (self.createChildArrayMember(ar, data[i]));    
+                ar[i] = (self.createChildArrayMember(ar, data[i]));
             }
 
             if (ASSEMBLEASFRAGMENT) {
@@ -139,7 +139,7 @@
                 }
             }
 
-            if (self.arrayEnhancer && ! ar.update) {
+            if (self.arrayEnhancer && !ar.update) {
                 self.arrayEnhancer.enhance(ar);
             }
 
@@ -167,8 +167,8 @@
             var id = data.name || data.id || data.value;
 
             if (!id || self.children[id]) {
-               childArray.idIndex++;
-               id = (id || childArray.key) + childArray.idIndex;    
+                childArray.idIndex++;
+                id = (id || childArray.key) + childArray.idIndex;
             }
             return id;
         };
@@ -905,7 +905,7 @@
             }
 
             self.initialized = true;
-            
+
             return this;
         };
 
