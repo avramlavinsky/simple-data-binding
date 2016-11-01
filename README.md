@@ -34,7 +34,7 @@ Two-way data-binding has been a key selling point for many JavaScript frameworks
   <strong>Intuitive</strong> – Geared towards rapid time to market.  A learning curve that feels comfortable in minutes, not months. 
   </li>
   <li>
-  <strong>Powerful</strong> – Geared towards advanced form field operations likedynamic options and question branching.
+  <strong>Powerful</strong> – Geared towards advanced form field operations like dynamic options and question branching.
   </li>
   <li>
   <strong>Scaleable</strong> – Performant under conditions that exceed the upper limits of reasonable DOM size and complexity.
