@@ -2,26 +2,57 @@
 
 <html>
     
+    
 <head>    
     <title text="title">Simple Data Binding User's Guide</title>
     <link rel="stylesheet" type="text/css" href="../css/guide.css">
     <script type="text/javascript" src="../build/simpledatabinding.js"></script>
 </head>
 
+    
 <body>
+    
+    <div class="page" role="main">
 
-    <h1>Simple Data Binding User's Guide</h1>
+        <h1>Simple Data Binding User's Guide</h1>
 
-    <section databind="sections">
+        <section databind="sections">
+
+            <h2>{{heading}}</h2>
+            <ul>
+                <li databind="items" childtemplate="template">     
+                </li>
+            </ul>
+
+        </section>
         
-        <h2>{{heading}}</h2>
-        <ul>
-            <li databind="items" childtemplate="template">     
-            </li>
-        </ul>
+    </div>
+    
+    
+    <div id="templates">
+        <article id="articleTemplate">
+            <heading id="{{name}}">{{name}}</heading>
+            <strong>Type:</strong><span>{{type}}</span>
+            <p>{{desc}}</p>
+            <div renderif="default">
+                <strong>Default:</strong><span>{{default}}</span>
+            </div>
+            <div renderif="optional">
+                <strong>(Optional)</strong>
+            </div>
+        </article>
         
-    </section>
-        
+        <article id="methodTemplate">
+            <heading id="{{name}}">{{name}}</heading>
+            <ul>
+                <li databind="arguments" childtemplate="'articleTemplate'">
+                </li>
+            </ul>
+            <div databind="returns" childtemplate="'articleTemplate'">
+            </div>
+        </article>
+    </div>
+    
 
     <script type="text/javascript">
 
@@ -87,34 +118,12 @@ var pageData = {
     }]
 };
 
-var pageBinding = new SimpleDataBinding("body", pageData);
+var pageBinding = new SimpleDataBinding(".page", pageData);
     </script>
+
+    
 </body>
-    
-    
-    <div id="templates">
-        <article id="articleTemplate">
-            <heading id="{{name}}">{{name}}</heading>
-            <strong>Type:</strong><span>{{type}}</span>
-            <p>{{desc}}</p>
-            <div renderif="default">
-                <strong>Default:</strong><span>{{default}}</span>
-            </div>
-            <div renderif="optional">
-                <strong>(Optional)</strong>
-            </div>
-        </article>
-        
-        <article id="methodTemplate">
-            <heading id="{{name}}">{{name}}</heading>
-            <ul>
-                <li databind="arguments" childtemplate="'articleTemplate'">
-                </li>
-            </ul>
-            <div databind="returns" childtemplate="'articleTemplate'">
-            </div>
-        </article>
-    </div>
+
 
 </html>
 
