@@ -30,6 +30,7 @@
     
     
     <div id="templateContainer">
+        
         <article id="articleTemplate">
             <div childtemplate="headingTemplate"></div>
             <strong>Type:</strong><span>{{type}}</span>
@@ -44,12 +45,12 @@
         
         <article id="methodTemplate">
             <h3 id="{{name}}">{{name}}</h3>
-            <h4>Arguments</h4>
+            <h4>Arguments:</h4>
             <ul>
                 <li databind="arguments" data-template="articleTemplate" childtemplate="template">
                 </li>
             </ul>
-            <h4>Returns</h4>
+            <h4>Returns:</h4>
             <div databind="returns" data-template="articleTemplate" childtemplate="template">
             </div>
         </article>
