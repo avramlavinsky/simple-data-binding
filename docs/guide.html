@@ -33,13 +33,13 @@
         <article id="articleTemplate">
             <heading id="{{name}}">{{name}}</heading>
             <strong>Type:</strong><span>{{type}}</span>
-            <p>{{desc}}</p>
             <div renderif="default">
                 <strong>Default:</strong><span>{{default}}</span>
             </div>
             <div renderif="optional">
-                <strong>(Optional)</strong>
+                <strong>Optional</strong>
             </div>
+            <p>{{desc}}</p>           
         </article>
         
         <article id="methodTemplate">
