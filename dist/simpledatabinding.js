@@ -1,12 +1,12 @@
 (function () {
-    function SimpleDataBinding(el, startData, configs, id, parent) {
+    function SimpleDataBinding(container, startData, configs, id, parent) {
         //binds data to and from form controls, text nodes, and attributes
         //automatically repeats markup bound to arrays
         //includes basic templating and easily extended for more complex DOM interaction
         //
         //arguments
         //
-        //  el:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
+        //  container:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
         //  startData: object (optional)
         //  configs: object (optional) - static configuration properties, watches
         //    nameSpace: string - appended to data prevent dataset name collisions
@@ -183,8 +183,8 @@
             return obj1;
         };
 
-        this.createChild = function (id, el, data) {
-            var child = new SimpleDataBinding(el, data, self.configs, id, self);
+        this.createChild = function (id, container, data) {
+            var child = new SimpleDataBinding(container, data, self.configs, id, self);
 
             self.children[id] = child;
             return child;
@@ -369,7 +369,7 @@
 
         var setContainer = function () {
             //create instance's container element
-            self.container = el && el.tagName ? el : document.querySelector(el || '[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
+            self.container = container && container.tagName ? container : document.querySelector(container || '[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
             if (self.configs.useHiddenInput) {
                 self.boundHiddenInput = document.createElement("input");
                 self.boundHiddenInput.type = "hidden";
