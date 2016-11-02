@@ -48,10 +48,11 @@ h3{
     font-size: 130%;
     font-weight: bold;
     display: block;
+    margin-bottom: 10px;
 }
 
 article article{
-    margin: 20px 0 0;
+    margin: 10px 0 0;
     padding: 0;
 }
 
