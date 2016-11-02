@@ -16,25 +16,25 @@
         
         <h2>Arguments</h2>
         <ul>
-            <li databind="args" innertemplate="articleTemplate">     
+            <li databind="args" childtemplate="articleTemplate">     
             </li>
         </ul>
         
         <h2>Configuration Options</h2>
         <ul>
-            <li databind="configs" innertemplate="articleTemplate">     
+            <li databind="configs" childtemplate="articleTemplate">     
             </li>
         </ul>
         
         <h2>Properties</h2>
         <ul>
-            <li databind="props" innertemplate="articleTemplate">     
+            <li databind="props" childtemplate="articleTemplate">     
             </li>
         </ul>
         
         <h2>Methods</h2>
         <ul>
-            <li databind="methods" innertemplate="methodTemplate">     
+            <li databind="methods" childtemplate="methodTemplate">     
             </li>
         </ul>
         
@@ -57,10 +57,10 @@
         <article id="methodTemplate">
             <heading id="{{name}}">{{name}}</heading>
             <ul>
-                <li databind="arguments" innertemplate="articleTemplate">
+                <li databind="arguments" childtemplate="articleTemplate">
                 </li>
             </ul>
-            <div databind="returns" innertemplate="articleTemplate">
+            <div databind="returns" childtemplate="articleTemplate">
             </div>
         </article>
     </div>
