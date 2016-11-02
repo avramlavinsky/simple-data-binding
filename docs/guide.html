@@ -63,7 +63,7 @@ var props = [
 ];
 
 var methods = [
-    {name: "createChild", arguments: [{name: id, type: "String"}, {name: "container", type: "Element/String"}, {name: "data", type: "Object"}], returns: {name: "child", type: "SimpleDataBinding"}},
+    {name: "createChild", arguments: [{name: "id", type: "String"}, {name: "container", type: "Element/String"}, {name: "data", type: "Object"}], returns: {name: "child", type: "SimpleDataBinding"}},
     {name: "export", arguments: [{name: "unprefix", type: "Boolean"}], returns: {name: "dataClone", type: "Object" }},
     {name: "get", arguments: [{name: "prop", type: "String"}, {name: "inherit", type: "Boolean"}], returns: {name: "value", type: "Strintg"}},
     {name: "parseNode", arguments: [{name: "node", type: "Element"}], returns: {name: "node", type: "Element or Boolean"}},
@@ -74,7 +74,7 @@ var methods = [
     {name: "watch", arguments: [{name: "props", type: "String/Array of Strings"}, {name: "fn", type: "Function"}, {name: "globalScope", type: "Boolean", default: false}], returns: {name: "watches", type: "Object"}}
 ];
 
-var pageBinding = new SimpleDataBinding(null, data: {args: args});
+var pageBinding = new SimpleDataBinding(null, {args: args});
     </script>
 </body>
 
