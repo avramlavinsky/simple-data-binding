@@ -103,21 +103,25 @@
             return self.data;
         };
 
-        var createChildArray = function (prop, data) {
+        var createChildArray = function (prop, data, el) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
-                ar, parent, parentPlaceholder, grandparent;
+                ar, templateElement, parent, parentPlaceholder, grandparent;
 
             if (self.childArrays[prop]) {
                 ar = self.childArrays[prop];
                 self.removeCommentedElements(ar.placeholder, "databind", prop);
                 ar.length = 0;
             } else {
+                templateElement = el || getContainer(prop);
+                if (!templateElement) {
+                    return null;
+                }
                 ar = self.configs.modifyInputArrays === true ? data : [],
                 self.childArrays[prop] = ar;
                 ar.idIndex = 0;
                 ar.ownerInstance = self;
                 ar.key = prop;
-                self.surroundByComments(ar, "child array " + prop, getContainer(prop));
+                self.surroundByComments(ar, "child array " + prop, templateElement);
             }
 
             if (ASSEMBLEASFRAGMENT) {
@@ -513,7 +517,10 @@
                 setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
             }
             if (method) {
-                self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
+                if (methodName !== "databind") {
+                    //databind is executed only once (as a failsafe in case container was not yet rendered on update as when in a template)
+                    self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
+                }
                 method.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, self.get(node.nodeValue)]);
             }
             return node;
@@ -621,10 +628,19 @@
             return el;
         };
 
+        var dataBind = function (el, prop, data) {
+            //a failsafe for childArray creation
+            //in the event that the templateElement does not exist during initData and update
+            if (data instanceof Array && ! data.templateElement) {
+                createChildArray(prop, data, el);
+            }
+        };
+
         /* test-code */
         this.childTemplate = childTemplate;
         this.renderIf = renderIf;
         this.setNodeValue = setNodeValue;
+        this.dataBind = dataBind;
         /* end-test-code */
 
 
@@ -854,6 +870,7 @@
             self.attrMethods.name = setNodeValue;
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
+            self.attrMethods[toPrefixedHyphenated("databind")] = dataBind;
             self.templates = assign({}, self.configs.templates || {});
 
             return self;
