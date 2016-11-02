@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title text="title">Simple Data Binding Examples</title>
+    <link rel="stylesheet" type="text/css" href="../css/example.css">
+
+    <script type="text/javascript" src="../build/simpledatabinding.js"></script>
+
+</head>
+
+<body>
+
+    <h1>Simple Data Binding User's Guide</h1>
+
+    <section>
+        <h2>Arguments</h2>
+        <ul>
+            <li databind="args">
+                <article>
+                    <heading id="{{name}}">{{name}}</heading>
+                    <strong>Type:</strong><span>{{type}}</span>
+                    <p>{{desc}}</p>
+                </article>
+            </li>
+        </ul>
+    </section>
+    
+
+    <script type="text/javascript">
+var args = [
+    {name: "container", type: "Element/String", desc: "Container element or selector.", default: "First element with prefixed databind attribute, the first form element, or the document body."},
+    {name: "startData", type: "Object", desc: "An object parsed to construct data, child instances for nested objects, and child arrays for nested arrays.  If null, instance data will be an empty DomStringMap."},
+    {name: "id", type: "String", desc: "The ID of the binding instance", default: "container id attribute, container name attribute, or a unique generated id."},
+    {name: "configs", type: "Object", optional: true, desc: "An object containing configuration options."}
+];
+
+
+var configs = [
+    {name: "useHiddenInput", type: "Object", default: false},
+    {name: "nameSpace", type: "String", default: ""},
+    {name: "attrPrefix", type: "String", default: ""},
+    {name: "watches", type: "Object"},
+    {name: "globalScopeWatches", type: "Object"},
+    {name: "checkboxDataDelimiter", type: "String", default: ","},
+    {name: "attrMethods", type: "Object"},
+    {name: "templates", type: "Object"},
+    {name: "keyup", type: "Boolean", default: true},
+    {name: "modifyInputArrays", type: "Boolean", default: false}
+];
+
+var props = [
+    {name: "ancestors", type: "Array"},
+    {name: "attrMethods", type: "Object"},
+    {name: "childArrays", type: "Object"},
+    {name: "children", type: "Object"},
+    {name: "container", type: "HTMLElement"},
+    {name: "data", type: "DOMStringMap Object"},
+    {name: "id", type: "String"},
+    {name: "observer", type: "MutationObserver Object"},
+    {name: "parent", type: "SimpleDataBinding Object"},
+    {name: "root", type: "SimpleDataBinding Object"},
+    {name: "templates", type: "Object"}
+];
+
+var methods = [
+    {name: "createChild", arguments: [{name: id, type: "String"}, {"name: container", type: "Element/String"}, {name: "data", type: "Object"}], returns: {name: "child", type: "SimpleDataBinding"}},
+    {name: "export", arguments: [{name: "unprefix", type: "Boolean"}], returns: {name: "dataClone", type: "Object" }},
+    {name: "get", arguments: [{name: "prop", type: "String"}, {name: "inherit", type: "Boolean"}], returns: {name: "value", type: "Strintg"}},
+    {name: "parseNode", arguments: [{name: "node", type: "Element"}], returns: {name: "node", type: "Element or Boolean"}},
+    {name: "removeCommentedElements", arguments: "(HTMLComment Node) placeholder, (String) attr, (String) value", returns: "(HTMLComment Node) placeholder"},
+    {name: "set", arguments: [{name: "name", type: "String"}, {name: "val", type: "String"}, {name: "inherit", type: "Boolean"}], returns: {name: "value", type: "String"}},
+    {name: "surroundByComments", arguments: [{name: "obj", type: "Object"}, {name: "message", type: "String"}, {name: "elementTemplate", type: "Element"}, {name: "retain", type: "Boolean"}], returns: {name: "placeholder", type: "HTML Comment Node"}},
+    {name: "update", arguments: [{name: "newData", type: "Object"}, {name: "bindDuringUpdate", type: "Boolean", default: false}], returns: {name: "data", type: "Object"}},
+    {name: "watch", arguments: [{name: "props", type: "String/Array of Strings"}, {name: "fn", type: "Function"}, {name: "globalScope", type: "Boolean", default: false}], returns: {name: "watches", type: "Object"}}
+];
+
+var pageBinding = new SimpleDataBinding(null, data: {args: args});
+    </script>
+</body>
+
+</html>
+
+
+

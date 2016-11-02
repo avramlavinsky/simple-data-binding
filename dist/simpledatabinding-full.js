@@ -498,7 +498,7 @@
             value = node.value || node.ownerElement[node.name];//be ware of element properties like node.href which may differ dramatically from the attribute node value
             watchName = value || "*";
             if (methodName === "value" && (node.ownerElement.type === "radio" || node.ownerElement.type === "checkbox" || node.ownerElement.tagName === "OPTION")) {
-                self.setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
+                setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
             }
             if (method) {
                 self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
@@ -548,7 +548,7 @@
 
         //<<<<<<<<<< attribute based methods >>>>>>>>>>
 
-        this.childTemplate = function (el, rawValue, prop, dataValue) {
+        var childTemplate = function (el, rawValue, prop, dataValue) {
             var clone;
 
             if (dataValue) {
@@ -565,7 +565,7 @@
             return el;
         };
 
-        this.renderIf = function (el, rawValue, prop, dataValue) {
+        var renderIf = function (el, rawValue, prop, dataValue) {
             this.surroundByComments(el, "render if " + rawValue, el, true);
             if (dataValue && !el.parentElement) {
                 el.placeholder.parentNode.insertBefore(el, el.placeholder);
@@ -575,7 +575,7 @@
             return el;
         };
 
-        this.setNodeValue = function (el, prop, attr) {
+        var setNodeValue = function (el, prop, attr) {
             //sets node value to data property value
             var value = self.get(prop, true);
 
@@ -597,6 +597,8 @@
 
             return el;
         };
+
+
 
 
         //<<<<<< Listeners, Handlers, and Watches >>>>>>
@@ -814,9 +816,9 @@
             self.globalScopeWatches = self.configs.globalScopeWatches || {};
             self.checkboxDataDelimiter = self.configs.checkboxDataDelimiter || ",";
             self.attrMethods = assign({}, self.configs.attrMethods || {});
-            self.attrMethods.name = self.setNodeValue;
-            self.attrMethods[toPrefixedHyphenated("renderif")] = self.renderIf;
-            self.attrMethods[toPrefixedHyphenated("childtemplate")] = self.childTemplate;
+            self.attrMethods.name = setNodeValue;
+            self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
+            self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.templates = assign({}, self.configs.templates || {});
 
             return self;

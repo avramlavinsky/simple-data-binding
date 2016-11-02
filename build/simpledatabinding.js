@@ -1,12 +1,12 @@
 (function () {
-    function SimpleDataBinding(el, startData, configs, id, parent) {
+    function SimpleDataBinding(container, startData, configs, id, parent) {
         //binds data to and from form controls, text nodes, and attributes
         //automatically repeats markup bound to arrays
         //includes basic templating and easily extended for more complex DOM interaction
         //
         //arguments
         //
-        //  el:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
+        //  container:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
         //  startData: object (optional)
         //  configs: object (optional) - static configuration properties, watches
         //    nameSpace: string - appended to data prevent dataset name collisions
@@ -183,8 +183,8 @@
             return obj1;
         };
 
-        this.createChild = function (id, el, data) {
-            var child = new SimpleDataBinding(el, data, self.configs, id, self);
+        this.createChild = function (id, container, data) {
+            var child = new SimpleDataBinding(container, data, self.configs, id, self);
 
             self.children[id] = child;
             return child;
@@ -381,8 +381,8 @@
 
         var setContainer = function () {
             //create instance's container element
-            self.container = el && el.tagName ? el : document.querySelector(el || '[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
-            if (self.configs.containInHiddenInput) {
+            self.container = container && container.tagName ? container : document.querySelector(container || '[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
+            if (self.configs.useHiddenInput) {
                 self.boundHiddenInput = document.createElement("input");
                 self.boundHiddenInput.type = "hidden";
                 self.container.appendChild(self.boundHiddenInput);
@@ -510,7 +510,7 @@
             value = node.value || node.ownerElement[node.name];//be ware of element properties like node.href which may differ dramatically from the attribute node value
             watchName = value || "*";
             if (methodName === "value" && (node.ownerElement.type === "radio" || node.ownerElement.type === "checkbox" || node.ownerElement.tagName === "OPTION")) {
-                self.setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
+                setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
             }
             if (method) {
                 self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
@@ -571,7 +571,7 @@
 
         //<<<<<<<<<< attribute based methods >>>>>>>>>>
 
-        this.childTemplate = function (el, rawValue, prop, dataValue) {
+        var childTemplate = function (el, rawValue, prop, dataValue) {
             var clone;
 
             if (dataValue) {
@@ -588,7 +588,7 @@
             return el;
         };
 
-        this.renderIf = function (el, rawValue, prop, dataValue) {
+        var renderIf = function (el, rawValue, prop, dataValue) {
             this.surroundByComments(el, "render if " + rawValue, el, true);
             if (dataValue && !el.parentElement) {
                 el.placeholder.parentNode.insertBefore(el, el.placeholder);
@@ -598,7 +598,7 @@
             return el;
         };
 
-        this.setNodeValue = function (el, prop, attr) {
+        var setNodeValue = function (el, prop, attr) {
             //sets node value to data property value
             var value = self.get(prop, true);
 
@@ -620,6 +620,12 @@
 
             return el;
         };
+
+        /* test-code */
+        this.childTemplate = childTemplate;
+        this.renderIf = renderIf;
+        this.setNodeValue = setNodeValue;
+        /* end-test-code */
 
 
         //<<<<<< Listeners, Handlers, and Watches >>>>>>
@@ -845,9 +851,9 @@
             self.globalScopeWatches = self.configs.globalScopeWatches || {};
             self.checkboxDataDelimiter = self.configs.checkboxDataDelimiter || ",";
             self.attrMethods = assign({}, self.configs.attrMethods || {});
-            self.attrMethods.name = self.setNodeValue;
-            self.attrMethods[toPrefixedHyphenated("renderif")] = self.renderIf;
-            self.attrMethods[toPrefixedHyphenated("childtemplate")] = self.childTemplate;
+            self.attrMethods.name = setNodeValue;
+            self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
+            self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.templates = assign({}, self.configs.templates || {});
 
             return self;
