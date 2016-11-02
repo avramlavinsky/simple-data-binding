@@ -20,6 +20,9 @@
                     <heading id="{{name}}">{{name}}</heading>
                     <strong>Type:</strong><span>{{type}}</span>
                     <p>{{desc}}</p>
+                    <div renderif="{{default}}">
+                        <strong>Default:</strong><span>{{default}}</span>
+                    </div>
                 </article>
             </li>
         </ul>
