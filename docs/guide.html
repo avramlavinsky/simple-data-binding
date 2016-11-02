@@ -42,13 +42,13 @@
             <p>{{desc}}</p>           
         </article>
         
-        <article id="methodTemplate" data-template="articleTemplate">
+        <article id="methodTemplate">
             <heading id="{{name}}">{{name}}</heading>
             <ul>
-                <li databind="arguments" childtemplate="template">
+                <li databind="arguments" data-template="articleTemplate" childtemplate="template">
                 </li>
             </ul>
-            <div databind="returns" childtemplate="template">
+            <div databind="returns" data-template="articleTemplate" childtemplate="template">
             </div>
         </article>
     </div>
