@@ -31,7 +31,7 @@
     
     <div id="templateContainer">
         <article id="articleTemplate">
-            <h3 id="{{name}}">{{name}}</h3>
+            <div childtemplate="headingTemplate"></div>
             <strong>Type:</strong><span>{{type}}</span>
             <div renderif="default">
                 <strong>Default:</strong><span>{{default}}</span>
@@ -53,6 +53,10 @@
             <div databind="returns" data-template="articleTemplate" childtemplate="template">
             </div>
         </article>
+        
+        <h3 id="h3Template">{{name}}</h3>
+                
+        <h5 id="h5Template">{{name}}</h5>
     </div>
     
 
@@ -63,6 +67,7 @@ var pageData = {
     {
         heading: "Initial Arguments",
         template: "articleTemplate",
+        headingTemplate: "h3Template",
         items: [
             {name: "container", type: "Element/String", desc: "Container element or selector.", default: "First element with prefixed databind attribute, the first form element, or the document body."},
             {name: "startData", type: "Object", desc: "An object parsed to construct data, child instances for nested objects, and child arrays for nested arrays.  If null, instance data will be an empty DomStringMap."},
@@ -73,6 +78,7 @@ var pageData = {
     {
         heading: "Configuration Options",
         template: "articleTemplate",
+        headingTemplate: "h3Template",
         items: [
             {name: "useHiddenInput", type: "Object", default: false, desc: "When true, data attributes are placed in a hidden input appended to the container rather than the container itself.  Useful for better HTML readability with large datasets."},
             {name: "nameSpace", type: "String", default: "An empty string", desc: "When set to a non-empty string, the string is appended to all data attributes.  Use this when there is a risk of data attribute name collisions with other scripts."},
@@ -89,6 +95,7 @@ var pageData = {
     {
         heading: "Properties",
         template: "articleTemplate",
+        headingTemplate: "h3Template",
         items: [
             {name: "ancestors", type: "Array"},
             {name: "attrMethods", type: "Object"},
@@ -106,6 +113,7 @@ var pageData = {
     {
         heading: "Methods",
         template: "methodTemplate",
+        headingTemplate: "h5Template",
         items: [
             {name: "createChild", arguments: [{name: "id", type: "String"}, {name: "container", type: "Element/String"}, {name: "data", type: "Object"}], returns: {name: "child", type: "SimpleDataBinding"}},
             {name: "export", arguments: [{name: "unprefix", type: "Boolean"}], returns: {name: "dataClone", type: "Object" }},
