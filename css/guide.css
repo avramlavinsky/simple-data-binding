@@ -56,3 +56,7 @@ strong{
     display: inline-block;
     margin-right: 20px
 }
+
+#templates{
+    display: none;
+}
