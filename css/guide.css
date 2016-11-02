@@ -1,0 +1,58 @@
+body{
+    padding: 20px 30px;
+    font-size: 14px;
+    font-family: Tahoma, Arial, sans-serif;
+    line-height: 1.5em;
+    color: #333333;
+}
+
+ul, li{
+    list-style: none;
+}
+
+ul, li, p{
+    padding: 0;
+    margin: 0;
+}
+
+h1, h2, h3{
+    font-weight: normal;
+    margin: 0 0 20px 0;
+}
+
+h1{
+    font-size: 150%;
+    margin: 20px 0 30px 0;
+}
+
+section{ 
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+}
+
+h2{
+    font-size: 140%;
+    font-weight: normal;
+}
+
+article{
+    margin: 20px 0;
+    background-color: #f7f7f7;
+    padding: 15px 20px;
+}
+
+heading{
+    font-size: 130%;
+    display: block;
+}
+
+p{
+    margin-top: 10px
+}
+
+strong{
+    font-weight: normal;
+    display: inline-block;
+    margin-right: 20px
+}
