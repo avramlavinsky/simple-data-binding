@@ -31,7 +31,7 @@
     
     <div id="templates">
         <article id="articleTemplate">
-            <heading id="{{name}}">{{name}}</heading>
+            <h3 id="{{name}}">{{name}}</h3>
             <strong>Type:</strong><span>{{type}}</span>
             <div renderif="default">
                 <strong>Default:</strong><span>{{default}}</span>
@@ -43,11 +43,13 @@
         </article>
         
         <article id="methodTemplate">
-            <heading id="{{name}}">{{name}}</heading>
+            <h3 id="{{name}}">{{name}}</h3>
+            <h4>Arguments</h4>
             <ul>
                 <li databind="arguments" data-template="articleTemplate" childtemplate="template">
                 </li>
             </ul>
+            <h4>Returns</h4>
             <div databind="returns" data-template="articleTemplate" childtemplate="template">
             </div>
         </article>
