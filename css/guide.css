@@ -44,7 +44,7 @@ article{
 }
 
 
-heading{
+h3{
     font-size: 130%;
     font-weight: bold;
     display: block;
@@ -55,7 +55,7 @@ article article{
     padding: 0;
 }
 
-article article heading{
+h4, article article h3{
     font-size: 100%;
 }
 
