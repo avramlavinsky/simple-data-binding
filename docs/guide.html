@@ -52,7 +52,7 @@
             <h3 id="{{name}}">{{name}}</h3>
             <h4>Arguments:</h4>
             <ul>
-                <li databind="arguments" data-template="articleTemplate" childtemplate="template">
+                <li databind="arguments" childtemplate="'articleTemplate'">
                 </li>
             </ul>
             <h4>Returns:</h4>
@@ -91,8 +91,8 @@ var pageData = {
             {name: "useHiddenInput", type: "Object", default: false, desc: "When true, data attributes are placed in a hidden input appended to the container rather than the container itself."},
             {name: "nameSpace", type: "String", default: "An empty string", desc: "When set to a non-empty string, the string is appended to all data attributes."},
             {name: "attrPrefix", type: "String", default: "An empty string", desc: "When set to a non-empty string, all attribute methods will be prefixed with the value."},
-            {name: "watches", type: "Object", format: "{props: [Strings], fn: function(newValue, oldValue, prop, {changedProp1: newValue1, changedProp2: newValue2...}){}}", desc: "An object containing initial watch properties and methods.  Only data properties specific to the current instance will be watched.", properties: [{name: "props", type: "String/Array of Strings", desc: "Data property name(s) to watch.  Pass \"*\" to listen for changes in all data properties."}, {name: "fn", type: "Function", desc: "The function to call when the specified data value changes.  Called in the context of the current SimpleDataBinding instance."}]},
-            {name: "globalScopeWatches", type: "Object", format: "{props: [Strings], fn: function(newValue, oldValue, prop, watchedProperty1, watchedProperty2, watchedProperty3...){}}", desc: "An object containing initial watch properties and methods.  Data properties within the entire family tree of the current instance will be watched.", properties: [{name: "props", type: "String/Array of Strings", desc: "Data property name(s) to watch.  Pass \"*\" to listen for changes in all data properties."}, {name: "fn", type: "Function", desc: "The function to call when the specified data value changes.  Called once in the context of the highest SimpleDataBinding instance in the family tree with bindings to the DOM which are affected by the change."}]},
+            {name: "watches", type: "Object", format: "{\n\tprops: [Strings],\n\tfn: function(newValue, oldValue, prop, {changedProp1: newValue1, changedProp2: newValue2...}){}\n}", desc: "An object containing initial watch properties and methods.  Only data properties specific to the current instance will be watched.", properties: [{name: "props", type: "String/Array of Strings", desc: "Data property name(s) to watch.  Pass \"*\" to listen for changes in all data properties."}, {name: "fn", type: "Function", desc: "The function to call when the specified data value changes.  Called in the context of the current SimpleDataBinding instance."}]},
+            {name: "globalScopeWatches", type: "Object", format: "{\n\tprops: [Strings],\n\tfn: function(newValue, oldValue, prop, {changedProp1: newValue1, changedProp2: newValue2...}){}\n}", desc: "An object containing initial watch properties and methods.  Data properties within the entire family tree of the current instance will be watched.", properties: [{name: "props", type: "String/Array of Strings", desc: "Data property name(s) to watch.  Pass \"*\" to listen for changes in all data properties."}, {name: "fn", type: "Function", desc: "The function to call when the specified data value changes.  Called once in the context of the highest SimpleDataBinding instance in the family tree with bindings to the DOM which are affected by the change."}]},
             {name: "checkboxDataDelimiter", type: "String", default: "\",\""},
             {name: "attrMethods", type: "Object"},
             {name: "templates", type: "Object"},
