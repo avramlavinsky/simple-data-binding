@@ -40,6 +40,9 @@
             <div renderif="optional">
                 <strong>Optional</strong>
             </div>
+            <div databind="properties" childtemplate="articleTemplate">
+                <strong>Optional</strong>
+            </div>
             <p>{{desc}}</p>           
         </article>
         
@@ -70,8 +73,8 @@ var pageData = {
         template: "articleTemplate",
         headingTemplate: "h3Template",
         items: [
-            {name: "container", type: "Element/String", desc: "Container element or selector.", default: "First element with prefixed databind attribute, the first form element, or the document body."},
-            {name: "startData", type: "Object", desc: "An object parsed to construct data, child instances for nested objects, and child arrays for nested arrays.  If null, instance data will be an empty DomStringMap."},
+            {name: "container", type: "Element/String", desc: "Container element or selector.", default: "First element with databind attribute matching id argument, first element with any databind attribute, the first form element, or the document body."},
+            {name: "startData", type: "Object", desc: "The data to bind. Primitive values will become values of the instance's data.  Nested objects will spawn new child SimpleDataBinding instances.  Nested arrays will spawn child arrays of SimpleDataBinding instances.  If null, instance data will be an empty DomStringMap."},
             {name: "id", type: "String", desc: "The ID of the binding instance", default: "container id attribute, container name attribute, or a unique generated id."},
             {name: "configs", type: "Object", optional: true, desc: "An object containing configuration options."}
         ]
@@ -81,10 +84,10 @@ var pageData = {
         template: "articleTemplate",
         headingTemplate: "h3Template",
         items: [
-            {name: "useHiddenInput", type: "Object", default: false, desc: "When true, data attributes are placed in a hidden input appended to the container rather than the container itself.  Useful for better HTML readability with large datasets."},
-            {name: "nameSpace", type: "String", default: "An empty string", desc: "When set to a non-empty string, the string is appended to all data attributes.  Use this when there is a risk of data attribute name collisions with other scripts."},
-            {name: "attrPrefix", type: "String", default: "An empty string", desc: "When set to a non-empty string, all attribute methods will be prefixed with the value.  Use this when there is a risk of attribute name collisions with other scripts."},
-            {name: "watches", type: "Object", desc: "An object containing initial watches and methods.  Specific to the current instance."},
+            {name: "useHiddenInput", type: "Object", default: false, desc: "When true, data attributes are placed in a hidden input appended to the container rather than the container itself."},
+            {name: "nameSpace", type: "String", default: "An empty string", desc: "When set to a non-empty string, the string is appended to all data attributes."},
+            {name: "attrPrefix", type: "String", default: "An empty string", desc: "When set to a non-empty string, all attribute methods will be prefixed with the value."},
+            {name: "watches", type: "Object", desc: "An object containing initial watches and methods.  Specific to the current instance.", properties: [{name: "test"}]},
             {name: "globalScopeWatches", type: "Object", desc: "An object containing initial watches and methods.  General to the entire family tree of the current instance."},
             {name: "checkboxDataDelimiter", type: "String", default: "\",\""},
             {name: "attrMethods", type: "Object"},
