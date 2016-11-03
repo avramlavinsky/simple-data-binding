@@ -18,7 +18,7 @@
 
         <section databind="sections">
 
-            <h2>{{heading}}</h2>
+            <h2 id="{{heading}}">{{heading}}</h2>
             <ul>
                 <li databind="items" childtemplate="template">     
                 </li>
@@ -60,7 +60,9 @@
             </div>
         </article>
         
-        <h3 id="h3Template">{{name}}</h3>
+        <div id="h3Template">
+            <h3 id="{{name}}">{{name}}</h3>
+        </div>
                 
         <h5 id="h5Template">{{name}}</h5>
     </div>
