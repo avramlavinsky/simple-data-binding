@@ -75,6 +75,11 @@ strong{
     margin-right: 20px
 }
 
+code {
+    white-space: pre-wrap;
+    display: block;
+}
+
 #templateContainer{
     display: none;
 }
