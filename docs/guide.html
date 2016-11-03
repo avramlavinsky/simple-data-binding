@@ -40,8 +40,7 @@
             <div renderif="optional">
                 <strong>Optional</strong>
             </div>
-            <div databind="properties" childtemplate="articleTemplate">
-                <strong>Optional</strong>
+            <div databind="properties"  data-heading-template="h5Template" childtemplate="articleTemplate">
             </div>
             <p>{{desc}}</p>           
         </article>
@@ -87,7 +86,7 @@ var pageData = {
             {name: "useHiddenInput", type: "Object", default: false, desc: "When true, data attributes are placed in a hidden input appended to the container rather than the container itself."},
             {name: "nameSpace", type: "String", default: "An empty string", desc: "When set to a non-empty string, the string is appended to all data attributes."},
             {name: "attrPrefix", type: "String", default: "An empty string", desc: "When set to a non-empty string, all attribute methods will be prefixed with the value."},
-            {name: "watches", type: "Object", desc: "An object containing initial watches and methods.  Specific to the current instance.", properties: [{name: "test"}]},
+            {name: "watches", type: "Object", desc: "An object containing initial watches and methods.  Specific to the current instance.", properties: [{name: "props", type: "String/Array of Strings"}, {name: "fn", type: "Function"}]},
             {name: "globalScopeWatches", type: "Object", desc: "An object containing initial watches and methods.  General to the entire family tree of the current instance."},
             {name: "checkboxDataDelimiter", type: "String", default: "\",\""},
             {name: "attrMethods", type: "Object"},
