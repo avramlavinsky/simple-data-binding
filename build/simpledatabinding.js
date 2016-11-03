@@ -386,10 +386,10 @@
         var setContainer = function () {
             //create instance's container element
             if (container) {
-                self.container = container.tagName ? container : document.querySelector(container) || (id && document.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]'));
+                self.container = container.tagName ? container : document.querySelector(container);
             }
             if ( ! self.container){
-                self.container = document.querySelector('[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
+                self.container = (id && document.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]')) || document.querySelector('[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
             }
             return self.container;
         };
