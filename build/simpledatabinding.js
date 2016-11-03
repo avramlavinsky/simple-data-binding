@@ -870,7 +870,7 @@
             self.attrMethods.name = setNodeValue;
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
-            self.attrMethods[toPrefixedHyphenated("databind")] = dataBind;
+            //self.attrMethods[toPrefixedHyphenated("databind")] = dataBind;
             self.templates = assign({}, self.configs.templates || {});
 
             return self;
