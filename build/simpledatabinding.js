@@ -385,14 +385,11 @@
 
         var setContainer = function () {
             //create instance's container element
-            self.container = container && container.tagName ? container : document.querySelector(container || '[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
-            if (self.configs.useHiddenInput) {
-                self.boundHiddenInput = document.createElement("input");
-                self.boundHiddenInput.type = "hidden";
-                self.container.appendChild(self.boundHiddenInput);
+            if (container) {
+                self.container = container.tagName ? container : document.querySelector(container) || (id && document.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]'));
             }
-            if (!self.container.getAttribute("databind")) {
-                self.container.setAttribute("databind", "");
+            if ( ! self.container){
+                self.container = document.querySelector('[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
             }
             return self.container;
         };
@@ -400,7 +397,26 @@
         var getContainer = function (prop) {
             //finds the appropriate container for a child instance or element template for an array
             var container = self.container.querySelector('[' + toPrefixedHyphenated('databind') + '="' + prop + '"]');
+
             return container;
+        };
+
+        var setId = function () {
+            var instanceId = id || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + new Date().getTime();
+
+            self.container.setAttribute("databind", instanceId);
+            return instanceId;
+        };
+
+        var setHiddenInput = function () {
+            var input;
+
+            if (self.configs.useHiddenInput) {
+                input = document.createElement("input");
+                input.type = "hidden";
+                self.container.appendChild(input);
+            }
+            return input;
         };
 
         this.surroundByComments = function (obj, message, elementTemplate, retain) {
@@ -517,10 +533,7 @@
                 setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
             }
             if (method) {
-                if (methodName !== "databind") {
-                    //databind is executed only once (as a failsafe in case container was not yet rendered on update as when in a template)
-                    self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
-                }
+                self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
                 method.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, self.get(node.nodeValue)]);
             }
             return node;
@@ -569,6 +582,9 @@
         this.getNodeValue = getNodeValue;
         this.getInitialNodeValues = getInitialNodeValues;
         this.setContainer = setContainer;
+        this.getContainer = getContainer;
+        this.setHiddenInput = setHiddenInput;
+        this.setId = setId;
         this.resolveAttrNode = resolveAttrNode;
         this.resolveAttrNodeName = resolveAttrNodeName;
         this.resolveAttrNodeValue = resolveAttrNodeValue;
@@ -628,19 +644,10 @@
             return el;
         };
 
-        var dataBind = function (el, prop, data) {
-            //a failsafe for childArray creation
-            //in the event that the templateElement does not exist during initData and update
-            if (data instanceof Array && ! data.templateElement) {
-                createChildArray(prop, data, el);
-            }
-        };
-
         /* test-code */
         this.childTemplate = childTemplate;
         this.renderIf = renderIf;
         this.setNodeValue = setNodeValue;
-        this.dataBind = dataBind;
         /* end-test-code */
 
 
@@ -862,7 +869,8 @@
             self.nameSpace = typeof (self.configs.nameSpace) === "string" ? self.configs.nameSpace : "";
             self.attrPrefix = typeof (self.configs.attrPrefix) === "string" ? self.configs.attrPrefix : "";
             self.container = setContainer();
-            self.id = id || self.container.id || self.container.name || "binding-" + new Date().getTime();
+            self.id = setId();
+            self.boundHiddenInput = setHiddenInput();
             self.watches = self.configs.watches || {};
             self.globalScopeWatches = self.configs.globalScopeWatches || {};
             self.checkboxDataDelimiter = self.configs.checkboxDataDelimiter || ",";
@@ -870,7 +878,6 @@
             self.attrMethods.name = setNodeValue;
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
-            //self.attrMethods[toPrefixedHyphenated("databind")] = dataBind;
             self.templates = assign({}, self.configs.templates || {});
 
             return self;
