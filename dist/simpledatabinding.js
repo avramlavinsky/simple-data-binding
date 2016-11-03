@@ -103,21 +103,25 @@
             return self.data;
         };
 
-        var createChildArray = function (prop, data) {
+        var createChildArray = function (prop, data, el) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
-                ar, parent, parentPlaceholder, grandparent;
+                ar, templateElement, parent, parentPlaceholder, grandparent;
 
             if (self.childArrays[prop]) {
                 ar = self.childArrays[prop];
                 self.removeCommentedElements(ar.placeholder, "databind", prop);
                 ar.length = 0;
             } else {
+                templateElement = el || getContainer(prop);
+                if (!templateElement) {
+                    return null;
+                }
                 ar = self.configs.modifyInputArrays === true ? data : [],
                 self.childArrays[prop] = ar;
                 ar.idIndex = 0;
                 ar.ownerInstance = self;
                 ar.key = prop;
-                self.surroundByComments(ar, "child array " + prop, getContainer(prop));
+                self.surroundByComments(ar, "child array " + prop, templateElement);
             }
 
             if (ASSEMBLEASFRAGMENT) {
@@ -369,14 +373,11 @@
 
         var setContainer = function () {
             //create instance's container element
-            self.container = container && container.tagName ? container : document.querySelector(container || '[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
-            if (self.configs.useHiddenInput) {
-                self.boundHiddenInput = document.createElement("input");
-                self.boundHiddenInput.type = "hidden";
-                self.container.appendChild(self.boundHiddenInput);
+            if (container) {
+                self.container = container.tagName ? container : document.querySelector(container) || (id && document.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]'));
             }
-            if (!self.container.getAttribute("databind")) {
-                self.container.setAttribute("databind", "");
+            if ( ! self.container){
+                self.container = document.querySelector('[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
             }
             return self.container;
         };
@@ -384,7 +385,26 @@
         var getContainer = function (prop) {
             //finds the appropriate container for a child instance or element template for an array
             var container = self.container.querySelector('[' + toPrefixedHyphenated('databind') + '="' + prop + '"]');
+
             return container;
+        };
+
+        var setId = function () {
+            var instanceId = id || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + new Date().getTime();
+
+            self.container.setAttribute("databind", instanceId);
+            return instanceId;
+        };
+
+        var setHiddenInput = function () {
+            var input;
+
+            if (self.configs.useHiddenInput) {
+                input = document.createElement("input");
+                input.type = "hidden";
+                self.container.appendChild(input);
+            }
+            return input;
         };
 
         this.surroundByComments = function (obj, message, elementTemplate, retain) {
@@ -811,7 +831,8 @@
             self.nameSpace = typeof (self.configs.nameSpace) === "string" ? self.configs.nameSpace : "";
             self.attrPrefix = typeof (self.configs.attrPrefix) === "string" ? self.configs.attrPrefix : "";
             self.container = setContainer();
-            self.id = id || self.container.id || self.container.name || "binding-" + new Date().getTime();
+            self.id = setId();
+            self.boundHiddenInput = setHiddenInput();
             self.watches = self.configs.watches || {};
             self.globalScopeWatches = self.configs.globalScopeWatches || {};
             self.checkboxDataDelimiter = self.configs.checkboxDataDelimiter || ",";

@@ -321,10 +321,9 @@ describe("attr methods - question branching setup", function () {
 
 describe("listeners/handlers/watches - question branching setup", function () {
 
-    setForm("attrMethodsTestForm");
-    
+    setForm("listeners");
 
-    var binding = new SimpleDataBinding("#attrMethodsTestForm", startData());
+    var binding = new SimpleDataBinding("#listeners", startData());
     var mutations = [{ target: binding.container, value: 1, oldValue: 0, attributeName: "attr" }];
     var firstNameInput = binding.container.querySelector("input");
     var e = { target: firstNameInput, stopPropagation: function () { } };
@@ -387,7 +386,7 @@ describe("listeners/handlers/watches - question branching setup", function () {
     it("property watch", function () {
         expect(binding.watch("test", testFn).test[0].fn).toEqual(testFn);
     });
-
+    
     it("global property watch", function () {
         expect(binding.children.firstName.watch("globalTest", testFn, true).globalTest[0].fn).toEqual(testFn);
         expect(binding.globalScopeWatches.globalTest[0].fn).toEqual(testFn);
