@@ -43,9 +43,9 @@
             <div renderif="optional">
                 <strong>Optional</strong>
             </div>
-            <div databind="properties"  data-heading-template="h5Template" childtemplate="'articleTemplate'">
-            </div>
-            <p>{{desc}}</p>           
+            <p renderif="desc">{{desc}}</p>
+            <div databind="properties"  data-format="" data-heading-template="h5Template" childtemplate="'articleTemplate'">
+            </div>           
         </article>
         
         <article id="methodTemplate">
