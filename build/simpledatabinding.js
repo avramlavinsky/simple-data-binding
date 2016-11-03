@@ -524,6 +524,7 @@
             //resolve curly braces and call attribute based methods
 
             var methodName = node.nodeName,
+                stringLiteral = node.value && node.value.substr(0, 1) === "'" &&  node.value.slice(1, -1),
                 method = self.attrMethods[methodName], value, watchName;
 
             resolveDoubleCurlyBraces(node, node.nodeValue);
@@ -533,8 +534,10 @@
                 setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
             }
             if (method) {
-                self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
-                method.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, self.get(node.nodeValue)]);
+                if (!stringLiteral) {
+                    self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
+                }
+                method.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, stringLiteral || self.get(node.nodeValue)]);
             }
             return node;
         };

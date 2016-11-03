@@ -256,6 +256,19 @@ describe("DOM methods - question branching setup", function () {
         expect(binding.setContainer().tagName).toEqual("FORM");
     });
 
+    it("getContainer", function () {
+        expect(binding.getContainer("firstName")).toEqual(binding.children.firstName.container);
+    });
+
+    it("setId", function () {
+        expect(binding.setId()).toEqual("domMethodsTestForm");
+    });
+
+    it("setHiddenInput", function () {
+        binding.configs.useHiddenInput = true;
+        expect(binding.setHiddenInput().tagName).toEqual("INPUT");
+    });
+
     it("surroundByComments", function () {
         span = binding.container.previousElementSibling;
         expect(binding.surroundByComments({}, "surroundByCommentsTest", span, true).nodeValue).toEqual("end surroundByCommentsTest");
@@ -282,6 +295,15 @@ describe("DOM methods - question branching setup", function () {
 
     it("resolveAttrNodeValue", function () {
         expect(binding.resolveAttrNodeValue(createInput().attributes[0]).nodeValue).toEqual("John");
+    });
+
+    it("resolveAttrNodeValue string literal", function () {
+        var literalInput = createInput();
+
+        binding.attrMethods.addprop = function (el, rawVal, attr, val) { binding.prop = val };
+        literalInput.setAttribute("addprop", "'test'");
+        binding.resolveAttrNodeValue(literalInput.attributes[1]);
+        expect(binding.prop).toEqual("test");
     });
 
     it("resolveDoubleCurlyBraces", function () {
