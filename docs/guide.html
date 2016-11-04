@@ -126,7 +126,7 @@ var pageData = {
             {name: "export", arguments: [{name: "unprefix", type: "Boolean"}], returns: {name: "dataClone", type: "Object" }},
             {name: "get", arguments: [{name: "prop", type: "String"}, {name: "inherit", type: "Boolean"}], returns: {name: "value", type: "Strintg"}},
             {name: "parseNode", arguments: [{name: "node", type: "Element"}], returns: {name: "node", type: "Element or Boolean"}},
-            {name: "removeCommentedElements", arguments: [{name: "placeholder", type: "String"}, {name: "attr", type: "String"}, {name: "value", type: "string"}], returns: {name: "placeholder", type: "HTML Comment Node"}, descr: "Removes all elements between the placeholder and the previous comment which match the attribute name and value."},
+            {name: "removeCommentedElements", arguments: [{name: "placeholder", type: "String"}, {name: "attr", type: "String"}, {name: "value", type: "string"}], returns: {name: "placeholder", type: "HTML Comment Node"}, desc: "Removes all elements between the placeholder and the previous comment which match the attribute name and value."},
             {name: "set", arguments: [{name: "name", type: "String"}, {name: "val", type: "String"}, {name: "inherit", type: "Boolean"}], returns: {name: "value", type: "String"}},
             {name: "surroundByComments", arguments: [{name: "obj", type: "Object"}, {name: "message", type: "String"}, {name: "elementTemplate", type: "Element"}, {name: "retain", type: "Boolean"}], returns: {name: "placeholder", type: "HTML Comment Node"}},
             {name: "update", arguments: [{name: "newData", type: "Object"}, {name: "bindDuringUpdate", type: "Boolean", default: false}], returns: {name: "data", type: "Object"}},
