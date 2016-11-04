@@ -50,13 +50,14 @@
         
         <article id="methodTemplate">
             <h3 id="{{name}}">{{name}}</h3>
+            <p renderif="desc">{{desc}}</p>
             <h4>Arguments:</h4>
             <ul>
-                <li databind="arguments" childtemplate="'articleTemplate'">
+                <li databind="arguments" data-desc="" childtemplate="'articleTemplate'">
                 </li>
             </ul>
             <h4>Returns:</h4>
-            <div databind="returns" data-template="articleTemplate" childtemplate="template">
+            <div databind="returns" data-desc="" data-template="articleTemplate" childtemplate="template">
             </div>
         </article>
         
