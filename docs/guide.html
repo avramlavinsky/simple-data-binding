@@ -56,8 +56,8 @@
                 <li databind="arguments" data-desc="" childtemplate="'articleTemplate'">
                 </li>
             </ul>
-            <h4>Returns:</h4>
-            <div databind="returns" data-desc="" data-template="articleTemplate" childtemplate="template">
+            <h4 renderif="returns">Returns:</h4>
+            <div renderif="returns" databind="returns" data-desc="" data-template="articleTemplate" childtemplate="template">
             </div>
         </article>
         
