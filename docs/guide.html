@@ -62,7 +62,7 @@
             <h4 renderif="returns">Returns:</h4>
             <div renderif="returns" databind="returns" data-desc="" data-template="articleTemplate" childtemplate="template">
             </div>
-            <ul>
+            <ul renderif="showExamples">
                 <li databind="examples">
                     <p>{{exampleDesc}}</p>
                     <code>{{exampleCode}}</code>
@@ -113,6 +113,7 @@ var pageData = {
         heading: "Properties",
         template: "articleTemplate",
         headingTemplate: "h3Template",
+        showExamples: "true",
         items: [
             {name: "ancestors", type: "Array", desc: "An array containing the root instance and all subsequent ancestors of the current element.  For the root instance the array is empty."},
             {name: "attrMethods", type: "Object", format: "{methodName1: method1, methodName2: method2}", desc: "Core and custom methods (the equivalent of Angular directives) associated with expando attribute names in markup. Executed when initially parsing markup attributes and whenever the property specified in the attribute value changes."},
@@ -143,7 +144,7 @@ var pageData = {
     },
     
     {
-        heading: "Creating Custom Attribute Methods",
+        heading: "Attribute Methods",
         template: "methodTemplate",
         headingTemplate: "h5Template",
         items: [
