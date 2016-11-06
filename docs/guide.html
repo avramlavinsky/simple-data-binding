@@ -134,11 +134,11 @@ var pageData = {
     },
     
     {
-        heading: "Attribute Methods",
+        heading: "Creating Custom Attribute Methods",
         template: "methodTemplate",
         headingTemplate: "h5Template",
         items: [
-            {name: "childTemplate", arguments: [{name: "el", type: "Element"}, {name: "rawValue", type: "String"}, {name: "prop", type: "String"}, {name: "parsedValue", type: "String"}], desc: "Appends the specified template to the element and parses it for data binding." }
+            {format: "myDataBinding.attrMethods.myCustomAttrMethod = function(el, rawValue, prop, parsedValue){\n\t//logic\n}", arguments: [{name: "el", type: "Element"}, {name: "rawValue", type: "String"}, {name: "prop", type: "String"}, {name: "parsedValue", type: "String"}], desc: "Appends the specified template to the element and parses it for data binding." }
           ]
     }]
 };
