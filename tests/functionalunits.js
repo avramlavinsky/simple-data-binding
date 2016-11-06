@@ -83,7 +83,7 @@ var startData = function () {
 
 var createEl = function (tagName, attr, value) {
     var el = document.createElement(tagName);
-    el.setAttribute(attr || "testAttribute", value || "{{firstName}}");
+    el.setAttribute(attr || "testattribute", value || "{{firstName}}");
     document.forms[document.forms.length - 1].appendChild(el);
     return el;
 };
@@ -290,7 +290,8 @@ describe("DOM methods - question branching setup", function () {
     });
 
     it("resolveAttrNodeName", function () {
-        expect(binding.resolveAttrNodeName(createInput("__firstname__").attributes[0]).boundAttrNameProp).toEqual("firstname");
+        var input = createInput("__firstname__");
+        expect(binding.resolveAttrNodeName(input.attributes[0]).rawName).toEqual("firstname");
     });
 
     it("resolveAttrNodeValue", function () {
@@ -308,6 +309,33 @@ describe("DOM methods - question branching setup", function () {
 
     it("resolveDoubleCurlyBraces", function () {
         expect(binding.resolveDoubleCurlyBraces(createInput().attributes[0])).toEqual("John");
+    });
+
+    it("parseFunctionOrObject", function () {
+        binding.fn = function (prop) { return prop; };
+        expect(binding.parseFunctionOrObject("this.fn(firstName)", {})()).toEqual("John");
+    });
+
+    it("parseExpression number", function () {
+        expect(binding.parseExpression("123", {})).toEqual(123);
+    });
+
+    it("parseExpression string", function () {
+       expect(binding.parseExpression("'hello world'", {})).toEqual("hello world");
+    });
+
+    it("parseExpression object", function () {
+        binding.testObject = { prop1: "val1" };
+        expect(binding.parseExpression("this.testObject", {}).prop1).toEqual("val1");
+    });
+
+    it("parseExpression function", function () {
+        expect(binding.parseExpression("this.fn(firstName)", {})).toEqual("John");
+    });
+
+    it("parseExpression nested function", function () {
+        binding.nestFunction = function (n) { return n + 1; };
+        expect(binding.parseExpression("this.nestFunction(this.nestFunction(3))", {})).toEqual(5);
     });
 });
 
@@ -344,8 +372,8 @@ describe("attr methods - question branching setup", function () {
 describe("listeners/handlers/watches - question branching setup", function () {
 
     setForm("listeners");
-
-    var binding = new SimpleDataBinding("#listeners", startData());
+    var pageLogicInput = createInput("test", "{{this.logic.forms.method(firstName)}}");
+    var binding = new SimpleDataBinding("#listeners", startData(), { logic: { forms: { method: function (val) { return val + "test"; } } } });
     var mutations = [{ target: binding.container, value: 1, oldValue: 0, attributeName: "attr" }];
     var firstNameInput = binding.container.querySelector("input");
     var e = { target: firstNameInput, stopPropagation: function () { } };
@@ -402,31 +430,27 @@ describe("listeners/handlers/watches - question branching setup", function () {
     });
 
     it("general watch", function () {
-        expect(binding.watch(testFn)["*"][0].fn).toEqual(testFn);
+        expect(binding.watch(testFn)["*"][0]).toEqual(testFn);
     });
 
     it("property watch", function () {
-        expect(binding.watch("test", testFn).test[0].fn).toEqual(testFn);
+        expect(binding.watch("test", testFn).test[0]).toEqual(testFn);
     });
     
     it("global property watch", function () {
-        expect(binding.children.firstName.watch("globalTest", testFn, true).globalTest[0].fn).toEqual(testFn);
-        expect(binding.globalScopeWatches.globalTest[0].fn).toEqual(testFn);
+        expect(binding.children.firstName.watch("globalTest", testFn, true).globalTest[0]).toEqual(testFn);
+        expect(binding.globalScopeWatches.globalTest[0]).toEqual(testFn);
     });
 
     it("global general watch", function () {
-        expect(binding.children.firstName.watch(testFn, true)["*"][0].fn).toEqual(testFn);
-        expect(binding.globalScopeWatches["*"][0].fn).toEqual(testFn);
+        expect(binding.children.firstName.watch(testFn, true)["*"][0]).toEqual(testFn);
+        expect(binding.globalScopeWatches["*"][0]).toEqual(testFn);
     });
 
-    it("addWatch", function () {
-        expect(binding.addWatch("addedWatch", { fn: testFn }).fn).toEqual(testFn);
-    });
-
-    it("addWatch duplicate", function () {
+    it("watch duplicate", function () {
         var input = createInput();
-        binding.addWatch("addedInputWatch", input);
-        binding.addWatch("addedInputWatch", input);
+        binding.watch("addedInputWatch", input);
+        binding.watch("addedInputWatch", input);
         expect(binding.watches.addedInputWatch.length).toEqual(1);
     });
 
@@ -435,7 +459,11 @@ describe("listeners/handlers/watches - question branching setup", function () {
     });
 
     it("executeWatchFn supplied method and context", function () {
-        var insertedWatch = { props: [], fn: function () { return this; } };
+        var insertedWatch = function () { return this; };
         expect(binding.executeWatchFn(insertedWatch)).toEqual(binding);
+    });
+
+    it("parseFunctionOrObject watch", function () {
+        expect(pageLogicInput.getAttribute("test")).toEqual("Davidtest");
     });
 });

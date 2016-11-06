@@ -95,8 +95,6 @@ describe("init - no args", function () {
 
     console.log("Render Time: ", t2 - t1);
   
-  
-    
 
     
     it("family tree initalized", function () {
@@ -125,7 +123,6 @@ describe("init - no args", function () {
     });
 
     it("initalized", function () {
-        expect(binding.observer instanceof MutationObserver).toEqual(true);
         expect(binding.initialized).toEqual(true);
     });
 

@@ -87,14 +87,14 @@
                         prop = toPrefixedCamel(prop);
                         self.root.lastMutation = { value: val, oldValue: self.get(prop), prop: prop };
                         self.set(prop, val);
-                        self.checkWatches(prop);
+                        checkWatches(prop);
                     }
                 }
             }
 
             self.parseNode(self.container);
 
-            self.checkWatches("*", false);
+            checkWatches("*", false);
 
             if (self.root.initialized) {
                 turnOnBindings();
@@ -109,7 +109,7 @@
 
             if (self.childArrays[prop]) {
                 ar = self.childArrays[prop];
-                self.removeCommentedElements(ar.placeholder, "databind", prop);
+                self.removeCommentedElements(ar.placeholderNode, "databind", prop);
                 ar.length = 0;
             } else {
                 templateElement = el || getContainer(prop);
@@ -120,12 +120,12 @@
                 self.childArrays[prop] = ar;
                 ar.idIndex = 0;
                 ar.ownerInstance = self;
-                ar.key = prop;
+                ar.id = prop;
                 self.surroundByComments(ar, "child array " + prop, templateElement);
             }
 
             if (ASSEMBLEASFRAGMENT) {
-                parent = self.childArrays[prop].placeholder.parentNode;
+                parent = self.childArrays[prop].placeholderNode.parentNode;
                 parentPlaceholder = parent.nextElementSibling;
                 grandparent = parent.parentElement;
                 grandparent.removeChild(parent);
@@ -158,7 +158,7 @@
                 return data;
             } else {
                 var id = generateChildArrayMemberId(childArray, data),
-                    el = cloneInPlace(childArray.elementTemplate, placeholder || childArray.placeholder),
+                    el = cloneInPlace(childArray.elementTemplate, placeholder || childArray.placeholderNode),
                     child = self.createChild(id, el, data);
 
                 child.containingArray = childArray;
@@ -172,7 +172,7 @@
 
             if (!id || self.children[id]) {
                 childArray.idIndex++;
-                id = (id || childArray.key) + childArray.idIndex;
+                id = (id || childArray.id) + childArray.idIndex;
             }
             return id;
         };
@@ -374,10 +374,10 @@
         var setContainer = function () {
             //create instance's container element
             if (container) {
-                self.container = container.tagName ? container : document.querySelector(container) || (id && document.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]'));
+                self.container = container.tagName ? container : document.querySelector(container);
             }
             if ( ! self.container){
-                self.container = document.querySelector('[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
+                self.container = (id && document.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]')) || document.querySelector('[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
             }
             return self.container;
         };
@@ -413,21 +413,21 @@
             //   elementTemplate:  the element
             //   placeholder:  the new trailing comment
 
-            if (!obj.placeholder) {
+            if (!obj.placeholderNode) {
                 obj.elementTemplate = elementTemplate;
-                obj.placeholder = document.createComment("end " + message);
-                elementTemplate.placeholder = obj.placeholder;
+                obj.placeholderNode = document.createComment("end " + message);
+                elementTemplate.placeholderNode = obj.placeholderNode;
                 elementTemplate.parentNode.insertBefore(document.createComment("start " + message), elementTemplate);
                 if (elementTemplate.nextElementSibling) {
-                    elementTemplate.parentNode.insertBefore(obj.placeholder, elementTemplate.nextElementSibling);
+                    elementTemplate.parentNode.insertBefore(obj.placeholderNode, elementTemplate.nextElementSibling);
                 } else {
-                    elementTemplate.parentNode.appendChild(obj.placeholder);
+                    elementTemplate.parentNode.appendChild(obj.placeholderNode);
                 }
                 if (!retain) {
                     elementTemplate.parentNode.removeChild(elementTemplate);
                 }
             }
-            return obj.placeholder;
+            return obj.placeholderNode;
         };
 
         this.removeCommentedElements = function (placeholder, attr, value) {
@@ -480,66 +480,57 @@
 
         var resolveAttrNodeName = function (node) {
             //resolve dynamically populated attribute names
-            var prop, attr;
+            var attrName, el, newNode;
 
-            if (node.boundAttrNameProp === undefined) {
-                if (node.nodeName.substr(-2, 2) === "__") {
-                    prop = toPrefixedCamel(node.nodeName.slice(2, -2));
-                    if (prop) {
-                        node.boundAttrNameProp = prop;
-                        self.addWatch(node.boundAttrNameProp, node);
-                    }
-                } else {
-                    node.boundAttrNameProp = null;
-                }
+            if (node.nodeName.substr(-2, 2) === "__") {
+                node.rawName = node.nodeName.slice(2, -2);
             }
-            if (node.boundAttrNameProp) {
-                attr = self.get(node.boundAttrNameProp, true);
-                if (attr) {
-                    node.boundAttrName = attr;
+
+            if (node.rawName) {
+                el = node.ownerElement;
+                attrName = parseExpression(node.rawName, node);
+                if (attrName && attrName !== node.nodeName) {
                     setTimeout(function () {
                         //wait for our current dynamcally named node to resolve it's value
-                        node.ownerElement.setAttribute(attr, node.nodeValue);
+                        el.setAttribute(attrName, node.nodeValue);
+                        newNode = el.attributes[attrName];
+                        newNode.rawName = node.rawName;
+                        el.removeAttribute(node.nodeName);
                     });
-                } else if (node.boundAttrName) {
-                    node.ownerElement.removeAttribute(node.boundAttrName);
                 }
             }
+
             return node;
         };
 
         var resolveAttrNodeValue = function (node) {
             //resolve curly braces and call attribute based methods
 
-            var methodName = node.nodeName,
-                stringLiteral = node.value && node.value.substr(0, 1) === "'" &&  node.value.slice(1, -1),
-                method = self.attrMethods[methodName], value, watchName;
+            var attrMethodName = node.nodeName,
+                attrMethod = self.attrMethods[attrMethodName],
+                value;
 
             resolveDoubleCurlyBraces(node, node.nodeValue);
             value = node.value || node.ownerElement[node.name];//be ware of element properties like node.href which may differ dramatically from the attribute node value
-            watchName = value || "*";
-            if (methodName === "value" && (node.ownerElement.type === "radio" || node.ownerElement.type === "checkbox" || node.ownerElement.tagName === "OPTION")) {
+            if (attrMethodName === "value" && (node.ownerElement.type === "radio" || node.ownerElement.type === "checkbox" || node.ownerElement.tagName === "OPTION")) {
                 setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
             }
-            if (method) {
-                if (!stringLiteral) {
-                    self.addWatch(toPrefixedCamel(watchName), node);//prefixing here at watch creation to avoid prefixing properties corresponding to new instances or child arrays
-                }
-                method.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, stringLiteral || self.get(node.nodeValue)]);
+            if (attrMethod) {
+                attrMethod.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, parseExpression(node.nodeValue, node)]);
             }
             return node;
         };
 
-        var resolveDoubleCurlyBraces = function (node, testTemplate) {
+        var resolveDoubleCurlyBraces = function (node) {
             //replace value (attribute value or text node value) in curly braces with corresponding data value
             if (!node) {
                 return "";
             }
 
-            var isInitialPass = node.nodeTemplate === undefined;
+            var isInitialPass = node.nodeTemplate === undefined,
+                testTemplate = node.nodeValue;
 
             if (isInitialPass) {
-                testTemplate = testTemplate || node.nodeValue;
                 if (typeof (testTemplate) === "string" && testTemplate.indexOf("{{") !== -1) {
                     node.nodeTemplate = testTemplate;
                 } else {
@@ -549,20 +540,84 @@
 
             if (node.nodeTemplate) {
                 node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
-                    var prop = toPrefixedCamel($0.slice(2, -2)),
-                        value = self.get(prop, true) || "";
-
-                    if (isInitialPass) {
-                        self.addWatch(prop, node);
-                    }
-                    if (node.nodeName === "name" && value) {
-                        self.addWatch(value, node);
-                    }
-                    return value;
+                    return parseExpression($0.slice(2, -2), node);
                 });
             }
 
             return node.nodeValue;
+        };
+
+        var parseFunctionOrObject = function (str, node, watchCallBack) {
+
+            if (str.substr(0, 5) === "this.") {
+
+                var parenIndex = str.indexOf("("),
+                    argsArray = parenIndex > 0 && str.slice(parenIndex + 1, -1).split(","),
+                    path = str.substr(0, parenIndex === -1 ? str.length : parenIndex),
+                    pointer = self,
+                    pathArray, fn, watchFn, i, stop;
+
+                pathArray = path.split(".");
+                for (i = 1, stop = pathArray.length; i < stop; i++) {
+                    if (pointer) {
+                        pointer = pointer[pathArray[i]];
+                    }
+                }
+
+                if (typeof (pointer) === "function") {
+                    fn = function () {
+                        var args = [];
+                        for (i = 0, stop = argsArray.length; i < stop; i++) {
+                            args[i] = parseExpression(argsArray[i].trim(), node);
+                        }
+                        return pointer.apply(self, args);
+                    };
+                    watchFn = function () {
+                        var result = fn();
+                        if (watchCallBack) {
+                            watchCallBack(result);
+                        } else {
+                            node.nodeValue = result;
+                        }
+                        return result;
+                    };
+                    self.watch(argsArray, watchFn);
+                    return fn;
+                } else {
+                    return pointer;
+                }
+            } else {
+                return null;
+            } 
+        };
+
+        var parseExpression = function (str, node, watchCallBack) {
+            if (!str) {
+                return str;
+            }
+
+            var stringPrimitive = str.substr(0, 1) === "'" && str.slice(1, -1),
+                numberPrimitive = Number(str),
+                fn, value;
+
+            if (stringPrimitive) {
+                return stringPrimitive;
+            }
+            if (!isNaN(numberPrimitive)) {
+                return numberPrimitive;
+            }
+
+            fn = parseFunctionOrObject(str, node, watchCallBack);//parseFunctionOrObject adds its own watches so no need to add here
+            if (fn) {
+                value = typeof (fn) === "function" ? fn() : fn;
+            } else {
+                value = self.get(str, true) || "";
+                self.watch(str, node);
+            }
+            if (node.nodeName === "name" && value) {
+                self.watch(value, node);
+            }
+            return value;
         };
 
 
@@ -591,7 +646,7 @@
         var renderIf = function (el, rawValue, prop, dataValue) {
             this.surroundByComments(el, "render if " + rawValue, el, true);
             if (dataValue && !el.parentElement) {
-                el.placeholder.parentNode.insertBefore(el, el.placeholder);
+                el.placeholderNode.parentNode.insertBefore(el, el.placeholderNode);
             } else if (!dataValue && el.parentElement) {
                 el.parentElement.removeChild(el);
             }
@@ -626,9 +681,12 @@
 
         //<<<<<< Listeners, Handlers, and Watches >>>>>>
 
+        var observer;
+
         var setListeners = function (handleKeyUp) {
             //listen for changes in the container element's dataset
-            self.observer = new MutationObserver(mutationHandler);
+            observer = new MutationObserver(mutationHandler);
+
 
             //listen for form control changes within our container
             self.container.addEventListener("change", changeHandler);
@@ -642,13 +700,13 @@
         };
 
         var turnOnBindings = function () {
-            if (self.observer) {
-                self.observer.observe(self.container, {
+            if (observer) {
+                observer.observe(self.container, {
                     attributes: true,
                     attributeOldValue: true
                 });
             }
-            return self.observer;
+            return observer;
         };
 
         this.turnOnAllBindings = function () {
@@ -662,10 +720,10 @@
         };
 
         var turnOffBindings = function () {
-            if (self.observer) {
-                self.observer.disconnect();
+            if (observer) {
+                observer.disconnect();
             }
-            return self.observer;
+            return observer;
         };
 
         var mutationHandler = function (mutations) {
@@ -681,8 +739,8 @@
                     if (mutation.attributeName.substr(0, prefix.length) === prefix && value !== mutation.oldValue) {
                         prop = toCamelCase(mutation.attributeName.substr(prefix.length));
                         self.root.lastMutation = { prop: prop, value: value, oldValue: mutation.oldValue };
-                        self.checkWatches(prop);
-                        self.checkWatches("*");
+                        checkWatches(prop);
+                        checkWatches("*");
                     }
                 }
             });
@@ -713,42 +771,33 @@
             }
         };
 
-        this.watch = function (props, fn, globalScope) {
+        this.watch = function (props, fnOrNode, globalScope) {
             //adds a watch function to a data property or array of data properties
             var globalWatch = ["*"],
-                instance;
+                instance, watchType;
 
-            if (typeof (props) === "function") {
-                globalScope = fn;
-                fn = props;
-                props = globalWatch;
-            } else if (typeof (props) === "string") {
+            if (typeof (props) === "string") {
                 props = [props];
+            }
+            if ( ! (props instanceof Array)) {
+                globalScope = fnOrNode;
+                fnOrNode = props;
+                props = globalWatch;
             }
             props = props || globalWatch;
             instance = globalScope ? self.root : self;
-
+            watchType = globalScope ? "globalScopeWatches" : "watches";
             for (var i = 0, stop = props.length; i < stop; i++) {
-                instance.addWatch(props[i], { fn: fn, props: props }, globalScope);
+                instance[watchType][props[i]] = instance[watchType][props[i]] || [];
+                if (instance[watchType][props[i]].indexOf(fnOrNode) === -1) {
+                    instance[watchType][props[i]].push(fnOrNode);
+                }
             }
 
             return instance[globalScope ? "globalScopeWatches" : "watches"];
         };
 
-        this.addWatch = function (prop, nodeOrObj, globalScope) {
-            //adds a watch object with a function or node with implicit function to a given data property
-            var watchType = globalScope ? "globalScopeWatches" : "watches",
-                instance = globalScope ? self.root : self;
-
-            instance[watchType][prop] = instance[watchType][prop] || [];
-            if (instance[watchType][prop].indexOf(nodeOrObj) === -1) {
-                instance[watchType][prop].push(nodeOrObj);
-            }
-
-            return nodeOrObj;
-        };
-
-        this.checkWatches = function (prop, recursive) {
+        var checkWatches = function (prop, recursive) {
             //check watches on the specific property as well as general watches which apply and execute
 
             if (self.watches[prop]) {
@@ -780,10 +829,10 @@
 
                 if (watches) {
                     for (var i = watches.length - 1; i >= 0; i--) {
-                        if (watches[i].fn) {
+                        if (typeof(watches[i]) === "function") {
                             //for watches of global scope we pull the function from the root instance
                             //but execute it in the context of local instance
-                            executeWatchFn(watches[i], prop);
+                            executeWatchFn(watches[i]);
                         } else {
                             node = watches[i];
                             if (node.nodeType === 2) {
@@ -799,25 +848,14 @@
             return prop;
         };
 
-        var executeWatchFn = function (watch) {
+        var executeWatchFn = function (fn) {
             //execute a watch function in the context of the instance with designated arguments
 
             var lastMut = self.root.lastMutation,
-                args = [lastMut.value, lastMut.oldValue, lastMut.prop],
-                watchProps = {};
+                args = [lastMut.value, lastMut.oldValue, lastMut.prop];
 
-            //on recursive watch functions
-            //only execute once in the context that contains the changed property
-            if (self.get(lastMut.prop) !== undefined || !watch.recursive) {
-
-                if (watch.props[0] !== "*") {
-                    for (var i = 0, stop = watch.props.length; i < stop; i++) {
-                        watchProps[watch.props[i]] = self.get(watch.props[i]);
-                    }
-                    args.push(watchProps);
-                }
-
-                return watch.fn.apply(self, args);
+            if (self.get(lastMut.prop) !== undefined) {
+                return fn.apply(self, args);
             }
         };
 
@@ -844,6 +882,7 @@
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.templates = assign({}, self.configs.templates || {});
+            self.logic = assign({}, self.configs.logic || {});
 
             return self;
         };
