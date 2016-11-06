@@ -460,11 +460,11 @@ var pageData = {
                "examples": [
                   {
                      "exampleDesc": "Pass the name of a data property as the rawAttrValue to return the corresponding (inheritted) value in data  as the parsedAttrValue:",
-                     "exampleCode": "MARKUP:\n<input myCustomAttrMethod=\"firstName\" />\n\nJS:\nmyDataBinding.firstName = \"John\"\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n//parsedAttrValue = \"John\"\n}"
+                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"firstName\" />\n\nJS:\nmyDataBinding.firstName = \"John\"\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\n\tconsole.log(parsedAttrValue)//logs \"John\"\n\tconsole.log(rawAttrValue)//logs \"firstName\"\n\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n\n}"
                   },
                   {
                      "exampleDesc": "Use single quotes in the rawAttrValue value to pass a string primitive:",
-                     "exampleCode": "<input myCustomAttribute=\"'Value'\" />"
+                     "exampleCode": "<input my-custom-attribute=\"'Value'\" />"
                   },
                   {
                      "exampleDesc": "Numbers in the rawAttrValue will return values of type Number in the parsedAttrValue.",
