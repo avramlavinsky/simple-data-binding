@@ -131,6 +131,15 @@ var pageData = {
             {name: "update", arguments: [{name: "newData", type: "Object"}, {name: "bindDuringUpdate", type: "Boolean", default: false}], returns: {name: "data", type: "Object"}},
             {name: "watch", arguments: [{name: "props", type: "String/Array of Strings"}, {name: "fn", type: "Function"}, {name: "globalScope", type: "Boolean", default: false}], returns: {name: "watches", type: "Object"}}
           ]
+    }],
+    
+    {
+        heading: "Attribute Methods",
+        template: "methodTemplate",
+        headingTemplate: "h5Template",
+        items: [
+            {name: "childTemplate", arguments: [{name: "el", type: "Element"}, {name: "rawValue", type: "String"}, {name: "prop", type: "String"}, {name: "parsedValue", type: "String"}], desc: "Appends the specified template to the element and parses it for data binding." }
+          ]
     }]
 };
 
