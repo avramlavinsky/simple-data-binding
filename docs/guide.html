@@ -64,7 +64,7 @@
             </div>
             <ul>
                 <li databind="examples">
-                    <p>{{exampleDesc}}:</p>
+                    <p>{{exampleDesc}}</p>
                     <code>{{exampleCode}}</code>
                 </li>
             </ul>
@@ -147,7 +147,7 @@ var pageData = {
         template: "methodTemplate",
         headingTemplate: "h5Template",
         items: [
-            {format: "myDataBinding.attrMethods.myCustomAttrMethod = function(el, rawValue, prop, parsedValue){\n\t//logic\n};", markup: "<input my-custom-attr-method=\"rawAttrValue\"", arguments: [{name: "el", type: "Element"}, {name: "rawAttrValue", type: "String"}, {name: "prop", type: "String"}, {name: "parsedAttrValue", type: "String/Number/Object"}], desc: "Execute logic in the context of the current SimpleDataBinding instance with the given arguments when the node is parsed or when associated data values change.", examples: [{exampleDesc: "Use single quotes in the rawAttrValue value to pass a string primitive.", exampleCode: "<input myCustomAttribute=\"'Value'\" />"}, { exampleDesc: "Numbers in the rawAttrValue will return values of type Number in the parsedAttrValue.", exampleCode: "<input myCustomAttribute=\"256\" />"}, { exampleDesc: "Methods, objects, or primitive values passed in the logic config object can be accessed here as well:", exampleCode: "<input myCustomAttribute=\"this.logic.page.showSidebar()\" />" }]}
+            {format: "myDataBinding.attrMethods.myCustomAttrMethod = function(el, rawValue, prop, parsedValue){\n\t//logic\n};", markup: "<input my-custom-attr-method=\"rawAttrValue\"", arguments: [{name: "el", type: "Element"}, {name: "rawAttrValue", type: "String"}, {name: "prop", type: "String"}, {name: "parsedAttrValue", type: "String/Number/Object"}], desc: "Execute logic in the context of the current SimpleDataBinding instance with the given arguments when the node is parsed or when associated data values change.", examples: [{exampleDesc: "Pass the name of a data property as the rawAttrValue to return the corresponding (inheritted) value in data  as the parsedAttrValue:", exampleCode: "myDataBinding.firstName = \"John\";\n\nThe following markup will pass \"John\" as the parsedAttrValue:\n\n<input myCustomAttribute=\"firstName\" />"}, {exampleDesc: "Use single quotes in the rawAttrValue value to pass a string primitive:", exampleCode: "<input myCustomAttribute=\"'Value'\" />"}, { exampleDesc: "Numbers in the rawAttrValue will return values of type Number in the parsedAttrValue.", exampleCode: "<input myCustomAttribute=\"256\" />"}, { exampleDesc: "Methods, objects, or primitive values passed in the logic config object can be accessed here as well:", exampleCode: "<input myCustomAttribute=\"this.logic.page.showValidation(errors)\"//Calls a custom method, showValidation, passing it the value in data corresponding to the data property, errors, and parsedAttrValue will be the returned value. Any time the data value for errors changes, myCustomAttrMethod will execute again."/>" }]}
           ]
     }]
 };
