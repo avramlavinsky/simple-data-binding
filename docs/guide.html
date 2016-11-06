@@ -81,76 +81,404 @@
     <script type="text/javascript">
 
 var pageData = {
-  sections: [
-    {
-        heading: "Initial Arguments",
-        template: "articleTemplate",
-        headingTemplate: "h3Template",
-        items: [
-            {name: "container", type: "Element/String", desc: "Container element or selector.", default: "First element with databind attribute matching id argument, first element with any databind attribute, the first form element, or the document body."},
-            {name: "startData", type: "Object", desc: "The data to bind. Primitive values will become values of the instance's data.  Nested objects will spawn new child SimpleDataBinding instances.  Nested arrays will spawn child arrays of SimpleDataBinding instances.  If null, instance data will be an empty DomStringMap."},
-            {name: "id", type: "String", desc: "The ID of the binding instance", default: "container id attribute, container name attribute, or a unique generated id."},
-            {name: "configs", type: "Object", optional: true, desc: "An object containing configuration options."}
-        ]
-    },
-    {
-        heading: "Configuration Options",
-        template: "articleTemplate",
-        headingTemplate: "h3Template",
-        items: [
-            {name: "useHiddenInput", type: "Object", default: false, desc: "When true, data attributes are placed in a hidden input appended to the container rather than the container itself."},
-            {name: "nameSpace", type: "String", default: "An empty string", desc: "When set to a non-empty string, the string is appended to all data attributes."},
-            {name: "attrPrefix", type: "String", default: "An empty string", desc: "When set to a non-empty string, all attribute methods will be prefixed with the value."},
-            {name: "watches", type: "Object", format: "{props: [string1, string2...], fn: function}", desc: "An object containing initial watch properties and methods.  Only data properties specific to the current instance will be watched.", properties: [{name: "props", type: "String/Array of Strings", desc: "Data property name(s) to watch.  Pass \"*\" to listen for changes in all data properties."}, {name: "fn", type: "Function", desc: "The function to call when the specified data property value changes.  Called in the context of the current SimpleDataBinding instance.  Receives four arguments:  newValue (String), oldValue (String), prop (String), allWatchedProps (Object)."}]},
-            {name: "globalScopeWatches", type: "Object", format: "{props: [string1, string2...], fn: function}", desc: "An object containing initial watch properties and methods.  Data properties within the entire family tree of the current instance will be watched.", properties: [{name: "props", type: "String/Array of Strings", desc: "Data property name(s) to watch.  Pass \"*\" to listen for changes in all data properties."}, {name: "fn", type: "Function", desc: "The function to call when the specified data value changes.  Called once in the context of the highest SimpleDataBinding instance in the family tree with bindings to the DOM which are affected by the change. Receives four arguments:  newValue (String), oldValue (String), prop (String), allWatchedProps (Object)."}]},
-            {name: "checkboxDataDelimiter", type: "String", default: "\",\""},
-            {name: "attrMethods", type: "Object", format: "{methodName1: method1, methodName2: method2}", desc: "Custom methods (the equivalent of Angular directives) associated with expando attribute names in markup. Executed when initially parsing markup attributes and whenever the property specified in the attribute value changes."},
-            {name: "keyup", type: "Boolean", default: true},
-            {name: "modifyInputArrays", type: "Boolean", default: false}
-      ]
-    },
-    {
-        heading: "Properties",
-        template: "articleTemplate",
-        headingTemplate: "h3Template",
-        items: [
-            {name: "ancestors", type: "Array", desc: "An array containing the root instance and all subsequent ancestors of the current element.  For the root instance the array is empty."},
-            {name: "attrMethods", type: "Object", format: "{methodName1: method1, methodName2: method2}", desc: "Core and custom methods (the equivalent of Angular directives) associated with expando attribute names in markup. Executed when initially parsing markup attributes and whenever the property specified in the attribute value changes."},
-            {name: "childArrays", type: "Object", desc: "An object containing all child arrays of the current instance.  Each array is populated with instances which are also referenced in the children object of the current instance."},
-            {name: "children", type: "Object", desc: "An object containing all child instances of the current instance."},
-            {name: "container", type: "Element", desc: "The container element associated with the current instance." },
-            {name: "data", type: "DOMStringMap", desc: "The data directly associated with the current instance."},
-            {name: "id", type: "String", desc: "The id of the current instance which is also its key in the parent intance's children object."},
-            {name: "parent", type: "SimpleDataBinding", desc: "The parent instance of the current instance or null for the root instance."},
-            {name: "root", type: "SimpleDataBinding", desc: "The orginal ancestor instance of the current instance.  Generally the root instance is intstantiated in local script and descendants are created based on the structure of the supplied data."},
-          ]
-    },
-    {
-        heading: "Methods",
-        template: "methodTemplate",
-        headingTemplate: "h5Template",
-        items: [
-            {name: "createChild", arguments: [{name: "id", type: "String"}, {name: "container", type: "Element/String"}, {name: "data", type: "Object"}], returns: {name: "child", type: "SimpleDataBinding"}, desc: "Creates a child SimpleDataBinding instance.  Called internally when data contains nested objects and arrays."},
-            {name: "export", arguments: [{name: "unprefix", type: "Boolean"}], returns: {name: "dataClone", type: "Object" }, desc: "Returns a single nested data object from all SimpleDataBinding instances in the family tree similar in structure to the orginal startData arguement of the root instance."},
-            {name: "get", arguments: [{name: "prop", type: "String"}, {name: "inherit", type: "Boolean"}], returns: {name: "value", type: "Strintg"}},
-            {name: "parseNode", arguments: [{name: "node", type: "Element"}], returns: {name: "node", type: "Element or Boolean"}},
-            {name: "removeCommentedElements", arguments: [{name: "placeholder", type: "String"}, {name: "attr", type: "String"}, {name: "value", type: "string"}], returns: {name: "placeholder", type: "HTML Comment Node"}, desc: "Removes all elements between the placeholder and the previous comment which match the attribute name and value."},
-            {name: "set", arguments: [{name: "name", type: "String"}, {name: "val", type: "String"}, {name: "inherit", type: "Boolean"}], returns: {name: "value", type: "String"}},
-            {name: "surroundByComments", arguments: [{name: "obj", type: "Object"}, {name: "message", type: "String"}, {name: "elementTemplate", type: "Element"}, {name: "retain", type: "Boolean", default: "false"}], returns: {name: "placeholder", type: "HTML Comment Node"}},
-            {name: "update", arguments: [{name: "newData", type: "Object"}, {name: "bindDuringUpdate", type: "Boolean", default: false}], returns: {name: "data", type: "Object"}},
-            {name: "watch", arguments: [{name: "props", type: "String/Array of Strings"}, {name: "fn", type: "Function"}, {name: "globalScope", type: "Boolean", default: false}], returns: {name: "watches", type: "Object"}}
-          ]
-    },
-    
-    {
-        heading: "Attribute Methods",
-        template: "methodTemplate",
-        headingTemplate: "h5Template",
-        showExamples: "true",
-        items: [
-            {format: "myDataBinding.attrMethods.myCustomAttrMethod = function(el, parsedAttrValue, rawAttrValue, attrName){\n\t//logic\n};", markup: "<input my-custom-attr-method=\"rawAttrValue\"", arguments: [{name: "el", type: "Element"}, {name: "rawAttrValue", type: "String"}, {name: "prop", type: "String"}, {name: "parsedAttrValue", type: "String/Number/Object"}], desc: "Execute logic in the context of the current SimpleDataBinding instance with the given arguments when the node is parsed or when associated data values change.", examples: [{exampleDesc: "Pass the name of a data property as the rawAttrValue to return the corresponding (inheritted) value in data  as the parsedAttrValue:", exampleCode: "myDataBinding.firstName = \"John\";\n\nThe following markup will pass \"John\" as the parsedAttrValue:\n\n<input myCustomAttribute=\"firstName\" />"}, {exampleDesc: "Use single quotes in the rawAttrValue value to pass a string primitive:", exampleCode: "<input myCustomAttribute=\"'Value'\" />"}, { exampleDesc: "Numbers in the rawAttrValue will return values of type Number in the parsedAttrValue.", exampleCode: "<input myCustomAttribute=\"256\" />"}, { exampleDesc: "Methods, objects, or primitive values passed in the logic config object can be accessed here as well:", exampleCode: "<input myCustomAttribute=\"this.logic.page.showValidation(errors)\"//Calls a custom method, showValidation, passing it the value in data corresponding to the data property, errors, and parsedAttrValue will be the returned value. Any time the data value for errors changes, myCustomAttrMethod will execute again." }]}
-          ]
-    }]
+   "sections": [
+      {
+         "heading": "Initial Arguments",
+         "template": "articleTemplate",
+         "headingTemplate": "h3Template",
+         "items": [
+            {
+               "name": "container",
+               "type": "Element/String",
+               "desc": "Container element or selector.",
+               "default": "First element with databind attribute matching id argument, first element with any databind attribute, the first form element, or the document body."
+            },
+            {
+               "name": "startData",
+               "type": "Object",
+               "desc": "The data to bind. Primitive values will become values of the instance's data.  Nested objects will spawn new child SimpleDataBinding instances.  Nested arrays will spawn child arrays of SimpleDataBinding instances.  If null, instance data will be an empty DomStringMap."
+            },
+            {
+               "name": "id",
+               "type": "String",
+               "desc": "The ID of the binding instance",
+               "default": "container id attribute, container name attribute, or a unique generated id."
+            },
+            {
+               "name": "configs",
+               "type": "Object",
+               "optional": true,
+               "desc": "An object containing configuration options."
+            }
+         ]
+      },
+      {
+         "heading": "Configuration Options",
+         "template": "articleTemplate",
+         "headingTemplate": "h3Template",
+         "items": [
+            {
+               "name": "useHiddenInput",
+               "type": "Object",
+               "default": false,
+               "desc": "When true, data attributes are placed in a hidden input appended to the container rather than the container itself."
+            },
+            {
+               "name": "nameSpace",
+               "type": "String",
+               "default": "An empty string",
+               "desc": "When set to a non-empty string, the string is appended to all data attributes."
+            },
+            {
+               "name": "attrPrefix",
+               "type": "String",
+               "default": "An empty string",
+               "desc": "When set to a non-empty string, all attribute methods will be prefixed with the value."
+            },
+            {
+               "name": "watches",
+               "type": "Object",
+               "format": "{props: [string1, string2...], fn: function}",
+               "desc": "An object containing initial watch properties and methods.  Only data properties specific to the current instance will be watched.",
+               "properties": [
+                  {
+                     "name": "props",
+                     "type": "String/Array of Strings",
+                     "desc": "Data property name(s) to watch.  Pass \"*\" to listen for changes in all data properties."
+                  },
+                  {
+                     "name": "fn",
+                     "type": "Function",
+                     "desc": "The function to call when the specified data property value changes.  Called in the context of the current SimpleDataBinding instance.  Receives four arguments:  newValue (String), oldValue (String), prop (String), allWatchedProps (Object)."
+                  }
+               ]
+            },
+            {
+               "name": "globalScopeWatches",
+               "type": "Object",
+               "format": "{props: [string1, string2...], fn: function}",
+               "desc": "An object containing initial watch properties and methods.  Data properties within the entire family tree of the current instance will be watched.",
+               "properties": [
+                  {
+                     "name": "props",
+                     "type": "String/Array of Strings",
+                     "desc": "Data property name(s) to watch.  Pass \"*\" to listen for changes in all data properties."
+                  },
+                  {
+                     "name": "fn",
+                     "type": "Function",
+                     "desc": "The function to call when the specified data value changes.  Called once in the context of the highest SimpleDataBinding instance in the family tree with bindings to the DOM which are affected by the change. Receives four arguments:  newValue (String), oldValue (String), prop (String), allWatchedProps (Object)."
+                  }
+               ]
+            },
+            {
+               "name": "checkboxDataDelimiter",
+               "type": "String",
+               "default": "\",\""
+            },
+            {
+               "name": "attrMethods",
+               "type": "Object",
+               "format": "{methodName1: method1, methodName2: method2}",
+               "desc": "Custom methods (the equivalent of Angular directives) associated with expando attribute names in markup. Executed when initially parsing markup attributes and whenever the property specified in the attribute value changes."
+            },
+            {
+               "name": "keyup",
+               "type": "Boolean",
+               "default": true
+            },
+            {
+               "name": "modifyInputArrays",
+               "type": "Boolean",
+               "default": false
+            }
+         ]
+      },
+      {
+         "heading": "Properties",
+         "template": "articleTemplate",
+         "headingTemplate": "h3Template",
+         "items": [
+            {
+               "name": "ancestors",
+               "type": "Array",
+               "desc": "An array containing the root instance and all subsequent ancestors of the current element.  For the root instance the array is empty."
+            },
+            {
+               "name": "attrMethods",
+               "type": "Object",
+               "format": "{methodName1: method1, methodName2: method2}",
+               "desc": "Core and custom methods (the equivalent of Angular directives) associated with expando attribute names in markup. Executed when initially parsing markup attributes and whenever the property specified in the attribute value changes."
+            },
+            {
+               "name": "childArrays",
+               "type": "Object",
+               "desc": "An object containing all child arrays of the current instance.  Each array is populated with instances which are also referenced in the children object of the current instance."
+            },
+            {
+               "name": "children",
+               "type": "Object",
+               "desc": "An object containing all child instances of the current instance."
+            },
+            {
+               "name": "container",
+               "type": "Element",
+               "desc": "The container element associated with the current instance."
+            },
+            {
+               "name": "data",
+               "type": "DOMStringMap",
+               "desc": "The data directly associated with the current instance."
+            },
+            {
+               "name": "id",
+               "type": "String",
+               "desc": "The id of the current instance which is also its key in the parent intance's children object."
+            },
+            {
+               "name": "parent",
+               "type": "SimpleDataBinding",
+               "desc": "The parent instance of the current instance or null for the root instance."
+            },
+            {
+               "name": "root",
+               "type": "SimpleDataBinding",
+               "desc": "The orginal ancestor instance of the current instance.  Generally the root instance is intstantiated in local script and descendants are created based on the structure of the supplied data."
+            }
+         ]
+      },
+      {
+         "heading": "Methods",
+         "template": "methodTemplate",
+         "headingTemplate": "h5Template",
+         "items": [
+            {
+               "name": "createChild",
+               "arguments": [
+                  {
+                     "name": "id",
+                     "type": "String"
+                  },
+                  {
+                     "name": "container",
+                     "type": "Element/String"
+                  },
+                  {
+                     "name": "data",
+                     "type": "Object"
+                  }
+               ],
+               "returns": {
+                  "name": "child",
+                  "type": "SimpleDataBinding"
+               },
+               "desc": "Creates a child SimpleDataBinding instance.  Called internally when data contains nested objects and arrays."
+            },
+            {
+               "name": "export",
+               "arguments": [
+                  {
+                     "name": "unprefix",
+                     "type": "Boolean"
+                  }
+               ],
+               "returns": {
+                  "name": "dataClone",
+                  "type": "Object"
+               },
+               "desc": "Returns a single nested data object from all SimpleDataBinding instances in the family tree similar in structure to the orginal startData arguement of the root instance."
+            },
+            {
+               "name": "get",
+               "arguments": [
+                  {
+                     "name": "prop",
+                     "type": "String"
+                  },
+                  {
+                     "name": "inherit",
+                     "type": "Boolean"
+                  }
+               ],
+               "returns": {
+                  "name": "value",
+                  "type": "Strintg"
+               }
+            },
+            {
+               "name": "parseNode",
+               "arguments": [
+                  {
+                     "name": "node",
+                     "type": "Element"
+                  }
+               ],
+               "returns": {
+                  "name": "node",
+                  "type": "Element or Boolean"
+               }
+            },
+            {
+               "name": "removeCommentedElements",
+               "arguments": [
+                  {
+                     "name": "placeholder",
+                     "type": "String"
+                  },
+                  {
+                     "name": "attr",
+                     "type": "String"
+                  },
+                  {
+                     "name": "value",
+                     "type": "string"
+                  }
+               ],
+               "returns": {
+                  "name": "placeholder",
+                  "type": "HTML Comment Node"
+               },
+               "desc": "Removes all elements between the placeholder and the previous comment which match the attribute name and value."
+            },
+            {
+               "name": "set",
+               "arguments": [
+                  {
+                     "name": "name",
+                     "type": "String"
+                  },
+                  {
+                     "name": "val",
+                     "type": "String"
+                  },
+                  {
+                     "name": "inherit",
+                     "type": "Boolean"
+                  }
+               ],
+               "returns": {
+                  "name": "value",
+                  "type": "String"
+               }
+            },
+            {
+               "name": "surroundByComments",
+               "arguments": [
+                  {
+                     "name": "obj",
+                     "type": "Object"
+                  },
+                  {
+                     "name": "message",
+                     "type": "String"
+                  },
+                  {
+                     "name": "elementTemplate",
+                     "type": "Element"
+                  },
+                  {
+                     "name": "retain",
+                     "type": "Boolean",
+                     "default": "false"
+                  }
+               ],
+               "returns": {
+                  "name": "placeholder",
+                  "type": "HTML Comment Node"
+               }
+            },
+            {
+               "name": "update",
+               "arguments": [
+                  {
+                     "name": "newData",
+                     "type": "Object"
+                  },
+                  {
+                     "name": "bindDuringUpdate",
+                     "type": "Boolean",
+                     "default": false
+                  }
+               ],
+               "returns": {
+                  "name": "data",
+                  "type": "Object"
+               }
+            },
+            {
+               "name": "watch",
+               "arguments": [
+                  {
+                     "name": "props",
+                     "type": "String/Array of Strings"
+                  },
+                  {
+                     "name": "fn",
+                     "type": "Function"
+                  },
+                  {
+                     "name": "globalScope",
+                     "type": "Boolean",
+                     "default": false
+                  }
+               ],
+               "returns": {
+                  "name": "watches",
+                  "type": "Object"
+               }
+            }
+         ]
+      },
+      {
+         "heading": "Attribute Methods",
+         "template": "methodTemplate",
+         "headingTemplate": "h5Template",
+         "showExamples": "true",
+         "items": [
+            {
+               "format": "myDataBinding.attrMethods.myCustomAttrMethod = function(el, parsedAttrValue, rawAttrValue, attrName){\n\t//logic\n};",
+               "markup": "<input my-custom-attr-method=\"rawAttrValue\"",
+               "arguments": [
+                  {
+                     "name": "el",
+                     "type": "Element"
+                  },
+                  {
+                     "name": "rawAttrValue",
+                     "type": "String"
+                  },
+                  {
+                     "name": "prop",
+                     "type": "String"
+                  },
+                  {
+                     "name": "parsedAttrValue",
+                     "type": "String/Number/Object"
+                  }
+               ],
+               "desc": "Execute logic in the context of the current SimpleDataBinding instance with the given arguments when the node is parsed or when associated data values change.",
+               "examples": [
+                  {
+                     "exampleDesc": "Pass the name of a data property as the rawAttrValue to return the corresponding (inheritted) value in data  as the parsedAttrValue:",
+                     "exampleCode": "MARKUP:\n<input myCustomAttrMethod=\"firstName\" />\n\nJS:\nmyDataBinding.firstName = \"John\"\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n//parsedAttrValue = \"John\"\n}"
+                  },
+                  {
+                     "exampleDesc": "Use single quotes in the rawAttrValue value to pass a string primitive:",
+                     "exampleCode": "<input myCustomAttribute=\"'Value'\" />"
+                  },
+                  {
+                     "exampleDesc": "Numbers in the rawAttrValue will return values of type Number in the parsedAttrValue.",
+                     "exampleCode": "<input myCustomAttribute=\"256\" />"
+                  },
+                  {
+                     "exampleDesc": "Methods, objects, or primitive values passed in the logic config object can be accessed here as well:",
+                     "exampleCode": "<input myCustomAttribute=\"this.logic.page.showValidation(errors)\"//Calls a custom method, showValidation, passing it the value in data corresponding to the data property, errors, and parsedAttrValue will be the returned value. Any time the data value for errors changes, myCustomAttrMethod will execute again."
+                  }
+               ]
+            }
+         ]
+      }
+   ]
 };
 
 var pageBinding = new SimpleDataBinding(".page", pageData);
