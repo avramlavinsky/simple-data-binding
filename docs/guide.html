@@ -62,6 +62,12 @@
             <h4 renderif="returns">Returns:</h4>
             <div renderif="returns" databind="returns" data-desc="" data-template="articleTemplate" childtemplate="template">
             </div>
+            <ul>
+                <li databind="examples">
+                    <p>{{exampleDesc}}:</p>
+                    <code>{{exampleCode}}</code>
+                </li>
+            </ul>
         </article>
         
         <div id="h3Template">
@@ -141,7 +147,7 @@ var pageData = {
         template: "methodTemplate",
         headingTemplate: "h5Template",
         items: [
-            {format: "myDataBinding.attrMethods.myCustomAttrMethod = function(el, rawValue, prop, parsedValue){\n\t//logic\n}", arguments: [{name: "el", type: "Element"}, {name: "rawValue", type: "String"}, {name: "prop", type: "String"}, {name: "parsedValue", type: "String"}], desc: "Appends the specified template to the element and parses it for data binding." }
+            {format: "myDataBinding.attrMethods.myCustomAttrMethod = function(el, rawValue, prop, parsedValue){\n\t//logic\n};", markup: "<input my-custom-attr-method=\"rawAttrValue\"", arguments: [{name: "el", type: "Element"}, {name: "rawAttrValue", type: "String"}, {name: "prop", type: "String"}, {name: "parsedAttrValue", type: "String/Number/Object"}], desc: "Execute logic in the context of the current SimpleDataBinding instance with the given arguments when the node is parsed or when associated data values change.", examples: [{exampleDesc: "Use single quotes in the rawAttrValue value to pass a string primitive.", exampleCode: "<input myCustomAttribute=\"'Value'\" />"}, { exampleDesc: "Numbers in the rawAttrValue will return values of type Number in the parsedAttrValue.", exampleCode: "<input myCustomAttribute=\"256\" />"}, { exampleDesc: "Methods, objects, or primitive values passed in the logic config object can be accessed here as well:", exampleCode: "<input myCustomAttribute=\"this.logic.page.showSidebar()\" />" }]}
           ]
     }]
 };
