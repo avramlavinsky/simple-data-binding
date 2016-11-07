@@ -174,7 +174,8 @@ var pageData = {
             {
                "name": "checkboxDataDelimiter",
                "type": "String",
-               "default": "\",\""
+               "default": "\",\"",
+                "desc": "The delimiter used in setting, getting, and exporting values for checkbox groups, radio groups, and multiselect form elements."
             },
             {
                "name": "attrMethods",
@@ -185,12 +186,14 @@ var pageData = {
             {
                "name": "keyup",
                "type": "Boolean",
-               "default": true
+               "default": true,
+               "desc": "Determines whether data and the DOM should update on keyup as opposed to on change."
             },
             {
                "name": "modifyInputArrays",
                "type": "Boolean",
-               "default": false
+               "default": false,
+               "desc": "When set to true child arrays are constructed from the actual arrays contained in the initial startData argument of the SimpleDataBinding instance. Manipulating the startData arrays will cause corresponsing changes to the DOM.
             }
          ]
       },
@@ -482,7 +485,7 @@ var pageData = {
                 "examples": [
                     {
                      "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for showInput changes -->\n<input renderif=\"showInput\" />\n\nJS:\nmyDataBinding.data.showInput = \"\"\n//the input will be removed from the DOM"
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for showInput changes -->\n<input renderif=\"showInput\" />\n\nJS:\nmyDataBinding.data.showInput = \"\";\n//the input will be removed from the DOM"
                     }
                 ]
             }
