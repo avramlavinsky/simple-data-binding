@@ -459,19 +459,19 @@ var pageData = {
                "examples": [
                   {
                      "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"firstName\" />\n\nJS:\nmyDataBinding.data.firstName = \"John\"\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"John\"\n\tconsole.log(rawAttrValue)//logs \"firstName\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
+                     "exampleCode": "MARKUP:\n<!-- attribute method will be reassessed whenever data value for firstName changes -->\n<input my-custom-attr-method=\"firstName\" />\n\nJS:\nmyDataBinding.data.firstName = \"John\"\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"John\"\n\tconsole.log(rawAttrValue)//logs \"firstName\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
                   },
                   {
                      "exampleDesc": "Passing a string primitive:",
-                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"'James'\" />\n\nJS:\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"James\"\n\tconsole.log(rawAttrValue)//logs \"'James'\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
+                     "exampleCode": "MARKUP:\n<!-- attribute method will be assessed only when node is parsed -->\n<input my-custom-attr-method=\"'James'\" />\n\nJS:\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"James\"\n\tconsole.log(rawAttrValue)//logs \"'James'\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
                   },
                   {
                      "exampleDesc": "Passing a number:",
-                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"365\" />\n\nJS:\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs 365\n\tconsole.log(rawAttrValue)//logs \"365\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
+                     "exampleCode": "MARKUP:\n<!-- attribute method will be assessed only when node is parsed -->\n<input my-custom-attr-method=\"365\" />\n\nJS:\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs 365\n\tconsole.log(rawAttrValue)//logs \"365\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
                   },
                   {
                      "exampleDesc": "Passing a method:",
-                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"this.logic.toInitials(firstName, lastName)\" />\n\nJS:\nmyDataBinding.logic.toInitials = function(str1, str2){\n\treturn str1.substr(0,1) + str2.substr(0,1);\n}\nmyDataBinding.data.firstName = \"John\";\nmyDataBinding.data.lastName = \"Smith\";\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"JS\"\n\tconsole.log(rawAttrValue)//logs \"this.logic.toInitials(firstName, lastName)\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
+                     "exampleCode": "MARKUP:\n<!-- attribute method will be reassessed whenever data values for firstName or lastName change -->\n<input my-custom-attr-method=\"this.logic.toInitials(firstName, lastName)\" />\n\nJS:\nmyDataBinding.logic.toInitials = function(str1, str2){\n\treturn str1.substr(0,1) + str2.substr(0,1);\n}\nmyDataBinding.data.firstName = \"John\";\nmyDataBinding.data.lastName = \"Smith\";\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"JS\"\n\tconsole.log(rawAttrValue)//logs \"this.logic.toInitials(firstName, lastName)\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
                   }
                ]
             }
