@@ -54,7 +54,7 @@
                 <strong>Format:</strong><code>{{format}}</code>
             </div>
             <p renderif="desc">{{desc}}</p>
-            <h4>Arguments:</h4>
+            <h4 renderif="arguments">Arguments:</h4>
             <ul>
                 <li databind="arguments" data-format="" data-desc="" childtemplate="'articleTemplate'">
                 </li>
@@ -476,13 +476,13 @@ var pageData = {
                ]
             },
             {
-                "name": "Custom Attribute Methods",
-                "desc": "Removes or replaces the element and all of its descendants from the DOM best on the parsedAttrValue as truey or falsey.",
+                "name": "renderIf",
+                "desc": "Native attribute method.  Removes the element and all of its descendants from the DOM if parsedAttrValue evaluates to falsey or replaces it in the DOM if truey.",
                 "showExamples": "true",
                 "examples": [
                     {
                      "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<!-- attribute method will be reassessed whenever data value for firstName changes -->\n<input my-custom-attr-method=\"firstName\" />\n\nJS:\nmyDataBinding.data.firstName = \"John\"\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"John\"\n\tconsole.log(rawAttrValue)//logs \"firstName\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for showInput changes -->\n<input renderif=\"showInput\" />\n\nJS:\nmyDataBinding.data.showInput = \"\"\n//the input will be removed from the DOM"
                     }
                 ]
             }
