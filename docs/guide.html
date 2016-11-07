@@ -470,8 +470,8 @@ var pageData = {
                      "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"365\" />\n\nJS:\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs 365\n\tconsole.log(rawAttrValue)//logs \"365\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
                   },
                   {
-                     "exampleDesc": "Passing a number:",
-                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"this.logic.toInitials(firstName, lastName)\" />\n\nJS:\nmyDataBinding.logic.toInitials = function(str1, str2){\n\treturn str1.substr(0,1) + str2.substr(0,1);\n}\nmyDataBinding.data.firstName = \"John\";\nmyDataBinding.data.lastName = \"Smith\";\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs 365\n\tconsole.log(rawAttrValue)//logs \"365\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
+                     "exampleDesc": "Passing a method:",
+                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"this.logic.toInitials(firstName, lastName)\" />\n\nJS:\nmyDataBinding.logic.toInitials = function(str1, str2){\n\treturn str1.substr(0,1) + str2.substr(0,1);\n}\nmyDataBinding.data.firstName = \"John\";\nmyDataBinding.data.lastName = \"Smith\";\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"JS\"\n\tconsole.log(rawAttrValue)//logs \"this.logic.toInitials(firstName, lastName)\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
                   }
                ]
             }
