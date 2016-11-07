@@ -5,7 +5,7 @@
         //includes basic templating and easily extended for more complex DOM interaction
         //
         //arguments
-        //
+        //  add some new data for github test
         //  container:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
         //  startData: object (optional)
         //  configs: object (optional) - static configuration properties, watches
