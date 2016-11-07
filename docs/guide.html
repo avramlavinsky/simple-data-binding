@@ -436,8 +436,7 @@ var pageData = {
          "showExamples": "true",
          "items": [
             {
-               "name": "Custom Attribute Methods", "format": "myDataBinding.attrMethods.myCustomAttrMethod = function(el, parsedAttrValue, rawAttrValue, attrName){\n\t//logic\n};",
-               "markup": "<input my-custom-attr-method=\"rawAttrValue\"",
+               "name": "Custom Attribute Methods",
                "arguments": [
                   {
                      "name": "el",
@@ -456,7 +455,7 @@ var pageData = {
                      "type": "String/Number/Object"
                   }
                ],
-               "desc": "Execute logic in the context of the current SimpleDataBinding instance with the given arguments when the node is parsed or when associated data values change.",
+               "desc": "Attribute methods (called directives in the parlance of some frameworks) execute in the context of the current SimpleDataBinding instance when an element with the given attribute is parsed or when associated data values change.",
                "examples": [
                   {
                      "exampleDesc": "Pass the name of a data property as the rawAttrValue to return the corresponding (inheritted) value in data  as the parsedAttrValue:",
