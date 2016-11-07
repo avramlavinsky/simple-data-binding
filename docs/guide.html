@@ -458,8 +458,8 @@ var pageData = {
                "desc": "Attribute methods (called directives in the parlance of some frameworks) execute in the context of the current SimpleDataBinding instance when an element with the given attribute is parsed or when associated data values change.",
                "examples": [
                   {
-                     "exampleDesc": "Pass the name of a data property as the rawAttrValue to return the corresponding (inheritted) value in data  as the parsedAttrValue:",
-                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"firstName\" />\n\nJS:\nmyDataBinding.firstName = \"John\"\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"John\"\n\tconsole.log(rawAttrValue)//logs \"firstName\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
+                     "exampleDesc": "Passing a data property name:",
+                     "exampleCode": "MARKUP:\n<input my-custom-attr-method=\"firstName\" />\n\nJS:\nmyDataBinding.data.firstName = \"John\"\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"John\"\n\tconsole.log(rawAttrValue)//logs \"firstName\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
                   },
                   {
                      "exampleDesc": "Use single quotes in the rawAttrValue value to pass a string primitive:",
