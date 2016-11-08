@@ -656,7 +656,7 @@
                             el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
                         } else {
                             placeClone(el, clone);
-                            self.surroundByComments(el, parsedAttrValue, clone, true);
+                            self.surroundByComments(el, "template " + parsedAttrValue, clone, true);
                         }
                         self.parseNode(clone);
                     }
@@ -718,6 +718,13 @@
             if (handleKeyUp !== false) {
                 //update data on keyup if desired
                 self.container.addEventListener("keyup", keyUpHandler);
+            }
+
+            if (self === self.root) {
+                self.turnOnAllBindings();//execute inline incase inline code makes changes to data immediately after init
+                setTimeout(function () {
+                    self.turnOnAllBindings();//a necessary failsafe in case all children have not initialized
+                });
             }
 
             return self;
@@ -954,9 +961,6 @@
             initProps();
             initData();
             setListeners(this.configs.keyUp);
-            if (this === this.root) {
-                this.turnOnAllBindings();
-            }
 
             self.initialized = true;
 
@@ -1094,14 +1098,14 @@
             //transforms the array member from data to object instance
             //context of the array
             //since no member instance exists yet
-            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholder;
+            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholderNode;
 
             return array.ownerInstance.createChildArrayMember(array, data, placeholder);
         };
         Bind.prototype.moveLiveArrayMember = function (array, i) {
             //move the member instance within the array
             //context of the member instance
-            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholder;
+            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholderNode;
 
             this.container.parentElement.insertBefore(this.container, placeholder);
             return this;

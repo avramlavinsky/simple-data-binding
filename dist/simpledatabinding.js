@@ -656,7 +656,7 @@
                             el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
                         } else {
                             placeClone(el, clone);
-                            self.surroundByComments(el, parsedAttrValue, clone, true);
+                            self.surroundByComments(el, "template " + parsedAttrValue, clone, true);
                         }
                         self.parseNode(clone);
                     }
@@ -718,6 +718,13 @@
             if (handleKeyUp !== false) {
                 //update data on keyup if desired
                 self.container.addEventListener("keyup", keyUpHandler);
+            }
+
+            if (self === self.root) {
+                self.turnOnAllBindings();//execute inline incase inline code makes changes to data immediately after init
+                setTimeout(function () {
+                    self.turnOnAllBindings();//a necessary failsafe in case all children have not initialized
+                });
             }
 
             return self;
@@ -954,9 +961,6 @@
             initProps();
             initData();
             setListeners(this.configs.keyUp);
-            if (this === this.root) {
-                this.turnOnAllBindings();
-            }
 
             self.initialized = true;
 
