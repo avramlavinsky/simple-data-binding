@@ -109,7 +109,7 @@
 
             if (self.childArrays[prop]) {
                 ar = self.childArrays[prop];
-                self.removeCommentedElements(ar.placeholderNode, "databind", prop);
+                self.removeCommentedElements(ar.placeholderNode, "databind");
                 ar.length = 0;
             } else {
                 templateElement = el || getContainer(prop);
@@ -430,9 +430,9 @@
             return obj.placeholderNode;
         };
 
-        this.removeCommentedElements = function (placeholder, attr, value) {
+        this.removeCommentedElements = function (placeholder, attr) {
             while (placeholder.previousSibling && placeholder.previousSibling.nodeType !== 8) {
-                if (placeholder.previousSibling.nodeType === 1 && placeholder.previousSibling.getAttribute(attr) === value) {
+                if (placeholder.previousSibling.nodeType === 1 && (! attr || placeholder.previousSibling.getAttribute(attr) !== null)) {
                     placeholder.parentNode.removeChild(placeholder.previousSibling);
                 } else {
                     placeholder = placeholder.previousSibling;
@@ -480,27 +480,31 @@
 
         var resolveAttrNodeName = function (node) {
             //resolve dynamically populated attribute names
-            var attrName, el, newNode;
+            var attrName;
 
-            if (node.nodeName.substr(-2, 2) === "__") {
-                node.rawName = node.nodeName.slice(2, -2);
-            }
-
-            if (node.rawName) {
-                el = node.ownerElement;
-                attrName = parseExpression(node.rawName, node);
-                if (attrName && attrName !== node.nodeName) {
-                    setTimeout(function () {
-                        //wait for our current dynamcally named node to resolve it's value
-                        el.setAttribute(attrName, node.nodeValue);
-                        newNode = el.attributes[attrName];
-                        newNode.rawName = node.rawName;
-                        el.removeAttribute(node.nodeName);
-                    });
+            if ( node.rawName === undefined ) {
+                if (node.nodeName.substr(-2, 2) === "__") {
+                    node.rawName = node.nodeName.slice(2, -2);
+                    node.originalEl = node.ownerElement;
+                    node.prevAttrName = node.nodeName;
+                } else {
+                    node.rawName = null;
                 }
             }
 
-            return node;
+            if (node.rawName !== null) {
+                attrName = parseExpression(toPrefixedCamel(toCamelCase(node.rawName)), node);
+                if (attrName !== node.prevAttrName) {
+                    if (attrName) {
+                        node.originalEl.setAttribute(attrName, node.nodeValue);
+                    }
+                    if (node.prevAttrName) {
+                        node.originalEl.removeAttribute(node.prevAttrName);
+                    }
+                    node.prevAttrName = attrName;
+                }
+            }
+            return attrName;
         };
 
         var resolveAttrNodeValue = function (node) {
@@ -508,15 +512,20 @@
 
             var attrMethodName = node.nodeName,
                 attrMethod = self.attrMethods[attrMethodName],
-                value;
+                el = node.ownerElement,
+                value, name;
 
             resolveDoubleCurlyBraces(node, node.nodeValue);
-            value = node.value || node.ownerElement[node.name];//be ware of element properties like node.href which may differ dramatically from the attribute node value
-            if (attrMethodName === "value" && (node.ownerElement.type === "radio" || node.ownerElement.type === "checkbox" || node.ownerElement.tagName === "OPTION")) {
-                setNodeValue(node.ownerElement, node.ownerElement.getAttribute("name"), "name");
+            value = node.value || el && el[node.name];//be ware of element properties like node.href which may differ dramatically from the attribute node value
+            if (attrMethodName === "value" && (el.type === "radio" || el.type === "checkbox" || el.tagName === "OPTION")) {
+                name = el && el.name;
+                if (!name && el.tagName === "OPTION") {
+                    name = el.parentNode.name;
+                }
+                setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
             if (attrMethod) {
-                attrMethod.apply(self, [node.ownerElement, node.nodeValue, node.nodeName, parseExpression(node.nodeValue, node)]);
+                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, node.nodeName]);
             }
             return node;
         };
@@ -547,7 +556,7 @@
             return node.nodeValue;
         };
 
-        var parseFunctionOrObject = function (str, node, watchCallBack) {
+        var parseFunctionOrObject = function (str, node, addWatches, watchCallBack) {
 
             if (str.substr(0, 5) === "this.") {
 
@@ -572,16 +581,18 @@
                         }
                         return pointer.apply(self, args);
                     };
-                    watchFn = function () {
-                        var result = fn();
-                        if (watchCallBack) {
-                            watchCallBack(result);
-                        } else {
-                            node.nodeValue = result;
-                        }
-                        return result;
-                    };
-                    self.watch(argsArray, watchFn);
+                    if (addWatches !== false) {
+                        watchFn = function () {
+                            var result = fn();
+                            if (watchCallBack) {
+                                watchCallBack(result);
+                            } else {
+                                node.nodeValue = result;
+                            }
+                            return result;
+                        };
+                        self.watch(argsArray, watchFn);
+                    }
                     return fn;
                 } else {
                     return pointer;
@@ -591,7 +602,7 @@
             } 
         };
 
-        var parseExpression = function (str, node, watchCallBack) {
+        var parseExpression = function (str, node, addWatches, watchCallBack) {
             if (!str) {
                 return str;
             }
@@ -607,14 +618,18 @@
                 return numberPrimitive;
             }
 
-            fn = parseFunctionOrObject(str, node, watchCallBack);//parseFunctionOrObject adds its own watches so no need to add here
+            fn = parseFunctionOrObject(str, node, addWatches, watchCallBack);//parseFunctionOrObject adds its own watches so no need to add here
             if (fn) {
-                value = typeof (fn) === "function" ? fn() : fn;
+                //important that return values for function as well as get should be undefined, not a null string, under failure conditions
+                //otherwise setNodeValue will overwrite previously set values to no selection for selects
+                value = typeof(fn) === "function" ? fn(): fn;
             } else {
-                value = self.get(str, true) || "";
-                self.watch(str, node);
+                value = self.get(str, true);
+                if (addWatches !== false) {
+                    self.watch(str, watchCallBack || node);
+                } 
             }
-            if (node.nodeName === "name" && value) {
+            if (node && node.nodeName === "name" && value && addWatches !== false) {
                 self.watch(value, node);
             }
             return value;
@@ -624,52 +639,61 @@
 
 
 
-        //<<<<<<<<<< attribute based methods >>>>>>>>>>
+        //<<<<<<<<<< attribute based methods and their subfunctions >>>>>>>>>>
 
-        var childTemplate = function (el, rawValue, prop, dataValue) {
-            var clone;
+        this.templateMaster = function (placeClone) {
+            return function (el, parsedAttrValue) {
+                var clone;
 
-            if (dataValue) {
-                self.templates[dataValue] = self.templates[dataValue] || document.getElementById(dataValue);
+                if (parsedAttrValue) {
+                    self.templates[parsedAttrValue] = self.templates[parsedAttrValue] || document.getElementById(parsedAttrValue);
 
-                if (self.templates[dataValue]) {
-                    clone = self.templates[dataValue].cloneNode(true);
-                    clone.removeAttribute("id");
-                    el.appendChild(clone);
-                    this.parseNode(clone);
-                    this.childFromTemplate = clone;
+                    if (self.templates[parsedAttrValue]) {
+                        clone = self.templates[parsedAttrValue].cloneNode(true);
+                        clone.removeAttribute("id");
+                        if (el.placeholderNode) {
+                            self.removeCommentedElements(el.placeholderNode);
+                            el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
+                        } else {
+                            placeClone(el, clone);
+                            self.surroundByComments(el, parsedAttrValue, clone, true);
+                        }
+                        self.parseNode(clone);
+                    }
                 }
-            }
-            return el;
+                return el;
+            };
         };
 
-        var renderIf = function (el, rawValue, prop, dataValue) {
-            this.surroundByComments(el, "render if " + rawValue, el, true);
-            if (dataValue && !el.parentElement) {
+        var childTemplate = self.templateMaster(function (el, clone) {
+            el.appendChild(clone);
+        });
+
+        var renderIf = function (el, parsedAttrValue, rawAttrValue) {
+            this.surroundByComments(el, "render if " + rawAttrValue, el, true);
+            if (parsedAttrValue && !el.parentElement) {
                 el.placeholderNode.parentNode.insertBefore(el, el.placeholderNode);
-            } else if (!dataValue && el.parentElement) {
+            } else if (!parsedAttrValue && el.parentElement) {
                 el.parentElement.removeChild(el);
             }
             return el;
         };
 
-        var setNodeValue = function (el, prop, attr) {
+        var setNodeValue = function (el, parsedAttrValue, rawAttrValue, attrName) {
             //sets node value to data property value
-            var value = self.get(prop, true);
-
-            if (value !== undefined) {
-                if (el.type === "radio" && attr === "name") {
-                    el.checked = (value === el.value);
-                } else if (el.type === "checkbox" && attr === "name") {
-                    el.checked = (value.indexOf(el.value) !== -1);
-                } else if (el.tagName === "SELECT" && !value) {
+            if (parsedAttrValue !== undefined) {
+                if (el.type === "radio" && attrName === "name") {
+                    el.checked = (parsedAttrValue === el.value);
+                } else if (el.type === "checkbox" && attrName === "name") {
+                    el.checked = (parsedAttrValue.indexOf(el.value) !== -1);
+                } else if (el.tagName === "SELECT" && !parsedAttrValue) {
                     setTimeout(function () {
                         el.selectedIndex = "-1";
                     }, 0);
-                } else if (el.tagName === "OPTION" && attr === "value") {
-                    el.selected = (self.get(el.parentElement.name) || "").indexOf(el.value) !== -1;
+                } else if (el.tagName === "OPTION" && (attrName === "value" || attrName === "name")) {
+                    el.selected = el.value && (parsedAttrValue).indexOf(el.value) !== -1;
                 } else {
-                    el.value = value;
+                    el.value = parsedAttrValue;
                 }
             }
 

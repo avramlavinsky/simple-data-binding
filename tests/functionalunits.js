@@ -290,8 +290,8 @@ describe("DOM methods - question branching setup", function () {
     });
 
     it("resolveAttrNodeName", function () {
-        var input = createInput("__firstname__");
-        expect(binding.resolveAttrNodeName(input.attributes[0]).rawName).toEqual("firstname");
+        var input = createInput("__first-name__");
+        expect(binding.resolveAttrNodeName(input.attributes[0])).toEqual("John");
     });
 
     it("resolveAttrNodeValue", function () {
@@ -301,7 +301,7 @@ describe("DOM methods - question branching setup", function () {
     it("resolveAttrNodeValue string literal", function () {
         var literalInput = createInput();
 
-        binding.attrMethods.addprop = function (el, rawVal, attr, val) { binding.prop = val };
+        binding.attrMethods.addprop = function (el, val, rawVal, attr) { binding.prop = val };
         literalInput.setAttribute("addprop", "'test'");
         binding.resolveAttrNodeValue(literalInput.attributes[1]);
         expect(binding.prop).toEqual("test");
@@ -348,16 +348,16 @@ describe("attr methods - question branching setup", function () {
     var binding = new SimpleDataBinding("#attrMethodsTestForm", startData());
 
     it("childTemplate", function () {
-        expect(binding.childTemplate(createEl("p"), null, null, "text").firstElementChild.tagName).toEqual("INPUT");
+        expect(binding.childTemplate(createEl("p"), "text", null, null).firstElementChild.tagName).toEqual("INPUT");
     });
 
     it("renderIf", function () {
-        expect(binding.renderIf(createEl("p"), "rawValue", null, "firstName").parentNode.tagName).toEqual("FORM");
-        expect(binding.renderIf(createEl("p"), "rawValue", null, undefined).parentNode).toEqual(null);
+        expect(binding.renderIf(createEl("p"), "firstName", "rawValue", null).parentNode.tagName).toEqual("FORM");
+        expect(binding.renderIf(createEl("p"), undefined, "rawValue", null).parentNode).toEqual(null);
     });
 
     it("childTemplate", function () {
-        expect(binding.setNodeValue(createInput(), "firstName", null).value).toEqual("John");
+        expect(binding.setNodeValue(createInput(), "John", "firstName", null).value).toEqual("John");
     });
 
     it("attrMethods", function () {
