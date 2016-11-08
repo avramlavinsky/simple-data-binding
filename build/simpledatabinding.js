@@ -87,14 +87,14 @@
                         prop = toPrefixedCamel(prop);
                         self.root.lastMutation = { value: val, oldValue: self.get(prop), prop: prop };
                         self.set(prop, val);
-                        checkWatches(prop);
+                        self.checkWatches(prop);
                     }
                 }
             }
 
             self.parseNode(self.container);
 
-            checkWatches("*", false);
+            self.checkWatches("*", false);
 
             if (self.root.initialized) {
                 turnOnBindings();
@@ -804,8 +804,8 @@
                     if (mutation.attributeName.substr(0, prefix.length) === prefix && value !== mutation.oldValue) {
                         prop = toCamelCase(mutation.attributeName.substr(prefix.length));
                         self.root.lastMutation = { prop: prop, value: value, oldValue: mutation.oldValue };
-                        checkWatches(prop);
-                        checkWatches("*");
+                        self.checkWatches(prop);
+                        self.checkWatches("*");
                     }
                 }
             });
@@ -862,7 +862,7 @@
             return instance[globalScope ? "globalScopeWatches" : "watches"];
         };
 
-        var checkWatches = function (prop, recursive) {
+        this.checkWatches = function (prop, recursive) {
             //check watches on the specific property as well as general watches which apply and execute
 
             if (self.watches[prop]) {
@@ -932,7 +932,6 @@
         this.mutationHandler = mutationHandler;
         this.keyUpHandler = keyUpHandler;
         this.changeHandler = changeHandler;
-        this.checkWatches = checkWatches;
         this.executeWatchFn = executeWatchFn;
         /* end-test-code */
 

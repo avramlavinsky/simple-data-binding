@@ -35,7 +35,7 @@ gulp.task('strip', function () {
 });
 
 gulp.task('compress', function () {
-    gulp.src(['build/simpledatabinding.js', 'dist/simpledatabinding-full.js'])
+    gulp.src(['build/*.js', 'dist/simpledatabinding-full.js'])
       .pipe(stripCode())
       .pipe(minify())
       .pipe(gulp.dest('dist'));
