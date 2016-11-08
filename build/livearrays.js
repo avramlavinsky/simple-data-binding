@@ -123,14 +123,14 @@
             //transforms the array member from data to object instance
             //context of the array
             //since no member instance exists yet
-            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholder;
+            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholderNode;
 
             return array.ownerInstance.createChildArrayMember(array, data, placeholder);
         };
         Bind.prototype.moveLiveArrayMember = function (array, i) {
             //move the member instance within the array
             //context of the member instance
-            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholder;
+            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholderNode;
 
             this.container.parentElement.insertBefore(this.container, placeholder);
             return this;
