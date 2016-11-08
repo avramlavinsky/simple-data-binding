@@ -12,7 +12,7 @@ Two-way data-binding has been a key selling point for many JavaScript frameworks
 <em>Simple Data Binding offers two-way data-binding à la carte.</em>
 </p>
 <p>
-<strong>Check out the <a href="https://avramlavinsky.github.io/simple-data-binding/examples/examples.html">CODEPEN examples</a>.</strong>
+<strong>Check out the <a href="https://avramlavinsky.github.io/simple-data-binding/examples/examples.html">CODEPEN examples</a> and <a href="https://avramlavinsky.github.io/simple-data-binding/docs/guide.html">user's guide</a>.</strong>
 </p>
 
 <h2>Objectives:</h2>
