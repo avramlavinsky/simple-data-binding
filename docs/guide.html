@@ -85,7 +85,7 @@
                 </li>
             </ul>
             <h4 renderif="showReturns">Returns:</h4>
-            <div renderif="returns" databind="returns" data-desc="" data-template="articleTemplate" childtemplate="template">
+            <div renderif="returns" databind="returns" data-desc="" childtemplate="'articleTemplate'">
             </div>
             <ul renderif="showExamples">
                 <li databind="examples">
@@ -429,7 +429,8 @@ var pageData = {
                      "name": "placeClone",
                      "type": "function",
                      "desc": "The logic for placing the clone."
-                   }],
+                   }
+                ],
                 "returns": {
                     "name": "attrMethod",
                     "type": "function"
@@ -592,6 +593,3 @@ guideBinding.watch("search", function(newValue){
 
 
 </html>
-
-
-
