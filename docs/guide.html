@@ -321,7 +321,7 @@ var pageData = {
                   "name": "node",
                   "type": "Element or Boolean"
                },
-               "desc": "Parses all attributes and text nodes associated with an element node, setting watches on any relevant data properties.  Recursively parses child elements unless the child element has a databind attribute indicative of another distinct SimpleDataBinding instance."
+               "desc": "Parses all attributes and text nodes associated with an element node, binding it to data by setting watches on any relevant data properties.  Recursively parses child elements unless the child element has a databind attribute indicative of another distinct SimpleDataBinding instance."
             },
             {
                "name": "removeCommentedElements",
@@ -457,7 +457,7 @@ var pageData = {
             },
             {
                 "name": "childtemplate",
-                "desc": "Native attribute method.  Removes the element and all of its descendants from the DOM if the parsed attribute value evaluates to falsey, replaces it in the DOM if truey.",
+                "desc": "Native attribute method.  Appends a clone of a template element to the element.  The cloned template element and all its descendants are then parsed and bound to data.",
                 "showExamples": "true",
                 "examples": [
                     {
