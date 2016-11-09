@@ -3,18 +3,10 @@
         //binds data to and from form controls, text nodes, and attributes
         //automatically repeats markup bound to arrays
         //includes basic templating and easily extended for more complex DOM interaction
-        //
-        //arguments
-        //
-        //  container:  element or string selector (optional) - container element for the two way binding instance  (if not present defaults to first [namespace]-databind attribute)
-        //  startData: object (optional)
-        //  configs: object (optional) - static configuration properties, watches
-        //    nameSpace: string - appended to data prevent dataset name collisions
-        //    delimmiter: string - separates selected checkbox values
-        //    watches: object - specifies watches in the form {watchName: { props: [] /* optional string or array of strings */, fn: function }} or just {watchName: function}
-        //    parent: parent SimpleDataBinding instance - used internally
+        //see https://avramlavinsky.github.io/simple-data-binding/docs/guide.html for usage
 
-        var self = this;
+        var self = this,
+            doc = document;
 
 
         //<<<< Core Data Methods >>>>
@@ -303,7 +295,7 @@
 
         var closest = function (el, selector) {
             //returns closest selector match in el or ancestors
-            while (!is(el, selector) && el !== document.body) {
+            while (!is(el, selector) && el !== doc.body) {
                 el = el.parentElement;
             }
             return el;
@@ -386,10 +378,10 @@
         var setContainer = function () {
             //create instance's container element
             if (container) {
-                self.container = container.tagName ? container : document.querySelector(container);
+                self.container = container.tagName ? container : doc.querySelector(container);
             }
             if ( ! self.container){
-                self.container = (id && document.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]')) || document.querySelector('[' + toPrefixedHyphenated('databind') + ']') || document.forms[0] || document.body;
+                self.container = (id && doc.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]')) || doc.querySelector('[' + toPrefixedHyphenated('databind') + ']') || doc.forms[0] || doc.body;
             }
             return self.container;
         };
@@ -412,7 +404,7 @@
             var input;
 
             if (self.configs.useHiddenInput) {
-                input = document.createElement("input");
+                input = doc.createElement("input");
                 input.type = "hidden";
                 self.container.appendChild(input);
             }
@@ -427,9 +419,9 @@
 
             if (!obj.placeholderNode) {
                 obj.elementTemplate = elementTemplate;
-                obj.placeholderNode = document.createComment("end " + message);
+                obj.placeholderNode = doc.createComment("end " + message);
                 elementTemplate.placeholderNode = obj.placeholderNode;
-                elementTemplate.parentNode.insertBefore(document.createComment("start " + message), elementTemplate);
+                elementTemplate.parentNode.insertBefore(doc.createComment("start " + message), elementTemplate);
                 if (elementTemplate.nextElementSibling) {
                     elementTemplate.parentNode.insertBefore(obj.placeholderNode, elementTemplate.nextElementSibling);
                 } else {
@@ -568,7 +560,7 @@
             return node.nodeValue;
         };
 
-        var parseFunctionOrObject = function (str, node, addWatches, watchCallBack) {
+        var parseFunctionOrObject = function (str, node, addWatches) {
 
             if (str.substr(0, 5) === "this.") {
 
@@ -576,7 +568,7 @@
                     argsArray = parenIndex > 0 && str.slice(parenIndex + 1, -1).split(","),
                     path = str.substr(0, parenIndex === -1 ? str.length : parenIndex),
                     pointer = self,
-                    pathArray, fn, watchFn, i, stop;
+                    pathArray, fn, i, stop;
 
                 pathArray = path.split(".");
                 for (i = 1, stop = pathArray.length; i < stop; i++) {
@@ -594,16 +586,7 @@
                         return pointer.apply(self, args);
                     };
                     if (addWatches !== false) {
-                        watchFn = function () {
-                            var result = fn();
-                            if (watchCallBack) {
-                                watchCallBack(result);
-                            } else {
-                                node.nodeValue = result;
-                            }
-                            return result;
-                        };
-                        self.watch(argsArray, watchFn);
+                        self.watch(argsArray, fn);
                     }
                     return fn;
                 } else {
@@ -614,7 +597,7 @@
             } 
         };
 
-        var parseExpression = function (str, node, addWatches, watchCallBack) {
+        var parseExpression = function (str, node, addWatches) {
             if (!str) {
                 return str;
             }
@@ -630,7 +613,7 @@
                 return numberPrimitive;
             }
 
-            fn = parseFunctionOrObject(str, node, addWatches, watchCallBack);//parseFunctionOrObject adds its own watches so no need to add here
+            fn = parseFunctionOrObject(str, node, addWatches);//parseFunctionOrObject adds its own watches so no need to add here
             if (fn) {
                 //important that return values for function as well as get should be undefined, not a null string, under failure conditions
                 //otherwise setNodeValue will overwrite previously set values to no selection for selects
@@ -638,7 +621,7 @@
             } else {
                 value = self.get(str, true);
                 if (addWatches !== false) {
-                    self.watch(str, watchCallBack || node);
+                    self.watch(str, node);
                 } 
             }
             if (node && node.nodeName === "name" && value && addWatches !== false) {
@@ -674,7 +657,7 @@
                 var clone;
 
                 if (parsedAttrValue) {
-                    self.templates[parsedAttrValue] = self.templates[parsedAttrValue] || document.getElementById(parsedAttrValue);
+                    self.templates[parsedAttrValue] = self.templates[parsedAttrValue] || doc.getElementById(parsedAttrValue);
 
                     if (self.templates[parsedAttrValue]) {
                         clone = self.templates[parsedAttrValue].cloneNode(true);
@@ -814,7 +797,7 @@
 
         var keyUpHandler = function (e) {
             //triggers change if desired
-            var changeEvent = document.createEvent('HTMLEvents');
+            var changeEvent = doc.createEvent('HTMLEvents');
 
             changeEvent.initEvent('change', true, false);
             e.target.dispatchEvent(changeEvent);
