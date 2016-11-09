@@ -11,8 +11,14 @@
 
     
 <body>
-      
-    <div class="sidebar" role="navigation">
+    
+    <header>
+        <label class="search">Search: 
+            <input name="search" type="search" />
+        </label>
+    </header>
+    
+    <aside class="sidebar" role="navigation">
         <ul>
             <li databind="sections">
                 <h2><a href="#{{this.logic.string.removeSpaces(heading)}}">{{heading}}</a></h2>
@@ -24,9 +30,9 @@
             </li>
         </ul>
         
-    </div>
+    </aside>
     
-    <div class="page">
+    <main class="page">
         
         <h1>Simple Data Binding User's Guide</h1>
 
@@ -40,7 +46,7 @@
 
         </section>
         
-    </div>
+    </main>
     
     
     <div id="templateContainer">
@@ -557,13 +563,22 @@ var logic =  {
      
 var filterItems = function(test){
     for(var i = 0, stop = pageData.sections.length; i < stop; i++){
-      filtered = pageData.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
-      pageBinding.childArrays.sections[i].update({items: filtered});
+        if(test){
+            filtered = pageData.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
+            pageBinding.childArrays.sections[i].update({items: filtered});
+        }else{
+            pageBinding.childArrays.sections[i].update({items: pageData.sections[i].items});
+        }
     }
 }
 
 var sidebarBinding = new SimpleDataBinding(".sidebar", pageData, {logic: logic});
 var pageBinding = new SimpleDataBinding(".page", pageData, {logic: logic});
+var searchBinding = new SimpleDataBinding(".search");
+        
+searchBinding.watch("search", function(newValue){
+    filterItems(newValue);
+}
 
         
         
