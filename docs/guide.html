@@ -473,13 +473,17 @@ var pageData = {
                   {
                      "name": "placeClone",
                      "type": "function",
-                     "desc": "The logic for placing the clone.",
-                     "format": "mySimpleDataBinding.attrMethods.firstchildtemplate = function(el, clone){\n\tif(el.firstChild){\n\t\tel.parentNode.insertBefore(clone, el);\n\t} else {\n\t\tel.parentNode.appendChild(clone);\n\t}\n}"
-                  }],
+                     "desc": "The logic for placing the clone."
+                   }],
                 "returns": {
                     "name": "attrMethod",
                     "type": "function"
-                }
+                },
+                "showExamples": "true",
+                "examples": [{
+                    "exampleDesc": "Create an attribute method which places the template clone as the first child of the element.",
+                    "exampleCode": "mySimpleDataBinding.attrMethods.firstchildtemplate = mySimpleDataBinding.templateMaster(function(el, clone){\n\tif(el.firstChild){\n\t\tel.parentNode.insertBefore(clone, el);\n\t} else {\n\t\tel.parentNode.appendChild(clone);\n\t}\n});"               
+                }]
             },
              {
                "name": "Custom Attribute Methods",
