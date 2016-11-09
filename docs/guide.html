@@ -462,9 +462,24 @@ var pageData = {
                 "examples": [
                     {
                      "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n\n<!-- resulting markup -->\n<div childtemplate=\"questionType\">\n\t<label>\n\tDescription:\n\t\t<textarea></textarea>\n\t</label>\n</div>"
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n\n<!-- resulting markup -->\n<div childtemplate=\"questionType\">\n\t<label>\n\t\tDescription:\n\t\t<textarea></textarea>\n\t</label>\n</div>"
                     }
                 ]
+            },
+            {
+                "name": "templateMaster",
+                "desc": "Not an attribute method but a method which generates attribute methods with the given logic for placing template markup.",
+                "arguments": [
+                  {
+                     "name": "placeClone",
+                     "type": "function",
+                     "desc": "The logic for placing the clone.
+                     "format": "mySimpleDataBinding.attrMethods.firstchildtemplate = function(el, clone){\n\tif(el.firstChild){\n\t\tel.parentNode.insertBefore(clone, el);\n\t} else {\n\t\tel.parentNode.appendChild(clone);\n\t}\n}"
+                  }],
+                "returns": {
+                    "name": "attrMethod",
+                    "type": "function"
+                }
             },
              {
                "name": "Custom Attribute Methods",
@@ -486,7 +501,7 @@ var pageData = {
                      "type": "String/Number/Object"
                   }
                ],
-               "desc": "Attribute methods (called directives in the parlance of some frameworks) execute in the context of the current SimpleDataBinding instance when an element with the given attribute is parsed or when associated data values change.",
+               "desc": "Execute when an element with the given attribute is parsed or when associated data values change.  Execute in the context of the current SimpleDataBinding instance.",
                "examples": [
                   {
                      "exampleDesc": "Passing a data property name:",
