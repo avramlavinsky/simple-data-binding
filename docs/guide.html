@@ -54,12 +54,12 @@
                 <strong>Format:</strong><code>{{format}}</code>
             </div>
             <p renderif="desc">{{desc}}</p>
-            <h4 renderif="arguments">Arguments:</h4>
+            <h4 renderif="showArguments">Arguments:</h4>
             <ul>
                 <li databind="arguments" data-format="" data-desc="" childtemplate="'articleTemplate'">
                 </li>
             </ul>
-            <h4 renderif="returns">Returns:</h4>
+            <h4 renderif="showReturns">Returns:</h4>
             <div renderif="returns" databind="returns" data-desc="" data-template="articleTemplate" childtemplate="template">
             </div>
             <ul renderif="showExamples">
@@ -254,8 +254,8 @@ var pageData = {
          "heading": "Methods",
          "template": "methodTemplate",
          "headingTemplate": "h5Template",
-         "arguments": "true",
-         "returns": "true",
+         "showArguments": "true",
+         "showReturns": "true",
          "items": [
             {
                "name": "createChild",
@@ -489,6 +489,7 @@ var pageData = {
             }, 
              {
                "name": "Custom Attribute Methods",
+               "showArguments": "true",
                "arguments": [
                   {
                      "name": "el",
