@@ -462,7 +462,7 @@ var pageData = {
                 "examples": [
                     {
                      "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n//The template element with an ID of textAreaTemplate will be cloned and appended to the div."
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n\n<!-- resulting markup -->\n<div childtemplate=\"questionType\">\n\t<label>\n\tDescription:\n\t\t<textarea></textarea>\n\t</label>\n</div>"
                     }
                 ]
             },
