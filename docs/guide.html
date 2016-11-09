@@ -558,7 +558,7 @@ var pageBinding = new SimpleDataBinding(".page", pageData, config);
 var sidebarBinding = new SimpleDataBinding(".sidebar", pageData, config);
         
 function removeSpaces(str){
-    return str.replace(/\s+/g, '');
+    return str && str.replace(/\s+/g, '');
 }
     </script>
 
