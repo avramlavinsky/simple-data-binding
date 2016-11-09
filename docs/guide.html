@@ -307,7 +307,7 @@ var pageData = {
                   "name": "value",
                   "type": "String"
                },
-               "desc": "Retrieves a value from the SimpleDataBinding instance's data.  Will iterate upwards through ancestor instances if the value is undefined and inherit is truey."
+               "desc": "Retrieves a value from the SimpleDataBinding instance's data.  Iterates upwards through ancestor instances if the value is undefined and inherit is truey."
             },
             {
                "name": "parseNode",
@@ -365,7 +365,7 @@ var pageData = {
                   "name": "value",
                   "type": "String"
                },
-               "desc": "Sets a value in the SimpleDataBinding instance's data."
+               "desc": "Sets a value in the SimpleDataBinding instance's data.  Iterates upwards through ancestor instances there is no reference defined in the data of the current instance and inherit is truey."
             },
             {
                "name": "surroundByComments",
