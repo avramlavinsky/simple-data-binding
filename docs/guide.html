@@ -307,6 +307,7 @@ var pageData = {
                   "name": "value",
                   "type": "Strintg"
                }
+               "desc": "Retrieves a value from data."
             },
             {
                "name": "parseNode",
@@ -319,7 +320,8 @@ var pageData = {
                "returns": {
                   "name": "node",
                   "type": "Element or Boolean"
-               }
+               },
+               "desc": "Parses all attributes and text nodes associated with an element node, setting watches on any relevant data properties.  Recursively parses child elements unless the child element has a databind attribute indicative of another distinct SimpleDataBinding instance."
             },
             {
                "name": "removeCommentedElements",
@@ -362,7 +364,8 @@ var pageData = {
                "returns": {
                   "name": "value",
                   "type": "String"
-               }
+               },
+               "desc": "Sets a value in the SimpleDataBinding instance's data."
             },
             {
                "name": "surroundByComments",
@@ -388,7 +391,8 @@ var pageData = {
                "returns": {
                   "name": "placeholder",
                   "type": "HTML Comment Node"
-               }
+               },
+                "Places comments before and after the given element.  Removes the element if retain is truey."
             },
             {
                "name": "update",
@@ -406,7 +410,8 @@ var pageData = {
                "returns": {
                   "name": "data",
                   "type": "Object"
-               }
+               },
+               "Batch updates the SimpleDataBinding instance's data.  Changes will not trigger internal or custom watches unless bindDuringUpdate is truey."
             },
             {
                "name": "watch",
@@ -428,7 +433,8 @@ var pageData = {
                "returns": {
                   "name": "watches",
                   "type": "Object"
-               }
+               },
+               "Listens for changes in the supplied properties, props, in data and, when a change is detected, the triggers the watch function, fn, in the context of the SimpleDataBinding instance."
             }
          ]
       },
