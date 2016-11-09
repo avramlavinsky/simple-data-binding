@@ -133,7 +133,8 @@ a {
     padding: 4px 8px
 }
 
-.threeLineIcon{
+.threeLineIcon,
+main .search{
     display: none;
 }
 
