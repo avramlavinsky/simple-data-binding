@@ -86,9 +86,11 @@
             </ul>
             <div renderif="showReturns" databind="returns">
                 <h4>Returns:</h4>
-                <h5>{{name}}</h5>
-                <strong>Type:</strong><span>{{type}}</span>
-                <p renderif="desc">{{desc}}</p>
+                <article>
+                    <h5>{{name}}</h5>
+                    <strong>Type:</strong><span>{{type}}</span>
+                    <p renderif="desc">{{desc}}</p>
+                </article>
             </div>
             <ul renderif="showExamples">
                 <li databind="examples">
