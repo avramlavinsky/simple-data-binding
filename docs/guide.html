@@ -566,16 +566,16 @@ var filterItems = function(test){
     for(var i = 0, stop = pageData.sections.length; i < stop; i++){
         if(test){
             filtered = pageData.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
-            pageBinding.childArrays.sections[i].update({items: filtered});
+            guideBinding.children.pageBinding.childArrays.sections[i].update({items: filtered});
         }else{
-            pageBinding.childArrays.sections[i].update({items: pageData.sections[i].items});
+            guideBinding.children.pageBinding.childArrays.sections[i].update({items: pageData.sections[i].items});
         }
     }
 }
 
 var guideBinding = new SimpleDataBinding(document.body, {sidebar: pageData, page: pageData}, {logic: logic});
         
-binding.watch("search", function(newValue){
+guideBinding.watch("search", function(newValue){
     filterItems(newValue);
 });
 
