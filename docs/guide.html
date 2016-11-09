@@ -12,7 +12,7 @@
     
 <body>
     
-    <aside class="sidebar" role="navigation">
+    <aside class="sidebar" role="navigation" databind="sidebar">
         <label class="search">Search: 
             <input name="search" type="search" />
         </label>
@@ -29,7 +29,7 @@
         
     </aside>
     
-    <main class="page">
+    <main class="page" databind="page">
         
         <h1>Simple Data Binding User's Guide</h1>
         
@@ -573,14 +573,9 @@ var filterItems = function(test){
     }
 }
 
-var sidebarBinding = new SimpleDataBinding(".sidebar", pageData, {logic: logic});
-var pageBinding = new SimpleDataBinding(".page", pageData, {logic: logic});
+var guideBinding = new SimpleDataBinding(document.body, {sidebar: pageData, page: pageData}, {logic: logic});
         
-sidebarBinding.watch("search", function(newValue){
-    filterItems(newValue);
-});
-        
-pageBinding.watch("search", function(newValue){
+binding.watch("search", function(newValue){
     filterItems(newValue);
 });
 
