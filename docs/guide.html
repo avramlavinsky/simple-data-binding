@@ -570,9 +570,9 @@ var filterItems = function(test){
     for(var i = 0, stop = pageData.sections.length; i < stop; i++){
         if(test){
             filtered = pageData.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
-            guideBinding.children.pageBinding.childArrays.sections[i].update({items: filtered});
+            guideBinding.children.page.childArrays.sections[i].update({items: filtered});
         }else{
-            guideBinding.children.pageBinding.childArrays.sections[i].update({items: pageData.sections[i].items});
+            guideBinding.children.page.childArrays.sections[i].update({items: pageData.sections[i].items});
         }
     }
 }
