@@ -457,12 +457,12 @@ var pageData = {
             },
             {
                 "name": "childtemplate",
-                "desc": "Native attribute method.  Appends a clone of a template element to the element.  The cloned template element and all its descendants are then parsed and bound to data.",
+                "desc": "Native attribute method.  Appends a clone of a template element to the element.  The cloned template element and all its descendants are then parsed and bound to data.  Templates should be marked up outside the SimpleDataBinding instance's container and hidden in CSS.",
                 "showExamples": "true",
                 "examples": [
                     {
                      "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n//The template element with an ID of textAreaTemplate will be cloned and appended to the div.  Templates should be marked up outside the SimpleDataBinding instance's container and hidden in CSS."
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n//The template element with an ID of textAreaTemplate will be cloned and appended to the div."
                     }
                 ]
             },
