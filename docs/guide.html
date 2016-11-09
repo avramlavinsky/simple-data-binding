@@ -393,7 +393,26 @@ var pageData = {
                   "type": "HTML Comment Node"
                },
                "desc": "Places comments before and after the given element.  Removes the element if retain is truey."
-            },
+            },     
+            {
+                "name": "templateMaster",
+                "desc": "Generates attribute methods with the given logic for placing template markup.",
+                "arguments": [
+                  {
+                     "name": "placeClone",
+                     "type": "function",
+                     "desc": "The logic for placing the clone."
+                   }],
+                "returns": {
+                    "name": "attrMethod",
+                    "type": "function"
+                },
+                "showExamples": "true",
+                "examples": [{
+                    "exampleDesc": "Create an attribute method which places the template clone as the first child of the element.",
+                    "exampleCode": "mySimpleDataBinding.attrMethods.firstchildtemplate = mySimpleDataBinding.templateMaster(function(el, clone){\n\tif(el.firstChild){\n\t\tel.parentNode.insertBefore(clone, el);\n\t} else {\n\t\tel.parentNode.appendChild(clone);\n\t}\n});"               
+                }]
+            },            
             {
                "name": "update",
                "arguments": [
@@ -465,26 +484,7 @@ var pageData = {
                      "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n\n<!-- resulting markup -->\n<div childtemplate=\"questionType\">\n\t<label>\n\t\tDescription:\n\t\t<textarea></textarea>\n\t</label>\n</div>"
                     }
                 ]
-            },
-            {
-                "name": "templateMaster",
-                "desc": "Not an attribute method but a method which generates attribute methods with the given logic for placing template markup.",
-                "arguments": [
-                  {
-                     "name": "placeClone",
-                     "type": "function",
-                     "desc": "The logic for placing the clone."
-                   }],
-                "returns": {
-                    "name": "attrMethod",
-                    "type": "function"
-                },
-                "showExamples": "true",
-                "examples": [{
-                    "exampleDesc": "Create an attribute method which places the template clone as the first child of the element.",
-                    "exampleCode": "mySimpleDataBinding.attrMethods.firstchildtemplate = mySimpleDataBinding.templateMaster(function(el, clone){\n\tif(el.firstChild){\n\t\tel.parentNode.insertBefore(clone, el);\n\t} else {\n\t\tel.parentNode.appendChild(clone);\n\t}\n});"               
-                }]
-            },
+            }, 
              {
                "name": "Custom Attribute Methods",
                "arguments": [
