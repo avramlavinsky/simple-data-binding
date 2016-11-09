@@ -81,9 +81,28 @@ code {
     margin-top: 10px;
 }
 
+a {
+    color: #1a0dab;
+}
+
+.page{
+    float: left;
+}
+
+.sidebar {
+    float: left;
+    margin-right: 30px;
+}
+
+.sidebar h2{
+    font-size: 100%;
+}
+
 [renderif=format] code{
     display: inline;
 }
+
+
 
 #templateContainer{
     display: none;
