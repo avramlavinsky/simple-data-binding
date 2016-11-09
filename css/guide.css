@@ -147,7 +147,7 @@ main .search{
         margin-left: 30px;
     }
   
-    main.search{
+    main .search{
         display: block;
     }
 
