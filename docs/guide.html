@@ -445,6 +445,28 @@ var pageData = {
          "showExamples": "true",
          "items": [
             {
+                "name": "renderif",
+                "desc": "Native attribute method.  Removes the element and all of its descendants from the DOM if the parsed attribute value evaluates to falsey, replaces it in the DOM if truey.",
+                "showExamples": "true",
+                "examples": [
+                    {
+                     "exampleDesc": "Passing a data property name:",
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for showInput changes -->\n<input renderif=\"showInput\" />\n\nJS:\nmyDataBinding.data.showInput = \"\";\n//the input will be removed from the DOM"
+                    }
+                ]
+            },
+            {
+                "name": "childtemplate",
+                "desc": "Native attribute method.  Removes the element and all of its descendants from the DOM if the parsed attribute value evaluates to falsey, replaces it in the DOM if truey.",
+                "showExamples": "true",
+                "examples": [
+                    {
+                     "exampleDesc": "Passing a data property name:",
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n//The template element with an ID of textAreaTemplate will be cloned and appended to the div.  Templates should be marked up outside the SimpleDataBinding instance's container and hidden in CSS."
+                    }
+                ]
+            },
+             {
                "name": "Custom Attribute Methods",
                "arguments": [
                   {
@@ -483,17 +505,6 @@ var pageData = {
                      "exampleCode": "MARKUP:\n<!-- attribute method will be reassessed whenever data values for firstName or lastName change -->\n<input my-custom-attr-method=\"this.logic.toInitials(firstName, lastName)\" />\n\nJS:\nmyDataBinding.logic.toInitials = function(str1, str2){\n\treturn str1.substr(0,1) + str2.substr(0,1);\n}\nmyDataBinding.data.firstName = \"John\";\nmyDataBinding.data.lastName = \"Smith\";\nmyDataBinding.attrMethods.myCustomAttrMethod=function(el, parsedAttrValue, rawAttrValue, attrName){\n\tconsole.log(el.tagName)//logs \"INPUT\"\n\tconsole.log(parsedAttrValue)//logs \"JS\"\n\tconsole.log(rawAttrValue)//logs \"this.logic.toInitials(firstName, lastName)\"\n\tconsole.log(attrName)//logs \"myCustomAttrMethod\"\n}"
                   }
                ]
-            },
-            {
-                "name": "renderIf",
-                "desc": "Native attribute method.  Removes the element and all of its descendants from the DOM if the parsed attribute value evaluates to falsey, replaces it in the DOM if truey.",
-                "showExamples": "true",
-                "examples": [
-                    {
-                     "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for showInput changes -->\n<input renderif=\"showInput\" />\n\nJS:\nmyDataBinding.data.showInput = \"\";\n//the input will be removed from the DOM"
-                    }
-                ]
             }
          ]
       }
