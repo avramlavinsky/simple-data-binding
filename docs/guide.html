@@ -12,7 +12,7 @@
     
 <body>
     
-    <div databind>
+    <div class="guideBinding">
     
     <aside class="sidebar" role="navigation" databind="sidebar">
         <label class="search">Search: 
@@ -577,7 +577,7 @@ var filterItems = function(test){
     }
 }
 
-var guideBinding = new SimpleDataBinding(document.body, {sidebar: pageData, page: pageData}, {logic: logic});
+var guideBinding = new SimpleDataBinding(".guideBinding", {sidebar: pageData, page: pageData}, {logic: logic});
         
 guideBinding.watch("search", function(newValue){
     filterItems(newValue);
