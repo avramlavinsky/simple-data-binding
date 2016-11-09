@@ -12,13 +12,10 @@
     
 <body>
     
-    <header>
+    <aside class="sidebar" role="navigation">
         <label class="search">Search: 
             <input name="search" type="search" />
         </label>
-    </header>
-    
-    <aside class="sidebar" role="navigation">
         <ul>
             <li databind="sections">
                 <h2><a href="#{{this.logic.string.removeSpaces(heading)}}">{{heading}}</a></h2>
@@ -574,9 +571,8 @@ var filterItems = function(test){
 
 var sidebarBinding = new SimpleDataBinding(".sidebar", pageData, {logic: logic});
 var pageBinding = new SimpleDataBinding(".page", pageData, {logic: logic});
-var searchBinding = new SimpleDataBinding(".search");
         
-searchBinding.watch("search", function(newValue){
+sidebarBinding.watch("search", function(newValue){
     filterItems(newValue);
 });
 
