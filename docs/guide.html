@@ -31,7 +31,7 @@
     
     <div id="templateContainer">
         
-        <article id="foo">
+        <article id="articleTemplate">
             <div childtemplate="headingTemplate"></div>
             <strong>Type:</strong><span>{{type}}</span>
             <div renderif="format">
@@ -48,7 +48,7 @@
             </div>           
         </article>
         
-        <article id="articleTemplate">
+        <article id="methodTemplate">
             <h3 renderif="name">{{name}}</h3>
             <div renderif="format">
                 <strong>Format:</strong><code>{{format}}</code>
