@@ -547,19 +547,26 @@ var pageData = {
    ]
 };
 
-var config = {
-        logic: {
-            string: {
-                removeSpaces: removeSpaces
-            }
+var logic =  {
+    string: {
+        removeSpaces: function(str){
+            return str && str.replace(/\s+/g, '');
         }
+    }
+};
+     
+var filterItems = function(test){
+    for(var i = 0, stop = pageData.sections.length; i < stop; i++){
+      filtered = pageData.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
+      pageBinding.childArrays.sections[i].update({items: filtered});
+    }
 }
-var pageBinding = new SimpleDataBinding(".page", pageData, config);
-var sidebarBinding = new SimpleDataBinding(".sidebar", pageData, config);
+
+var sidebarBinding = new SimpleDataBinding(".sidebar", pageData, {logic: logic});
+var pageBinding = new SimpleDataBinding(".page", pageData, {logic: logic});
+
         
-function removeSpaces(str){
-    return str && str.replace(/\s+/g, '');
-}
+        
     </script>
 
     
