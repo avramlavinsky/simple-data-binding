@@ -30,9 +30,9 @@
         
         <h1>Simple Data Binding User's Guide</h1>
 
-        <section databind="sections">
+        <section id="{{this.logic.string.removeSpaces(heading)}}" databind="sections">
 
-            <h2 id="{{this.logic.string.removeSpaces(heading)}}">{{heading}}</h2>
+            <h2>{{heading}}</h2>
             <ul>
                 <li id="{{name}}" databind="items" childtemplate="template">     
                 </li>
