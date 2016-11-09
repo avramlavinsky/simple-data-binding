@@ -111,6 +111,7 @@ a {
 .sidebar h2{
    margin-top: 20px;
    font-size: 100%;
+   font-weight: bold;
 }
 
 .sidebar li{
