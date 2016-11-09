@@ -122,7 +122,45 @@ a {
     display: inline;
 }
 
+.search {
+    display: block;
+    margin-top: 30px;
+}
 
+.search input{
+    display: block;
+    margin: 10px 0;
+    padding: 4px 8px
+}
+
+.threeLineIcon{
+    display: none;
+}
+
+@media screen and (max-width: 860px) {
+    .sidebar{
+        display: none;
+    }
+
+    .page{
+        margin-left: 30px;
+    }
+
+    .threeLineIcon{
+        display: inline-block;
+    }
+}
+
+@media screen and (max-width: 660px) {
+    .page{
+        width: 94%;
+        margin-left: 3%;
+        margin-right: 3%;
+    }
+    h1, h2{
+        margin-left: 20px
+    }
+}
 
 #templateContainer{
     display: none;
