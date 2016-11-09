@@ -15,7 +15,7 @@
     <div class="sidebar" role="navigation">
         <ul>
             <li databind="sections">
-                <h2><a href="{{this.logic.string.removeSpaces(heading)}}">{{heading}}</a></h2>
+                <h2><a href="#{{this.logic.string.removeSpaces(heading)}}">{{heading}}</a></h2>
                 <ul>
                     <li databind="items">
                         <a href="#{{name}}">{{name}}</a>
@@ -63,7 +63,7 @@
         </article>
         
         <article id="methodTemplate">
-            <h3 renderif="name">{{name}}</h3>
+            <h3 id="{{name}}" renderif="name">{{name}}</h3>
             <div renderif="format">
                 <strong>Format:</strong><code>{{format}}</code>
             </div>
