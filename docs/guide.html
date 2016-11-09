@@ -15,10 +15,10 @@
     <div class="sidebar" role="navigation">
         <ul>
             <li databind="sections">
-                <h2>{{heading}}</h2>
+                <h2><a href="{{this.logic.string.removeSpaces(heading)}}">{{heading}}</a></h2>
                 <ul>
                     <li databind="items">
-                        <a href="{{name}}">{{name}}</a>
+                        <a href="#{{name}}">{{name}}</a>
                     </li>
                 </ul>
             </li>
@@ -32,7 +32,7 @@
 
         <section databind="sections">
 
-            <h2 id="{{heading}}">{{heading}}</h2>
+            <h2 id="{{this.logic.string.removeSpaces(heading)}}">{{heading}}</h2>
             <ul>
                 <li databind="items" childtemplate="template">     
                 </li>
@@ -547,8 +547,19 @@ var pageData = {
    ]
 };
 
-var pageBinding = new SimpleDataBinding(".page", pageData);
-var sidebarBinding = new SimpleDataBinding(".sidebar", pageData);
+var config = {
+        logic: {
+            string: {
+                removeSpaces: removeSpaces
+            }
+        }
+}
+var pageBinding = new SimpleDataBinding(".page", pageData, config);
+var sidebarBinding = new SimpleDataBinding(".sidebar", pageData, config);
+        
+function removeSpaces(str){
+    return str.replace(/\s+/g, '');
+}
     </script>
 
     
