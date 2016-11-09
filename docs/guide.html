@@ -11,10 +11,23 @@
 
     
 <body>
+      
+    <h1>Simple Data Binding User's Guide</h1>
     
-    <div class="page" role="main">
-
-        <h1>Simple Data Binding User's Guide</h1>
+    <div class="sidebar" role="navigation">
+        
+        <article databind="sections">
+            <h2>{{heading}}</h2>
+            <ul>
+                <li databind="items">
+                    <a href="{{name}}">{{name}}</a>
+                </li>
+            </ul>
+        </article>
+        
+    </div>
+    
+    <div class="page">
 
         <section databind="sections">
 
@@ -534,6 +547,7 @@ var pageData = {
 };
 
 var pageBinding = new SimpleDataBinding(".page", pageData);
+var sidebarBinding = new SimpleDataBinding(".sidbar", pageData);
     </script>
 
     
