@@ -78,6 +78,11 @@ strong{
 code {
     white-space: pre-wrap;
     display: block;
+    margin-top: 10px;
+}
+
+[renderif=format] code{
+    display: inline;
 }
 
 #templateContainer{
