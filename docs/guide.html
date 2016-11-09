@@ -34,7 +34,7 @@
 
             <h2 id="{{this.logic.string.removeSpaces(heading)}}">{{heading}}</h2>
             <ul>
-                <li databind="items" childtemplate="template">     
+                <li id="{{name}}" databind="items" childtemplate="template">     
                 </li>
             </ul>
 
@@ -63,7 +63,7 @@
         </article>
         
         <article id="methodTemplate">
-            <h3 id="{{name}}" renderif="name">{{name}}</h3>
+            <h3 renderif="name">{{name}}</h3>
             <div renderif="format">
                 <strong>Format:</strong><code>{{format}}</code>
             </div>
@@ -85,7 +85,7 @@
         </article>
         
         <div id="h3Template">
-            <h3 id="{{name}}">{{name}}</h3>
+            <h3>{{name}}</h3>
         </div>
                 
         <h5 id="h5Template">{{name}}</h5>
