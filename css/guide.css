@@ -162,7 +162,7 @@ main .search{
         margin-left: 3%;
         margin-right: 3%;
     }
-    h1, h2{
+    h1, h2, main .search{
         margin-left: 20px
     }
 }
