@@ -58,7 +58,6 @@
         
         <article id="articleTemplate">
             <div childtemplate="headingTemplate"></div>
-            <!--
             <strong>Type:</strong><span>{{type}}</span>
             <div renderif="format">
                 <strong>Format:</strong><code>{{format}}</code>
@@ -72,12 +71,10 @@
             <p renderif="desc">{{desc}}</p>
             <div databind="properties"  data-format="" data-heading-template="h5Template" childtemplate="'articleTemplate'">
             </div>
-            -->
         </article>
         
         <article id="methodTemplate">
             <h3 renderif="name">{{name}}</h3>
-            <!--
             <div renderif="format">
                 <strong>Format:</strong><code>{{format}}</code>
             </div>
@@ -104,7 +101,7 @@
                     <code>{{exampleCode}}</code>
                 </li>
             </ul>
-            -->
+
         </article>
         
         <div id="h3Template">
@@ -570,7 +567,7 @@ var pageData = {
       }
    ]
 };
-/*
+
 var logic =  {
     string: {
         removeSpaces: function(str){
@@ -595,9 +592,6 @@ var guideBinding = new SimpleDataBinding(".guideBinding", {sidebar: pageData, pa
 guideBinding.watch("search", function(newValue){
     filterItems(newValue);
 });
-
-*/
-var guideBinding = new SimpleDataBinding(".page", pageData); 
         
 
         
