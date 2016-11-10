@@ -184,7 +184,7 @@
         };
 
         this.createChild = function (id, container, data) {
-            var child = new SimpleDataBinding(container, data, self.configs, id, self);
+            var child = container ? new SimpleDataBinding(container, data, self.configs, id, self): null;
 
             self.children[id] = child;
             return child;
@@ -200,9 +200,9 @@
                 dataClone = unprefixData(dataClone);
             }
 
-            for (var childKey in self.children) {
-                if (self.children.hasOwnProperty(childKey)) {
-                    dataClone[childKey] = self.children[childKey].export();
+            for (var childId in self.children) {
+                if (self.children.hasOwnProperty(childId) && self.children[childId]) {
+                    dataClone[childId] = self.children[childId].export();
                 }
             }
             return dataClone;
@@ -763,9 +763,9 @@
 
         this.turnOnAllBindings = function () {
             turnOnBindings();
-            for (var childKey in self.children) {
-                if (self.children.hasOwnProperty(childKey)) {
-                    self.children[childKey].turnOnAllBindings();
+            for (var childId in self.children) {
+                if (self.children.hasOwnProperty(childId) && self.children[childId]) {
+                    self.children[childId].turnOnAllBindings();
                 }
             }
             return self;
@@ -865,10 +865,10 @@
             }
 
             if (recursive !== false) {
-                for (var childKey in self.children) {
-                    if (self.children.hasOwnProperty(childKey)) {
+                for (var childId in self.children) {
+                    if (self.children.hasOwnProperty(childId) && self.children[childId]) {
                         //recurse through child instances in case the property is inheritted
-                        self.children[childKey].checkWatches(prop);
+                        self.children[childId].checkWatches(prop);
                     }
                 }
             }

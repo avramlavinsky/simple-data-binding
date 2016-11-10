@@ -151,8 +151,13 @@ var testDataMethods = function (config, configDescription, formId) {
             expect(binding.assign({ a: 1, b: 2 }, { c: 3, d: 4 }).c).toEqual(3);
         });
 
+        it("createChild - new container", function () {
+            var input = createInput();
+            expect(binding.createChild("newProp", input, { a: 1, b: 2 }).data.b).toEqual("2");
+        });
+
         it("createChild - no container", function () {
-            expect(binding.createChild("newProp", null, { a: 1, b: 2 }).data.b).toEqual("2");
+            expect(binding.createChild("newProp", null)).toEqual(null);
         });
 
         it("export", function () {
