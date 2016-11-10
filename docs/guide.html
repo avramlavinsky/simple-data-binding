@@ -570,7 +570,7 @@ var pageData = {
       }
    ]
 };
-
+/*
 var logic =  {
     string: {
         removeSpaces: function(str){
@@ -595,6 +595,10 @@ var guideBinding = new SimpleDataBinding(".guideBinding", {sidebar: pageData, pa
 guideBinding.watch("search", function(newValue){
     filterItems(newValue);
 });
+
+*/
+var guideBinding = new SimpleDataBinding(".page", pageData); 
+        
 
         
         
