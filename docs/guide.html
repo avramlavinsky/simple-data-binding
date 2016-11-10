@@ -587,7 +587,7 @@ var filterItems = function(test){
     }
 }
 
-var guideBinding = new SimpleDataBinding(".guideBinding", {/*sidebar: pageData, */page: pageData, search: ""}, {logic: logic});
+var guideBinding = new SimpleDataBinding(".guideBinding", {sidebar: pageData, page: pageData, search: ""}, {logic: logic});
         
 guideBinding.watch("search", function(newValue){
     filterItems(newValue);
