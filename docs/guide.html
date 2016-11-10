@@ -84,13 +84,15 @@
                 <li databind="arguments" data-format="" data-desc="" childtemplate="'articleTemplate'">
                 </li>
             </ul>
-            <div renderif="showReturns" databind="returns">
+            <div renderif="showReturns" databind="returns" childtemplate="'articleTemplate'">
+                <!--
                 <h4>Returns:</h4>
                 <article>
                     <h5>{{name}}</h5>
                     <strong>Type:</strong><span>{{type}}</span>
                     <p renderif="desc">{{desc}}</p>
                 </article>
+                -->
             </div>
             <ul renderif="showExamples">
                 <li databind="examples">
