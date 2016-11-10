@@ -581,8 +581,10 @@ var filterItems = function(test){
         if(test){
             filtered = pageData.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
             guideBinding.children.page.childArrays.sections[i].update({items: filtered});
+            guideBinding.children.sidebar.childArrays.sections[i].update({items: filtered});
         }else{
             guideBinding.children.page.childArrays.sections[i].update({items: pageData.sections[i].items});
+            guideBinding.children.sidebar.childArrays.sections[i].update({items: pageData.sections[i].items});
         }
     }
 }
