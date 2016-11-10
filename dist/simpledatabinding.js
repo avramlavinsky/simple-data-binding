@@ -11,7 +11,7 @@
 
         //<<<< Core Data Methods >>>>
 
-        this.set = function (prop, val, inherit, repository) {
+        this.set = function (prop, val, inherit, repository, setWhereDefined) {
             //set value in the closest instance where that value exists
             //or set it as a new property for this instance
             var parent = self, existingValue;
@@ -20,18 +20,22 @@
             repository = repository || "data";
             existingValue = self.data[prop];
 
-            while (existingValue === undefined && inherit !== false && parent.parent) {
-                //search for a reference to the property in ancestors
-                parent = parent.parent;
-                existingValue = parent[repository][prop];
-            }
+            if (setWhereDefined) {
+                while (existingValue === undefined && inherit !== false && parent.parent) {
+                    //search for a reference to the property in ancestors
+                    parent = parent.parent;
+                    existingValue = parent[repository][prop];
+                }
 
-            if (existingValue === undefined) {
-                //if there is no reference, set our existingValue in this instance
-                self[repository][toPrefixedCamel(prop)] = val;
+                if (existingValue === undefined) {
+                    //if there is no reference, set our existingValue in this instance
+                    self[repository][prop] = val;
+                } else {
+                    //otherwise set the existingValue in the parent
+                    parent[repository][prop] = val;
+                }
             } else {
-                //otherwise set the existingValue in the parent
-                parent[repository][toPrefixedCamel(prop)] = val;
+                self[repository][prop] = val;
             }
 
             return self[repository][prop];
@@ -779,9 +783,9 @@
 
             if (self.containingArray && self.parent.get(prop) !== undefined && (e.target.type === "radio" || e.target.type === "checkbox")) {
                 //checkboxes and radios created in childArrays should change the value in the parent DataBinding instance
-                return self.parent.set(prop, val);
+                return self.parent.set(prop, val, true, "data", true);
             } else {
-                return self.set(prop, val);
+                return self.set(prop, val, true, "data", true);
             }
         };
 
