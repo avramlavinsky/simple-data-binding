@@ -97,8 +97,9 @@ a {
    color: #1a0dab;
 }
 
-:not(.bindings-initialized)[databind]{
-   color: transparent !important;
+:not(.bindings-initialized)[databind],
+:not(.bindings-initialized)[databind] a{
+   color: transparent;
 }
 
 .page{
