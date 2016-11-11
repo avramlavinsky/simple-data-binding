@@ -97,6 +97,15 @@ a {
     color: #1a0dab;
 }
 
+[databind]{
+  background-color: purple;
+}
+
+.bindings-initialized{
+  display: initial;
+  background-color: inherit;
+}
+
 .page{
     float: left;
 }
@@ -133,7 +142,6 @@ a {
     padding: 4px 8px
 }
 
-.threeLineIcon,
 main .search{
     display: none;
 }
@@ -149,10 +157,6 @@ main .search{
   
     main .search{
         display: block;
-    }
-
-    .threeLineIcon{
-        display: inline-block;
     }
 }
 
