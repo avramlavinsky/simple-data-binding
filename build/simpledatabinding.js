@@ -108,11 +108,11 @@
 
         var createChildArray = function (prop, data, el) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
-                ar, templateElement, parent, parentPlaceholder, grandparent;
+                i, stop, ar, templateElement, parent, parentPlaceholder, grandparent;
 
             if (self.childArrays[prop]) {
                 ar = self.childArrays[prop];
-                for (var i = 0, stop = ar.length; i < ar.length; i++) {
+                for (i = 0, stop = ar.length; i < ar.length; i++) {
                     self.removeChild(ar[i]);
                 }
                 ar.length = 0;
@@ -136,7 +136,7 @@
                 grandparent.removeChild(parent);
             }
 
-            for (var i = 0, stop = data.length; i < stop; i++) {
+            for (i = 0, stop = data.length; i < stop; i++) {
                 ar[i] = (self.createChildArrayMember(ar, data[i]));
             }
 
@@ -195,15 +195,13 @@
         this.createChild = function (id, container, data) {
             var child = null, cachedChild;
 
-            if (container) {
-                cachedChild = self.cache.get(data);
-                if (cachedChild) {
-                    cachedChild.container = container;
-                    cachedChild.parseNode(container);
-                    child = cachedChild;
-                } else {
-                    child = new SimpleDataBinding(container, data, self.configs, id, self);
-                }
+            cachedChild = self.cache.get(data);
+            if (cachedChild && container && cachedChild.removed) {
+                cachedChild.container = container;
+                cachedChild.parseNode(container);
+                child = cachedChild;
+            } else {
+                child = new SimpleDataBinding(container, data, self.configs, id, self);
             }
 
             self.children[id] = child;

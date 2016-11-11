@@ -158,7 +158,7 @@ var testDataMethods = function (config, configDescription, formId) {
         });
 
         it("createChild - no container", function () {
-            expect(binding.createChild("newProp", null)).toEqual(null);
+            expect(binding.createChild("newProp", null) instanceof SimpleDataBinding).toEqual(true);
         });
 
         it("removeChild", function () {
