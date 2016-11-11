@@ -98,7 +98,7 @@ a {
 }
 
 :not(.bindings-initialized)[databind]{
-   background-color: purple;
+   color: transparent;
 }
 
 .page{
