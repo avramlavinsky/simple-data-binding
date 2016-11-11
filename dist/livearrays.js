@@ -138,8 +138,7 @@
         Bind.prototype.removeLiveArrayMember = function () {
             //remove the member instance from the array
             //context of the member instance
-            this.container.parentElement.removeChild(this.container);
-            return this;
+            this.parent.removeChild(this);
         };
         liveArrayFactory = new LiveArrayFactory(Bind, "createLiveArrayMember", "moveLiveArrayMember", "removeLiveArrayMember");
         Bind.prototype.arrayEnhancer = liveArrayFactory;

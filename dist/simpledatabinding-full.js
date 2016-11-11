@@ -99,13 +99,22 @@
             return self.data;
         };
 
+        self.removeChild = function (child) {
+            child.container.parentNode.removeChild(child.container);
+            delete self.children[child.id];
+            child.removed = true;
+            return child;
+        };
+
         var createChildArray = function (prop, data, el) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
                 ar, templateElement, parent, parentPlaceholder, grandparent;
 
             if (self.childArrays[prop]) {
                 ar = self.childArrays[prop];
-                self.removeCommentedElements(ar.placeholderNode, "databind");
+                for (var i = 0, stop = ar.length; i < ar.length; i++) {
+                    self.removeChild(ar[i]);
+                }
                 ar.length = 0;
             } else {
                 templateElement = el || getContainer(prop);
@@ -184,7 +193,18 @@
         };
 
         this.createChild = function (id, container, data) {
-            var child = container ? new SimpleDataBinding(container, data, self.configs, id, self): null;
+            var child = null, cachedChild;
+
+            if (container) {
+                cachedChild = self.cache.get(data);
+                if (cachedChild) {
+                    cachedChild.container = container;
+                    cachedChild.parseNode(container);
+                    child = cachedChild;
+                } else {
+                    child = new SimpleDataBinding(container, data, self.configs, id, self);
+                }
+            }
 
             self.children[id] = child;
             return child;
@@ -901,6 +921,7 @@
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.templates = assign({}, self.configs.templates || {});
             self.logic = assign({}, self.configs.logic || {});
+            self.cache = new WeakMap();
 
             return self;
         };
@@ -928,6 +949,9 @@
             //overwrite with values in form controls if present
             //overwrite again with start dataArgument if present
 
+            if (startData && self.parent) {
+                self.parent.cache.set(startData, self);
+            }
             self.data = prefixData((self.boundHiddenInput || self.container).dataset);
             self.update(self.data);
             getInitialNodeValues();
@@ -1100,8 +1124,7 @@
         Bind.prototype.removeLiveArrayMember = function () {
             //remove the member instance from the array
             //context of the member instance
-            this.container.parentElement.removeChild(this.container);
-            return this;
+            this.parent.removeChild(this);
         };
         liveArrayFactory = new LiveArrayFactory(Bind, "createLiveArrayMember", "moveLiveArrayMember", "removeLiveArrayMember");
         Bind.prototype.arrayEnhancer = liveArrayFactory;

@@ -107,6 +107,7 @@ var testDataMethods = function (config, configDescription, formId) {
 
         var binding = new SimpleDataBinding("#" + formId, startData(), config),
             questionTemplate = binding.childArrays.jobQuestions.elementTemplate,
+            originalMiddleNameBinding = binding.children.middleName,
             childArray;
 
         binding.data.lastName = "Smith";
@@ -158,6 +159,20 @@ var testDataMethods = function (config, configDescription, formId) {
 
         it("createChild - no container", function () {
             expect(binding.createChild("newProp", null)).toEqual(null);
+        });
+
+        it("removeChild", function () {
+            window.originalMiddleNameBinding = binding.children.middleName;
+            expect(binding.removeChild(binding.children.middleName).removed).toEqual(true);
+        });
+
+        it("removeChild - children object", function () {
+            expect(binding.children.middleName).toEqual(undefined);
+        });
+
+        it("createChild - replacing", function () {
+            var middleNameInput = createInput();
+            expect(binding.createChild("middleName", middleNameInput, questionData.middleName) === originalMiddleNameBinding).toEqual(true);
         });
 
         it("export", function () {
