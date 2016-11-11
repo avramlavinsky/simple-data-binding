@@ -405,6 +405,9 @@
             if ( ! self.container){
                 self.container = (id && doc.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]')) || doc.querySelector('[' + toPrefixedHyphenated('databind') + ']') || doc.forms[0] || doc.body;
             }
+            setTimeout(function () {
+                self.container.classList.add("bindings-initialized");
+            });
             return self.container;
         };
 
