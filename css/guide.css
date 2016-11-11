@@ -94,20 +94,15 @@ code {
 }
 
 a {
-    color: #1a0dab;
+   color: #1a0dab;
 }
 
-[databind]{
-  background-color: purple;
-}
-
-.bindings-initialized{
-  display: initial;
-  background-color: inherit;
+:not(.bindings-initialized)[databind]{
+   background-color: purple;
 }
 
 .page{
-    float: left;
+   float: left;
 }
 
 .sidebar {
