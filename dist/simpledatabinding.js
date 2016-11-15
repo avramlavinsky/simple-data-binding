@@ -234,6 +234,7 @@
             if (cachedChild && container && cachedChild.removed) {
                 cachedChild.container = container;
                 cachedChild.parseNode(container);
+                cachedChild.update(data);
                 child = cachedChild;
             } else {
                 child = new SimpleDataBinding(container, data, self.configs, id, self);
