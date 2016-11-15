@@ -146,15 +146,6 @@
                 ar = self.childArrays[prop],
                 i, stop, elementTemplate, parentNode, parentPlaceholder, grandparent;
 
-            if (ar && document.body.contains(ar.elementTemplate)) {
-                elementTemplate = ar.elementTemplate;
-            }else{
-                elementTemplate = el || getContainer(prop);
-                if (!elementTemplate) {
-                    return null;
-                }
-            }
-
             if (ar) {
                 for (i = 0, stop = ar.length; i < ar.length; i++) {
                     self.removeChild(ar[i]);
@@ -166,8 +157,12 @@
                 ar.idIndex = 0;
                 ar.ownerInstance = self;
                 ar.id = prop;
+                elementTemplate = el || getContainer(prop);
+                if (!elementTemplate) {
+                    return null;
+                }
             }
-            self.surroundByComments(ar, "child array " + prop, elementTemplate);
+            self.surroundByComments(ar, "child array " + prop, elementTemplate || ar.elementTemplate);
             
             if (ASSEMBLEASFRAGMENT) {
                 parentNode = self.childArrays[prop].placeholderNode.parentNode;
