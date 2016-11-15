@@ -492,7 +492,7 @@
             
             if (self.container) {
                 if (!instanceId) {
-                    instanceId = self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
+                    instanceId = self.container.getAttribute("databind") || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
                 }
                 self.container.setAttribute("databind", instanceId);
             }
