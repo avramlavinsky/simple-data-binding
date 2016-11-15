@@ -38,6 +38,10 @@
                 self[repository][prop] = val;
             }
 
+            if (self.configs.modifyInputObjects && repository === "data") {
+                startData[prop] = val;
+            }
+
             return self[repository][prop];
         };
 
@@ -99,11 +103,42 @@
             return self.data;
         };
 
-        self.removeChild = function (child) {
+        this.removeChild = function (child) {
             child.container.parentNode.removeChild(child.container);
             delete self.children[child.id];
             child.removed = true;
             return child;
+        };
+
+        var wireData = function (data) {
+            if (data) {
+                if (data.$bindings) {
+                    data.$bindings.push(self);
+                } else {
+                    wire("$bindings", [self]);
+                    wire("$set", $set);
+                }
+                wire("$binding",self);
+            }
+
+            function $set (prop, val) {
+                for (var i = 0, stop = data.$bindings.length; i < stop; i++) {
+                    if (data.$bindings[i] && data.$bindings[i].set) {
+                        data.$bindings[i].set(prop, val);
+                    }
+                }
+                return val;
+            }
+
+            function wire(prop, val) {
+                Object.defineProperty(data, prop, {
+                    enumerable: false,
+                    configurable: true,
+                    value: val
+                });
+            }
+
+            return data;
         };
 
         var createChildArray = function (prop, data, el) {
@@ -991,6 +1026,7 @@
             self.update(self.data);
             getInitialNodeValues();
             self.update(startData || {});
+            wireData(startData);
             return self;
         };
 
@@ -1017,4 +1053,11 @@
     }
 
     window.SimpleDataBinding = SimpleDataBinding;
+
+    window.$bind = function (container, startData, configs, id) {
+        configs = configs || {};
+        configs.updateInputArrays = true;
+        configs.updateInputObjects = true;
+        return new SimpleDataBinding(container, startData, configs, id);
+    }
 })();

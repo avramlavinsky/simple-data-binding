@@ -136,6 +136,18 @@ var testDataMethods = function (config, configDescription, formId) {
             expect(binding.update({ middleName: "Harrison" }).middleName).toEqual("Harrison");
         });
 
+        it("wireData - $binding", function () {
+            expect(binding.wireData({}).$binding).toEqual(binding);
+        });
+
+        it("wireData - $bindings", function () {
+            expect(binding.wireData({}).$bindings[0]).toEqual(binding);
+        }); 
+
+        it("wireData - $set", function () {
+            expect(binding.wireData({}).$set("yearOfOffense", '1985')).toEqual(binding.get("yearOfOffense"));
+        });
+
         it("generateChildArrayMemberId", function () {
             expect(binding.generateChildArrayMemberId([], questionData.offense)).toEqual("offense");
         });

@@ -1,4 +1,12 @@
 //gross initialization tests in the simplest scenario, no arguments, no markup
+describe("initFamilyTree - no args", function () {
+
+    var binding = new SimpleDataBinding({ test: "result" });
+
+    it("initArgs", function () {
+        expect(binding.data.test).toEqual("result");
+    });
+});
 
 describe("initFamilyTree - no args", function () {
 
