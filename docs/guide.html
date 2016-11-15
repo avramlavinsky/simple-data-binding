@@ -88,7 +88,7 @@
           
             <div renderif="showReturns">
                 <h4>Returns:</h4>
-                <article  databind="returns" data-name="" data-type="" data-descr="">
+                <article  databind="returns" data-name="" data-type="" data-desc="">
                     <h5>{{name}}</h5>
                     <strong>Type:</strong><span>{{type}}</span>
                     <p renderif="desc">{{desc}}</p>
@@ -589,7 +589,7 @@ var filterItems = function(test){
     }
 }
 
-var guideBinding = new SimpleDataBinding(".guideBinding", {sidebar: pageData, page: pageData, search: ""}, {logic: logic});
+var guideBinding = new SimpleDataBinding(".guideBinding", { sidebar: pageData, page: pageData, search: ""}, {logic: logic});
         
 guideBinding.watch("search", function(newValue){
     filterItems(newValue);
