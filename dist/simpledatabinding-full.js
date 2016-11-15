@@ -143,19 +143,22 @@
 
         var createChildArray = function (prop, data, el) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
-                i, stop, ar, templateElement, parentNode, parentPlaceholder, grandparent;
+                ar = self.childArrays[prop],
+                i, stop, templateElement, parentNode, parentPlaceholder, grandparent;
 
-            if (self.childArrays[prop]) {
-                ar = self.childArrays[prop];
+            if (! (ar && document.body.contains(ar.placeholderNode))) {
+                templateElement = el || getContainer(prop);
+                if (!templateElement) {
+                    return null;
+                }
+            }
+
+            if (ar) {
                 for (i = 0, stop = ar.length; i < ar.length; i++) {
                     self.removeChild(ar[i]);
                 }
                 ar.length = 0;
             } else {
-                templateElement = el || getContainer(prop);
-                if (!templateElement) {
-                    return null;
-                }
                 ar = self.configs.modifyInputArrays === true ? data : [],
                 self.childArrays[prop] = ar;
                 ar.idIndex = 0;
