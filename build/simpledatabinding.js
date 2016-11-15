@@ -435,9 +435,6 @@
             if ( ! self.container){
                 self.container = (id && doc.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]')) || doc.querySelector('[' + toPrefixedHyphenated('databind') + ']') || doc.forms[0] || doc.body;
             }
-            setTimeout(function () {
-                self.container.classList.add("bindings-initialized");
-            });
             return self.container;
         };
 
@@ -521,6 +518,13 @@
                         if (!(node.childNodes[i].hasAttribute && node.childNodes[i].hasAttribute("databind"))) {
                             self.parseNode(node.childNodes[i]);
                         }
+                    }
+
+                    if (node.getAttribute("databind")) {
+                        setTimeout(function () {
+                            node.classList.remove("unparsed");
+                            node.classList.add("parsed");
+                        }, 0);
                     }
                 }
                 node.parsed = true;
