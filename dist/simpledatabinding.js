@@ -144,11 +144,13 @@
         var createChildArray = function (prop, data, el) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
                 ar = self.childArrays[prop],
-                i, stop, templateElement, parentNode, parentPlaceholder, grandparent;
+                i, stop, elementTemplate, parentNode, parentPlaceholder, grandparent;
 
-            if (! (ar && document.body.contains(ar.placeholderNode))) {
-                templateElement = el || getContainer(prop);
-                if (!templateElement) {
+            if (ar && document.body.contains(ar.elementTemplate)) {
+                elementTemplate = ar.elementTemplate;
+            }else{
+                elementTemplate = el || getContainer(prop);
+                if (!elementTemplate) {
                     return null;
                 }
             }
@@ -164,9 +166,9 @@
                 ar.idIndex = 0;
                 ar.ownerInstance = self;
                 ar.id = prop;
-                self.surroundByComments(ar, "child array " + prop, templateElement);
             }
-
+            self.surroundByComments(ar, "child array " + prop, elementTemplate);
+            
             if (ASSEMBLEASFRAGMENT) {
                 parentNode = self.childArrays[prop].placeholderNode.parentNode;
                 parentPlaceholder = parentNode.nextElementSibling;
@@ -507,7 +509,7 @@
             //   elementTemplate:  the element
             //   placeholder:  the new trailing comment
 
-            if (!obj.placeholderNode) {
+            if (! (obj.placeholderNode && document.body.contains(obj.placeholderNode))) {
                 obj.elementTemplate = elementTemplate;
                 obj.placeholderNode = doc.createComment("end " + message);
                 elementTemplate.placeholderNode = obj.placeholderNode;
