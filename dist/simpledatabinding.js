@@ -242,6 +242,7 @@
                 cachedChild.container = container;
                 cachedChild.parseNode(container);
                 cachedChild.update(data);
+                cachedChild.removed = false;
                 child = cachedChild;
             } else {
                 child = new SimpleDataBinding(container, data, self.configs, id, self);
@@ -738,6 +739,7 @@
         //<<<<<<<<<< attribute based methods and their subfunctions >>>>>>>>>>
 
         this.templateMaster = function (placeClone) {
+            //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
             return function (el, parsedAttrValue) {
                 var clone;
 
@@ -762,10 +764,15 @@
         };
 
         var childTemplate = self.templateMaster(function (el, clone) {
+            //native attribute method
+            //appends a template clone as a child of the element
             el.appendChild(clone);
         });
 
         var renderIf = function (el, parsedAttrValue, rawAttrValue) {
+            //native attribute method
+            //removes the node from the dom whenever the attribute value evalutes to falsey
+            //replaces it when truey
             this.surroundByComments(el, "render if " + rawAttrValue, el, true);
             if (parsedAttrValue && !el.parentElement) {
                 el.placeholderNode.parentNode.insertBefore(el, el.placeholderNode);
@@ -776,6 +783,7 @@
         };
 
         var setNodeValue = function (el, parsedAttrValue, rawAttrValue, attrName) {
+            //executed as a native attribute method wherever a name attribute is encountered
             //sets node value to data property value
             if (parsedAttrValue !== undefined) {
                 if (el.type === "radio" && attrName === "name") {
@@ -928,6 +936,10 @@
 
         this.checkWatches = function (prop, recursive) {
             //check watches on the specific property as well as general watches which apply and execute
+
+            if (self.removed) {
+                return false;
+            }
 
             if (self.watches[prop]) {
                 iterateWatchArray(prop, false);
