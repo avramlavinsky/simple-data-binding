@@ -175,6 +175,18 @@ var testDataMethods = function (config, configDescription, formId) {
             expect(binding.createChild("middleName", middleNameInput, questionData.middleName) === originalMiddleNameBinding).toEqual(true);
         });
 
+        it("find", function () {
+            expect(binding.find("firstName").data.label).toEqual("First Name");
+        });
+
+        it("findAll", function () {
+            expect(binding.findAll("firstName")[0].data.label).toEqual("First Name");
+        });
+
+        it("find", function () {
+            expect(binding.find("options") instanceof Array).toEqual(true);
+        });
+
         it("export", function () {
             expect(binding.export().firstName.name).toEqual("firstName");
         });

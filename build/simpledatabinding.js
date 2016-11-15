@@ -173,7 +173,7 @@
 
         var generateChildArrayMemberId = function (childArray, data) {
             //generate a meaningful id for child instance within a child array
-            var id = data.name || data.id || data.value;
+            var id = data.name || data.id || data.heading || data.label;
 
             if (!id || self.children[id]) {
                 childArray.idIndex++;
@@ -206,6 +206,36 @@
 
             self.children[id] = child;
             return child;
+        };
+
+        var find = function (id, all, topInstance) {
+            var children = self.children,
+                childArrays = self.childArrays,
+                childId;
+
+            topInstance = topInstance || (self.found = []) && self;
+            if (children[id]) {
+                self.root.found.push(children[id]);
+            }
+            if (childArrays[id]) {
+                self.root.found.push(childArrays[id]);
+            }
+            if (all || !self.root.length) {
+                for (childId in children) {
+                    if (children.hasOwnProperty(childId)) {
+                        children[childId].find(id, all, topInstance);
+                    }
+                }
+            }
+            return all ? self.root.found : self.root.found[0];
+        };
+
+        this.find = function (id) {
+            return find(id);
+        };
+
+        this.findAll = function (id) {
+            return find(id, true);
         };
 
         this.export = function (unprefix) {
