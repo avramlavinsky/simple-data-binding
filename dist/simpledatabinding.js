@@ -151,6 +151,13 @@
                     self.removeChild(ar[i]);
                 }
                 ar.length = 0;
+                if (!document.body.contains(ar.placeholderNode)) {
+                    elementTemplate = el || getContainer(prop);
+                    if (!elementTemplate) {
+                        return null;
+                    }
+                    self.surroundByComments(ar, "child array " + prop, elementTemplate);
+                }
             } else {
                 ar = self.configs.modifyInputArrays === true ? data : [],
                 self.childArrays[prop] = ar;
@@ -161,8 +168,8 @@
                 if (!elementTemplate) {
                     return null;
                 }
+                self.surroundByComments(ar, "child array " + prop, elementTemplate);
             }
-            self.surroundByComments(ar, "child array " + prop, elementTemplate || ar.elementTemplate);
             
             if (ASSEMBLEASFRAGMENT) {
                 parentNode = self.childArrays[prop].placeholderNode.parentNode;
