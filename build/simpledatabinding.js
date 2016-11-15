@@ -215,7 +215,7 @@
 
         var generateChildArrayMemberId = function (childArray, data) {
             //generate a meaningful id for child instance within a child array
-            var id = data.name || data.id || data.heading || data.label;
+            var id = data.name || data.id || data.heading || data.value || data.label;
 
             if (!id || self.children[id]) {
                 childArray.idIndex++;
