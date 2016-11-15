@@ -1,5 +1,5 @@
 (function () {
-    function SimpleDataBinding(container, startData, configs, id, parent) {
+    function SimpleDataBinding(container, startData, configs, id, parentInstance) {
         //binds data to and from form controls, text nodes, and attributes
         //automatically repeats markup bound to arrays
         //includes basic templating and easily extended for more complex DOM interaction
@@ -14,17 +14,17 @@
         this.set = function (prop, val, inherit, repository, setWhereDefined) {
             //set value in the closest instance where that value exists
             //or set it as a new property for this instance
-            var parent = self, existingValue;
+            var parentInstance = self, existingValue;
 
             prop = toPrefixedCamel(prop);
             repository = repository || "data";
             existingValue = self.data[prop];
 
             if (setWhereDefined) {
-                while (existingValue === undefined && inherit !== false && parent.parent) {
+                while (existingValue === undefined && inherit !== false && parentInstance.parent) {
                     //search for a reference to the property in ancestors
-                    parent = parent.parent;
-                    existingValue = parent[repository][prop];
+                    parentInstance = parentInstance.parent;
+                    existingValue = parentInstance[repository][prop];
                 }
 
                 if (existingValue === undefined) {
@@ -32,7 +32,7 @@
                     self[repository][prop] = val;
                 } else {
                     //otherwise set the existingValue in the parent
-                    parent[repository][prop] = val;
+                    parentInstance[repository][prop] = val;
                 }
             } else {
                 self[repository][prop] = val;
@@ -47,17 +47,17 @@
 
         this.get = function (prop, inherit, repository) {
             //get the closest inheritted value unless inherit is false
-            var parent = self, value;
+            var parentInstance = self, value;
 
             prop = toPrefixedCamel(prop);
             repository = repository || "data";
             value = self[repository][prop];
 
-            while (value === undefined && inherit !== false && parent.parent) {
+            while (value === undefined && inherit !== false && parentInstance.parent) {
                 //values of a null string or even null will not inherit from the parent
                 //only undefined
-                parent = parent.parent;
-                value = parent[repository][prop];
+                parentInstance = parentInstance.parent;
+                value = parentInstance[repository][prop];
             }
             return value;
         };
@@ -143,7 +143,7 @@
 
         var createChildArray = function (prop, data, el) {
             var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
-                i, stop, ar, templateElement, parent, parentPlaceholder, grandparent;
+                i, stop, ar, templateElement, parentNode, parentPlaceholder, grandparent;
 
             if (self.childArrays[prop]) {
                 ar = self.childArrays[prop];
@@ -165,10 +165,10 @@
             }
 
             if (ASSEMBLEASFRAGMENT) {
-                parent = self.childArrays[prop].placeholderNode.parentNode;
-                parentPlaceholder = parent.nextElementSibling;
-                grandparent = parent.parentElement;
-                grandparent.removeChild(parent);
+                parentNode = self.childArrays[prop].placeholderNode.parentNode;
+                parentPlaceholder = parentNode.nextElementSibling;
+                grandparent = parentNode.parentElement;
+                grandparent.removeChild(parentNode);
             }
 
             for (i = 0, stop = data.length; i < stop; i++) {
@@ -177,9 +177,9 @@
 
             if (ASSEMBLEASFRAGMENT) {
                 if (parentPlaceholder) {
-                    parentPlaceholder.parentNode.insertBefore(parent, parentPlaceholder);
+                    parentPlaceholder.parentNode.insertBefore(parentNode, parentPlaceholder);
                 } else {
-                    grandparent.appendChild(parent);
+                    grandparent.appendChild(parentNode);
                 }
             }
 
@@ -452,11 +452,16 @@
 
         var setContainer = function () {
             //create instance's container element
+            var parentContainer = (parentInstance && parentInstance.container) || doc;
             if (container) {
-                self.container = container.tagName ? container : doc.querySelector(container);
+                self.container = container.tagName ? container : parentContainer.querySelector(container);
             }
-            if ( ! self.container){
-                self.container = (id && doc.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]')) || doc.querySelector('[' + toPrefixedHyphenated('databind') + ']') || doc.forms[0] || doc.body;
+            if (id && !self.container) {
+                self.container = parentContainer.querySelector('[' + toPrefixedHyphenated('databind') + '="' + id + '"]');
+            }
+            if (!self.container && !parentInstance) {
+                //only if we are instantiating a new root do we default to the first element with a databind attribute or the first form or the body
+                self.container =  doc.querySelector('[' + toPrefixedHyphenated('databind') + ']') || doc.forms[0] || doc.body;
             }
             return self.container;
         };
@@ -469,10 +474,16 @@
         };
 
         var setId = function () {
-            var instanceId = id || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + new Date().getTime();
-
-            self.container.setAttribute("databind", instanceId);
-            return instanceId;
+            var instanceId = id,
+                timeStamp = new Date().getTime().toString();
+            
+            if (self.container) {
+                if (!instanceId) {
+                    instanceId = self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
+                }
+                self.container.setAttribute("databind", instanceId);
+            }
+            return instanceId || timeStamp;
         };
 
         var setHiddenInput = function () {
@@ -481,7 +492,7 @@
             if (self.configs.useHiddenInput) {
                 input = doc.createElement("input");
                 input.type = "hidden";
-                self.container.appendChild(input);
+                (self.container || doc).appendChild(input);
             }
             return input;
         };
@@ -785,23 +796,25 @@
         var observer;
 
         var setListeners = function (handleKeyUp) {
-            //listen for changes in the container element's dataset
-            observer = new MutationObserver(mutationHandler);
+            if (self.container) {
+                //listen for changes in the container element's dataset
+                observer = new MutationObserver(mutationHandler);
 
 
-            //listen for form control changes within our container
-            self.container.addEventListener("change", changeHandler);
+                //listen for form control changes within our container
+                self.container.addEventListener("change", changeHandler);
 
-            if (handleKeyUp !== false) {
-                //update data on keyup if desired
-                self.container.addEventListener("keyup", keyUpHandler);
-            }
+                if (handleKeyUp !== false) {
+                    //update data on keyup if desired
+                    self.container.addEventListener("keyup", keyUpHandler);
+                }
 
-            if (self === self.root) {
-                self.turnOnAllBindings();//execute inline incase inline code makes changes to data immediately after init
-                setTimeout(function () {
-                    self.turnOnAllBindings();//a necessary failsafe in case all children have not initialized
-                });
+                if (self === self.root) {
+                    self.turnOnAllBindings();//execute inline incase inline code makes changes to data immediately after init
+                    setTimeout(function () {
+                        self.turnOnAllBindings();//a necessary failsafe in case all children have not initialized
+                    });
+                }
             }
 
             return self;
@@ -973,6 +986,17 @@
 
         //<<<<<<<<< Initialization >>>>>>>>>>
 
+        var initArgs = function () {
+            if (container && typeof (container) === "object" && ! container.tagName) {
+                parentInstance = id;
+                id = configs;
+                configs = startData;
+                startData = container;
+                container = null;
+            }
+            return startData;
+        };
+
         var initProps = function () {
             //initialize properties
 
@@ -999,10 +1023,10 @@
         var initFamilyTree = function () {
             //establish SimpleDataBinding instance relationships with other SimpleDataBinding instances 
 
-            self.parent = parent;
+            self.parent = parentInstance;
             if (self.parent) {
                 self.ancestors = self.parent.ancestors.slice();
-                self.ancestors.push(parent);
+                self.ancestors.push(parentInstance);
             } else {
                 self.ancestors = [];
             }
@@ -1018,15 +1042,18 @@
             //first capture values in container data attributes if presentvalues 
             //overwrite with values in form controls if present
             //overwrite again with start dataArgument if present
-
-            if (startData && self.parent) {
-                self.parent.cache.set(startData, self);
+            var el = self.boundHiddenInput || self.container;
+            
+            if (el) {
+                if (startData && self.parent) {
+                    self.parent.cache.set(startData, self);
+                }          
+                self.data = prefixData(el.dataset);
+                self.update(self.data);
+                getInitialNodeValues();
+                self.update(startData || {});
+                wireData(startData);
             }
-            self.data = prefixData((self.boundHiddenInput || self.container).dataset);
-            self.update(self.data);
-            getInitialNodeValues();
-            self.update(startData || {});
-            wireData(startData);
             return self;
         };
 
@@ -1039,6 +1066,7 @@
             //inits listeners
             //processes initial data
 
+            initArgs();
             initFamilyTree();
             initProps();
             initData();
@@ -1059,5 +1087,5 @@
         configs.updateInputArrays = true;
         configs.updateInputObjects = true;
         return new SimpleDataBinding(container, startData, configs, id);
-    }
+    };
 })();
