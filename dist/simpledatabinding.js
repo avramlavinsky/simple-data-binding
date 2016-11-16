@@ -6,7 +6,8 @@
         //see https://avramlavinsky.github.io/simple-data-binding/docs/guide.html for usage
 
         var self = this,
-            doc = document;
+            doc = document,
+            observer;
 
 
         //<<<< Core Data Methods >>>>
@@ -36,10 +37,6 @@
                 }
             } else {
                 self[repository][prop] = val;
-            }
-
-            if (self.configs.modifyInputObjects && repository === "data") {
-                startData[prop] = val;
             }
 
             return self[repository][prop];
@@ -142,9 +139,8 @@
         };
 
         var createChildArray = function (prop, data, el) {
-            var ASSEMBLEASFRAGMENT = false,//possible performance enhancement currently not proven
-                ar = self.childArrays[prop],
-                i, stop, elementTemplate, parentNode, parentPlaceholder, grandparent;
+            var ar = self.childArrays[prop],
+                i, stop, elementTemplate;
 
             if (ar) {
                 for (i = 0, stop = ar.length; i < ar.length; i++) {
@@ -170,24 +166,9 @@
                 }
                 self.surroundByComments(ar, "child array " + prop, elementTemplate);
             }
-            
-            if (ASSEMBLEASFRAGMENT) {
-                parentNode = self.childArrays[prop].placeholderNode.parentNode;
-                parentPlaceholder = parentNode.nextElementSibling;
-                grandparent = parentNode.parentElement;
-                grandparent.removeChild(parentNode);
-            }
 
             for (i = 0, stop = data.length; i < stop; i++) {
                 ar[i] = (self.createChildArrayMember(ar, data[i]));
-            }
-
-            if (ASSEMBLEASFRAGMENT) {
-                if (parentPlaceholder) {
-                    parentPlaceholder.parentNode.insertBefore(parentNode, parentPlaceholder);
-                } else {
-                    grandparent.appendChild(parentNode);
-                }
             }
 
             if (self.arrayEnhancer && !ar.update) {
@@ -280,6 +261,16 @@
 
         this.findAll = function (id) {
             return find(id, true);
+        };
+
+        this.getBindingFor = function (el) {
+            var closestContainer = closest(el, "[databind]"),
+                id = closestContainer && closestContainer.getAttribute("databind"),
+                bindings = self.root.findAll(id);
+
+            return bindings.find(function (binding) {
+                return binding.container === closestContainer;
+            });
         };
 
         this.export = function (unprefix) {
@@ -425,6 +416,15 @@
             return val;
         };
 
+        var getControlValue = function (el) {
+            if (el.name !== "undefined" && el.type !== "radio" && el.type !== "checkbox" && el.tagName !== "OPTION") {
+                var val = el.getAttribute("value");//NOT el.value since Chrome populates this with "on" by default in some contexts
+                if (val && val.substr(0, 2) !== "{{") {
+                    return self.set(el.name, getNodeValue(el));
+                }
+            }
+        };
+
         var getInitialNodeValues = function () {
             //assigns initial form values in elements with a name or a [namespace-]val attribute to data
             var selector = "[name]", nodes;
@@ -448,15 +448,6 @@
             }
 
             return self.data;
-
-            function getControlValue(el) {
-                if (el.name !== "undefined" && el.type !== "radio" && el.type !== "checkbox" && el.tagName !== "OPTION") {
-                    var val = el.getAttribute("value");//NOT el.value since Chrome populates this with "on" by default in some contexts
-                    if (val && val.substr(0, 2) !== "{{") {
-                        self.set(el.name, getNodeValue(el));
-                    }
-                }
-            }
         };
 
         var setContainer = function () {
@@ -483,6 +474,7 @@
         };
 
         var setId = function () {
+            //constructs a meaningful id for a SimpleDataBinding instance
             var instanceId = id,
                 timeStamp = new Date().getTime().toString();
             
@@ -496,6 +488,7 @@
         };
 
         var setHiddenInput = function () {
+            //creates a hidden input and associates data with its dataset
             var input;
 
             if (self.configs.useHiddenInput) {
@@ -530,6 +523,7 @@
         };
 
         this.removeCommentedElements = function (placeholder, attr) {
+            //removes elements between a set of comments
             while (placeholder.previousSibling && placeholder.previousSibling.nodeType !== 8) {
                 if (placeholder.previousSibling.nodeType === 1 && (! attr || placeholder.previousSibling.getAttribute(attr) !== null)) {
                     placeholder.parentNode.removeChild(placeholder.previousSibling);
@@ -663,7 +657,8 @@
         };
 
         var parseFunctionOrObject = function (str, node, addWatches) {
-
+            //parses a string as a path to a funtion with arguments or an object
+            //if a function, the arguments are each parsed recursively as expressions
             if (str.substr(0, 5) === "this.") {
 
                 var parenIndex = str.indexOf("("),
@@ -700,6 +695,7 @@
         };
 
         var parseExpression = function (str, node, addWatches) {
+            //parses a string as an expression: string primitive, number primitive, path to a function and arguments, path to an object, or data property
             if (!str) {
                 return str;
             }
@@ -741,13 +737,18 @@
         this.templateMaster = function (placeClone) {
             //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
             return function (el, parsedAttrValue) {
-                var clone;
+                var clone, template;
 
                 if (parsedAttrValue) {
-                    self.templates[parsedAttrValue] = self.templates[parsedAttrValue] || doc.getElementById(parsedAttrValue);
+                    template = self.templates[parsedAttrValue] || doc.getElementById(parsedAttrValue);
 
-                    if (self.templates[parsedAttrValue]) {
-                        clone = self.templates[parsedAttrValue].cloneNode(true);
+                    if (template.tagName === "template") {
+                        template = template.content || template.firstElementChild;
+                    }
+                    self.templates[parsedAttrValue] = template;
+
+                    if (template) {
+                        clone = template.cloneNode(true);
                         clone.removeAttribute("id");
                         if (el.placeholderNode) {
                             self.removeCommentedElements(el.placeholderNode);
@@ -809,9 +810,8 @@
 
         //<<<<<< Listeners, Handlers, and Watches >>>>>>
 
-        var observer;
-
         var setListeners = function (handleKeyUp) {
+            //sets mutation observer and either keyup or change listener
             if (self.container) {
                 //listen for changes in the container element's dataset
                 observer = new MutationObserver(mutationHandler);
@@ -837,6 +837,7 @@
         };
 
         var turnOnBindings = function () {
+            //turns on mutation observer within instance
             if (observer) {
                 observer.observe(self.container, {
                     attributes: true,
@@ -847,6 +848,7 @@
         };
 
         this.turnOnAllBindings = function () {
+            //recursively turns on mutation observer within instance and it's descendants
             turnOnBindings();
             for (var childId in self.children) {
                 if (self.children.hasOwnProperty(childId) && self.children[childId]) {
@@ -857,6 +859,7 @@
         };
 
         var turnOffBindings = function () {
+            //turns off mutation observer so batch update can proceed without unnecessary calls to watch methods
             if (observer) {
                 observer.disconnect();
             }
@@ -869,8 +872,8 @@
             mutations.forEach(function (mutation) {
                 if (mutation.target === (self.boundHiddenInput || self.container)) {
                     var prefix = "data-",
-                    value = mutation.target.getAttribute(mutation.attributeName),
-                    prop;
+                        value = mutation.target.getAttribute(mutation.attributeName),
+                        prop;
 
                     //we are only interested in changes to data attributes and only ones within the namesspace if one is configured
                     if (mutation.attributeName.substr(0, prefix.length) === prefix && value !== mutation.oldValue) {
@@ -878,6 +881,9 @@
                         self.root.lastMutation = { prop: prop, value: value, oldValue: mutation.oldValue };
                         self.checkWatches(prop);
                         self.checkWatches("*");
+                        if (self.configs.modifyInputObjects) {
+                            startData[prop] = value;
+                        }
                     }
                 }
             });
@@ -934,6 +940,31 @@
             return instance[globalScope ? "globalScopeWatches" : "watches"];
         };
 
+        var iterateWatchArray = function (prop, globalScope) {
+            //iterate watches related to property and exectute
+            var instance = globalScope ? self.root : self,
+                watchType = globalScope ? "globalScopeWatches" : "watches",
+                watches = instance[watchType][prop], node;
+
+            if (watches) {
+                for (var i = watches.length - 1; i >= 0; i--) {
+                    if (typeof (watches[i]) === "function") {
+                        //for watches of global scope we pull the function from the root instance
+                        //but execute it in the context of local instance
+                        executeWatchFn(watches[i]);
+                    } else {
+                        node = watches[i];
+                        if (node.nodeType === 2) {
+                            resolveAttrNode(node);
+                        } else {
+                            resolveDoubleCurlyBraces(node);
+                        }
+                    }
+                }
+            }
+            return instance;
+        };
+
         this.checkWatches = function (prop, recursive) {
             //check watches on the specific property as well as general watches which apply and execute
 
@@ -958,30 +989,6 @@
                     if (self.children.hasOwnProperty(childId) && self.children[childId]) {
                         //recurse through child instances in case the property is inheritted
                         self.children[childId].checkWatches(prop);
-                    }
-                }
-            }
-
-            function iterateWatchArray(prop, globalScope) {
-                //iterate watches related to property and exectute
-                var instance = globalScope ? self.root : self,
-                    watchType = globalScope ? "globalScopeWatches" : "watches",
-                    watches = instance[watchType][prop], node;
-
-                if (watches) {
-                    for (var i = watches.length - 1; i >= 0; i--) {
-                        if (typeof(watches[i]) === "function") {
-                            //for watches of global scope we pull the function from the root instance
-                            //but execute it in the context of local instance
-                            executeWatchFn(watches[i]);
-                        } else {
-                            node = watches[i];
-                            if (node.nodeType === 2) {
-                                resolveAttrNode(node);
-                            } else {
-                                resolveDoubleCurlyBraces(node);
-                            }
-                        }
                     }
                 }
             }

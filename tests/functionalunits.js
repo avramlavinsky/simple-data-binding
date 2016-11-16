@@ -195,8 +195,12 @@ var testDataMethods = function (config, configDescription, formId) {
             expect(binding.findAll("firstName")[0].data.label).toEqual("First Name");
         });
 
-        it("find", function () {
+        it("find - array", function () {
             expect(binding.find("options") instanceof Array).toEqual(true);
+        });
+
+        it("getBindingFor", function () {
+            expect(binding.getBindingFor(binding.container.querySelector("option")) === binding.find("never")).toEqual(true);
         });
 
         it("export", function () {
