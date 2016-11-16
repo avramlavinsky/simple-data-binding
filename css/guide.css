@@ -97,6 +97,10 @@ a {
    color: #1a0dab;
 }
 
+.unparsed{
+  display: none;
+}
+
 :not(.parsed)[databind],
 :not(.parsed)[databind] a{
    color: transparent;
