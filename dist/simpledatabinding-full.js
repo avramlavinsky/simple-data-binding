@@ -752,8 +752,9 @@
                         if (template.tagName === "TEMPLATE") {
                             template = template.content || template.firstElementChild;
                             if (template instanceof DocumentFragment) {
-                                nodes = [].slice.call(template.childNodes, 0);//if we have a document fragment we need a reference to its child nodes
+                                nodes = [].slice.call(template.childNodes, 0);//we need a reference to fragment's child nodes
                             }
+                            isFromTemplateEl = true;
                         }
                         self.templates[parsedAttrValue] = template;
                         clone = template.cloneNode(true);
