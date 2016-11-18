@@ -743,19 +743,19 @@
         this.templateMaster = function (placeClone) {
             //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
             return function (el, parsedAttrValue) {
-                var clone, template, placedEl;
+                var clone, template, placedEl, isFromTemplateEl;
 
                 if (parsedAttrValue) {
                     template = self.templates[parsedAttrValue] || doc.getElementById(parsedAttrValue);
 
-                    if (template.tagName === "TEMPLATE") {
-                        template = template.content || template.firstElementChild;
-                    }
-                    self.templates[parsedAttrValue] = template;
-
                     if (template) {
+                        if (template.tagName === "TEMPLATE") {
+                            template = template.content || template.firstElementChild;
+                            isFromTemplateEl = true;
+                        }
+                        self.templates[parsedAttrValue] = template;
                         clone = template.cloneNode(true);
-                        if (template.tagName !== "TEMPLATE") {
+                        if (! isFromTemplateEl) {
                             clone.removeAttribute("id");
                         }
                         if (el.placeholderNode) {
