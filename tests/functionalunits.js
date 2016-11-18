@@ -179,7 +179,7 @@ var testDataMethods = function (config, configDescription, formId) {
         });
 
         it("removeChild - children object", function () {
-            expect(binding.children.middleName).toEqual(undefined);
+            expect(binding.children.middleName === undefined).toEqual(true);
         });
 
         it("createChild - replacing", function () {
@@ -508,7 +508,7 @@ describe("listeners/handlers/watches - question branching setup", function () {
 
     it("executeWatchFn supplied method and context", function () {
         var insertedWatch = function () { return this; };
-        expect(binding.executeWatchFn(insertedWatch)).toEqual(binding);
+        expect(binding.executeWatchFn(insertedWatch) === binding).toEqual(true);
     });
 
     it("parseFunctionOrObject watch", function () {

@@ -181,13 +181,20 @@
         this.createChildArrayMember = function (childArray, data, placeholder) {
             //creates a member of child array
             //accessed externally by live array methods
+            var child = self.cache.get(data),
+                id, el;
+
+            placeholder = placeholder || childArray.placeholderNode
 
             if (data instanceof SimpleDataBinding) {
                 return data;
-            } else {
-                var id = generateChildArrayMemberId(childArray, data),
-                    el = cloneInPlace(childArray.elementTemplate, placeholder || childArray.placeholderNode),
-                    child = self.createChild(id, el, data);
+            } else if (child) {
+                placeholder.parentNode.insertBefore(child.container, placeholder);
+                self.createChild(child.id, child.container, data);
+            }else{
+                id = generateChildArrayMemberId(childArray, data);
+                el = cloneInPlace(childArray.elementTemplate, placeholder);
+                child = self.createChild(id, el, data);
 
                 child.containingArray = childArray;
                 return child;
@@ -221,7 +228,6 @@
             cachedChild = self.cache.get(data);
             if (cachedChild && container && cachedChild.removed) {
                 cachedChild.container = container;
-                cachedChild.parseNode(container);
                 cachedChild.update(data);
                 cachedChild.removed = false;
                 child = cachedChild;
@@ -1013,17 +1019,6 @@
 
         //<<<<<<<<< Initialization >>>>>>>>>>
 
-        var initArgs = function () {
-            if (container && typeof (container) === "object" && ! container.tagName) {
-                parentInstance = id;
-                id = configs;
-                configs = startData;
-                startData = container;
-                container = null;
-            }
-            return startData;
-        };
-
         var initProps = function () {
             //initialize properties
 
@@ -1093,7 +1088,6 @@
             //inits listeners
             //processes initial data
 
-            initArgs();
             initFamilyTree();
             initProps();
             initData();
@@ -1108,11 +1102,4 @@
     }
 
     window.SimpleDataBinding = SimpleDataBinding;
-
-    window.$bind = function (container, startData, configs, id) {
-        configs = configs || {};
-        configs.updateInputArrays = true;
-        configs.updateInputObjects = true;
-        return new SimpleDataBinding(container, startData, configs, id);
-    };
 })();

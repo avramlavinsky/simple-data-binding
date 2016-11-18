@@ -143,4 +143,10 @@
         liveArrayFactory = new LiveArrayFactory(Bind, "createLiveArrayMember", "moveLiveArrayMember", "removeLiveArrayMember");
         Bind.prototype.arrayEnhancer = liveArrayFactory;
     }
+
+    window.$bind = function (container, startData, configs, id) {
+        configs = configs || {};
+        configs.updateInputObjects = true;
+        return new SimpleDataBinding(container, startData, configs, id);
+    };
 })();

@@ -1,12 +1,5 @@
 //gross initialization tests in the simplest scenario, no arguments, no markup
-describe("initFamilyTree - no args", function () {
 
-    var binding = new SimpleDataBinding({ test: "result" });
-
-    it("initArgs", function () {
-        expect(binding.data.test).toEqual("result");
-    });
-});
 
 describe("initFamilyTree - no args", function () {
 
@@ -33,7 +26,7 @@ describe("initFamilyTree - no args", function () {
     });
 
     it("initFamilyTree return value", function () {
-        expect(binding.initFamilyTree()).toEqual(binding);
+        expect(binding.initFamilyTree() === binding).toEqual(true);
     });
 });
 
@@ -87,7 +80,7 @@ describe("initProps - no args", function () {
     });
 
     it("initProps return value", function () {
-        expect(binding.initProps()).toEqual(binding);
+        expect(binding.initProps() === binding).toEqual(true);
     });
 
 });
@@ -102,7 +95,7 @@ describe("initData - no args", function () {
     });
 
     it("initData return value", function () {
-        expect(binding.initData()).toEqual(binding);
+        expect(binding.initData() === binding).toEqual(true);
     });
 
 });
