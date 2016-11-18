@@ -743,31 +743,29 @@
         this.templateMaster = function (placeClone) {
             //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
             return function (el, parsedAttrValue) {
-                var clone, template, nodes, isFromTemplateEl;
+                var storedTemplate, clone, template;
 
                 if (parsedAttrValue) {
-                    template = self.templates[parsedAttrValue] || doc.getElementById(parsedAttrValue);
+                    storedTemplate = self.root.templates[parsedAttrValue];
+                    template =  storedTemplate || doc.getElementById(parsedAttrValue);
 
                     if (template) {
                         if (template.tagName === "TEMPLATE") {
                             template = template.content || template.firstElementChild;
                             if (template instanceof DocumentFragment) {
-                                nodes = [].slice.call(template.childNodes, 0);//we need a reference to fragment's child nodes
+                                template = template.firstElementChild;
                             }
-                            isFromTemplateEl = true;
+                        } else if (!storedTemplate) {
+                            template.removeAttribute("id");
                         }
-                        self.templates[parsedAttrValue] = template;
+                        self.root.templates[parsedAttrValue] = template;
                         clone = template.cloneNode(true);
-                        if (!isFromTemplateEl) {
-                            //not if(nodes) since IE11 will process template and return child element
-                            clone.removeAttribute("id");
-                        }
                         if (el.placeholderNode) {
                             self.removeCommentedElements(el.placeholderNode);
                             el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
                         } else {
-                            placeClone(el, clone);//use returned value rather than just clone since template element content will generate a document framgment
-                            self.surroundByComments(el, "template " + parsedAttrValue, nodes && nodes[nodes.length - 1] || clone, true);
+                            placeClone(el, clone);
+                            self.surroundByComments(el, "template " + parsedAttrValue, clone, true);
                         }
                         self.parseNode(clone);
                     }
