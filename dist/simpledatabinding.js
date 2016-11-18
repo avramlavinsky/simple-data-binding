@@ -743,25 +743,27 @@
         this.templateMaster = function (placeClone) {
             //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
             return function (el, parsedAttrValue) {
-                var clone, template;
+                var clone, template, placedEl;
 
                 if (parsedAttrValue) {
                     template = self.templates[parsedAttrValue] || doc.getElementById(parsedAttrValue);
 
-                    if (template.tagName === "template") {
+                    if (template.tagName === "TEMPLATE") {
                         template = template.content || template.firstElementChild;
                     }
                     self.templates[parsedAttrValue] = template;
 
                     if (template) {
                         clone = template.cloneNode(true);
-                        clone.removeAttribute("id");
+                        if (template.tagName !== "TEMPLATE") {
+                            clone.removeAttribute("id");
+                        }
                         if (el.placeholderNode) {
                             self.removeCommentedElements(el.placeholderNode);
                             el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
                         } else {
-                            placeClone(el, clone);
-                            self.surroundByComments(el, "template " + parsedAttrValue, clone, true);
+                            placedEl = placeClone(el, clone);//use returned value rather than just clone since template element content will generate a document framgment
+                            self.surroundByComments(el, "template " + parsedAttrValue, placedEl, true);
                         }
                         self.parseNode(clone);
                     }
@@ -773,7 +775,7 @@
         var childTemplate = self.templateMaster(function (el, clone) {
             //native attribute method
             //appends a template clone as a child of the element
-            el.appendChild(clone);
+            return el.appendChild(clone);
         });
 
         var renderIf = function (el, parsedAttrValue, rawAttrValue) {
