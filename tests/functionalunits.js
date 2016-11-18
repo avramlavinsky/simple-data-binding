@@ -334,7 +334,8 @@ describe("DOM methods - question branching setup", function () {
     });
 
     it("resolveAttrNode", function () {
-        expect(binding.resolveAttrNode(binding.container.querySelector("label").attributes[1]).nodeValue).toEqual("questionType");
+        var attr = binding.resolveAttrNode(binding.container.querySelector("label").attributes[1]);
+        expect(attr.nodeValue == "questionType" || attr.nodeValue == "firstName"/* order varies by browser */).toEqual(true);
     });
 
     it("resolveAttrNodeName", function () {
@@ -459,10 +460,6 @@ describe("listeners/handlers/watches - question branching setup", function () {
         firstNameInput.value = "Joe";
         expect(binding.changeHandler(e)).toEqual("Joe");
         binding.data.firstName = "Sam";
-    });
-
-    it("keyUpHandler", function () {
-        expect(binding.keyUpHandler(e).type).toEqual("change");
     });
 
     it("turnOnBindings binding functionality", function () {

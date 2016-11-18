@@ -274,9 +274,9 @@
                 id = closestContainer && closestContainer.getAttribute("databind"),
                 bindings = self.root.findAll(id);
 
-            return bindings.find(function (binding) {
+            return bindings.filter(function (binding) {
                 return binding.container === closestContainer;
-            });
+            })[0];
         };
 
         this.export = function (unprefix) {
@@ -825,10 +825,10 @@
 
                 //listen for form control changes within our container
                 self.container.addEventListener("change", changeHandler);
-
+                self.container.addEventListener("search", changeHandler);//chrome does not register change event when clearing input via x
                 if (handleKeyUp !== false) {
                     //update data on keyup if desired
-                    self.container.addEventListener("keyup", keyUpHandler);
+                    self.container.addEventListener("keyup", changeHandler);
                 }
 
                 if (self === self.root) {
@@ -894,15 +894,6 @@
                 }
             });
             return mutations;
-        };
-
-        var keyUpHandler = function (e) {
-            //triggers change if desired
-            var changeEvent = doc.createEvent('HTMLEvents');
-
-            changeEvent.initEvent('change', true, false);
-            e.target.dispatchEvent(changeEvent);
-            return changeEvent;
         };
 
         var changeHandler = function (e) {
