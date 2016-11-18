@@ -184,7 +184,7 @@
             var child = self.cache.get(data),
                 id, el;
 
-            placeholder = placeholder || childArray.placeholderNode
+            placeholder = placeholder || childArray.placeholderNode;
 
             if (data instanceof SimpleDataBinding) {
                 return data;
@@ -197,8 +197,8 @@
                 child = self.createChild(id, el, data);
 
                 child.containingArray = childArray;
-                return child;
             }
+            return child;
         };
 
         var generateChildArrayMemberId = function (childArray, data) {
