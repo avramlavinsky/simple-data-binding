@@ -1,6 +1,6 @@
 describe("live arrays stand-alone", function () {
 
-    var arrayFactory = new LiveArrayFactory(String);
+    var arrayFactory = new LiveArrayFactory(String, "removeChild", "createChildArray");
 
     it("addCallBack return value", function () {
         var obj = {fn: function(){return null;}},
@@ -38,27 +38,8 @@ describe("live arrays stand-alone", function () {
         var arr = [];
 
         arr.update = arrayFactory.update;
-
+        arr.ownerInstance = { createChildArray: function () { } };
         expect((arr).update()).toEqual(arr);
-    });
-
-    it("update functionality", function () {
-        var arr = [];
-
-        arr.update = arrayFactory.update;
-        arr.update();
-        arr.push(1);
-
-        expect(arr.update()[0]).toEqual("1");
-    });
-
-    it("enhance functionality", function () {
-        var arr = [];
-
-        arrayFactory.enhance(arr);
-        arr.push(1);
-
-        expect(arr.update()[0]).toEqual("1");
     });
 });
 
@@ -71,6 +52,7 @@ describe("live arrays with simple data binding", function () {
     var questions = binding.childArrays.jobQuestions;
 
     it("push", function () {
+
         questions.push(questionData.offenseDetails);
         expect(binding.container.querySelector("textarea") && binding.container.querySelector("textarea").name).toEqual("offenseDetails");
     });
@@ -85,3 +67,4 @@ describe("live arrays with simple data binding", function () {
         expect(binding.container.querySelector("textarea").name).toEqual("offenseDetails");
     });
 });
+

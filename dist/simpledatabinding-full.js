@@ -75,7 +75,7 @@
                     datum = newData[prop];
                     if (typeof (datum) === "object") {
                         if (datum instanceof Array) {
-                            createChildArray(prop, datum);
+                            self.updateChildArray(prop, datum);
                         } else {
                             self.createChild(prop, getContainer(prop), datum);
                         }
@@ -101,13 +101,18 @@
         };
 
         this.removeChild = function (child) {
-            child.container.parentNode.removeChild(child.container);
+            //remove a child instance from a childArray and it's container from the DOM
+            removeChildContainer(child);
             delete self.children[child.id];
             child.removed = true;
             return child;
         };
 
         var wireData = function (data) {
+            //add a few non enumerable properties to data object:
+            //$bindings = all bindings associated with the object
+            //$binding = this simple data binding instance
+            //$set = set the property in the object and the binding and the DOM
             if (data) {
                 if (data.$bindings) {
                     data.$bindings.push(self);
@@ -139,37 +144,56 @@
         };
 
         var createChildArray = function (prop, data, el) {
-            var ar = self.childArrays[prop],
-                i, stop, elementTemplate;
+            //creates new child array of simple data binding instances
+            var elementTemplate,
+                ar = self.configs.modifyInputArrays === true ? data : [];
 
-            if (ar) {
-                for (i = 0, stop = ar.length; i < ar.length; i++) {
-                    self.removeChild(ar[i]);
+            self.childArrays[prop] = ar;
+            ar.idIndex = 0;
+            ar.ownerInstance = self;
+            ar.id = prop;
+            elementTemplate = el || getContainer(prop);
+            self.surroundByComments(ar, "child array " + prop, elementTemplate);
+            return ar;
+        };
+
+        var resetChildArray = function (prop, data, el, ar) {
+            //clean up removed members of child array and reset its placeholder comments if necessary
+            var i, stop, elementTemplate;
+
+            for (i = 0, stop = ar.priorState.length; i < stop; i++) {
+                if (data.indexOf(ar.priorState[i]) === -1) {
+                    self.removeChild(ar.priorState[i]);
                 }
-                ar.length = 0;
-                if (!document.body.contains(ar.placeholderNode)) {
-                    elementTemplate = el || getContainer(prop);
-                    if (!elementTemplate) {
-                        return null;
-                    }
-                    self.surroundByComments(ar, "child array " + prop, elementTemplate);
-                }
-            } else {
-                ar = self.configs.modifyInputArrays === true ? data : [],
-                self.childArrays[prop] = ar;
-                ar.idIndex = 0;
-                ar.ownerInstance = self;
-                ar.id = prop;
+            }
+            if (!document.body.contains(ar.placeholderNode)) {
                 elementTemplate = el || getContainer(prop);
                 if (!elementTemplate) {
                     return null;
                 }
                 self.surroundByComments(ar, "child array " + prop, elementTemplate);
             }
+            ar.ownerInstance = self;
+        };
 
-            for (i = 0, stop = data.length; i < stop; i++) {
-                ar[i] = (self.createChildArrayMember(ar, data[i]));
+        this.updateChildArray = function (prop, data, el) {
+            //updates a child array of simple data binding instances with given data
+            var ar = self.childArrays[prop],
+                frag = document.createDocumentFragment();
+
+
+            if (ar) {
+                resetChildArray(prop, data, el, ar);
+            } else {
+                ar = createChildArray(prop, data, el);
             }
+
+            for (var i = 0, stop = data.length; i < stop; i++) {
+                ar[i] = self.createChildArrayMember(ar, data[i], frag);
+            }
+            ar.priorState = ar.slice();
+
+            renderChildArray(ar, frag);
 
             if (self.arrayEnhancer && !ar.update) {
                 self.arrayEnhancer.enhance(ar);
@@ -178,24 +202,22 @@
             return ar;
         };
 
-        this.createChildArrayMember = function (childArray, data, placeholder) {
+        this.createChildArrayMember = function (childArray, data, frag) {
             //creates a member of child array
             //accessed externally by live array methods
             var child = self.cache.get(data),
-                id, el;
-
-            placeholder = placeholder || childArray.placeholderNode;
+                childContainer;
 
             if (data instanceof SimpleDataBinding) {
-                return data;
-            } else if (child) {
-                placeholder.parentNode.insertBefore(child.container, placeholder);
+                child = data;
+                placeChildArrayEl(child.container, frag);
+            } else if (child && child.removed) {
                 self.createChild(child.id, child.container, data);
-            }else{
-                id = generateChildArrayMemberId(childArray, data);
-                el = cloneInPlace(childArray.elementTemplate, placeholder);
-                child = self.createChild(id, el, data);
-
+                placeChildArrayEl(child.container, frag);
+            } else {
+                //timing is very sensitive: must place the element in the document fragment before creating our child instance
+                childContainer = placeChildArrayEl(createChildArrayEl(childArray), frag);
+                child = self.createChild(generateChildArrayMemberId(childArray, data), childContainer, data);
                 child.containingArray = childArray;
             }
             return child;
@@ -210,6 +232,20 @@
                 id = (id || childArray.id) + childArray.idIndex;
             }
             return id;
+        };
+
+        var setId = function () {
+            //constructs a meaningful id for a SimpleDataBinding instance
+            var instanceId = id,
+                timeStamp = new Date().getTime().toString();
+
+            if (self.container) {
+                if (!instanceId) {
+                    instanceId = self.container.getAttribute("databind") || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
+                }
+                self.container.setAttribute("databind", instanceId);
+            }
+            return instanceId || timeStamp;
         };
 
         var assign = Object.assign || function (obj1, obj2) {
@@ -370,7 +406,7 @@
 
         var is = function (el, selector) {
             //polyfill for matches method
-            var matchesTest = (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector);
+            var matchesTest = el ? (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector) : false;
             return matchesTest && matchesTest.call(el, selector);
         };
 
@@ -382,12 +418,21 @@
             return el;
         };
 
-        var cloneInPlace = function (el, placeholder) {
-            //inserts a clone of an element before a placeholder
-            var clone = el.cloneNode(true);
+        var placeChildArrayEl = function (el, frag) {
+            //appends a child to a document fragment
+            return frag && frag.appendChild(el);
+        };
 
-            placeholder.parentNode.insertBefore(clone, placeholder);
-            return clone;
+        var createChildArrayEl = function(childArray){
+            //create a container element for a child array member instance
+            return childArray.elementTemplate.cloneNode(true);
+        };
+
+        var renderChildArray = function (childArray, frag) {
+            var placeholder = childArray.placeholderNode;
+
+            placeholder.parentNode.insertBefore(frag, placeholder);
+            return placeholder;
         };
 
         var getNodeValue = function (el) {
@@ -479,20 +524,6 @@
             return container;
         };
 
-        var setId = function () {
-            //constructs a meaningful id for a SimpleDataBinding instance
-            var instanceId = id,
-                timeStamp = new Date().getTime().toString();
-            
-            if (self.container) {
-                if (!instanceId) {
-                    instanceId = self.container.getAttribute("databind") || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
-                }
-                self.container.setAttribute("databind", instanceId);
-            }
-            return instanceId || timeStamp;
-        };
-
         var setHiddenInput = function () {
             //creates a hidden input and associates data with its dataset
             var input;
@@ -539,6 +570,15 @@
             }
 
             return placeholder;
+        };
+
+        var removeChildContainer = function (child) {
+            //remove container element of a child instance from the DOM
+            var container = child.container;
+
+            if (container && container.parentNode) {
+                container.parentNode.removeChild(container);
+            }
         };
 
         this.parseNode = function (node) {
@@ -619,14 +659,19 @@
             var attrMethodName = node.nodeName,
                 attrMethod = self.attrMethods[attrMethodName],
                 el = node.ownerElement,
-                value, name;
+                parentEl, value, name;
 
             resolveDoubleCurlyBraces(node, node.nodeValue);
-            value = node.value || el && el[node.name];//be ware of element properties like node.href which may differ dramatically from the attribute node value
+            value = node.value || el && el[node.name];//element properties like node.href may differ dramatically from the attribute node value
             if (attrMethodName === "value" && (el.type === "radio" || el.type === "checkbox" || el.tagName === "OPTION")) {
                 name = el && el.name;
-                if (!name && el.tagName === "OPTION") {
-                    name = el.parentNode.name;
+                if (!name && el.tagName === "OPTION" && el.parentNode) {
+                    if (el.parentNode instanceof DocumentFragment) {
+                        parentEl = self.parent.container.tagName === "SELECT" ? self.parent.container : self.parent.container.querySelector("select");
+                    } else {
+                        parentEl = el.parentNode;
+                    }
+                    name = parentEl.name;
                 }
                 setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
@@ -1100,15 +1145,14 @@
 })();
 
 (function () {
-    function LiveArrayFactory(MemberClass, createMethodName, moveMethodName, removeMethodName) {
+    function LiveArrayFactory(MemberClass, removeMethodName, updateMethodName) {
         //creates an object that adds callbacks to array methods
         //for synchronization of the array members with an expected class
         //insures that all members are class instances after array methods are executed
         //ARGUMENTS
         //MemberClass: function (constructor)
-        //createMethodName: string (must correspond to name method of MemberClass PROTOTYPE, not just a method within the constructor)
-        //moveMethodName: string (MemberClass method name)
         //removeMethodName: string (MemberClass method name)
+        //updateMethodName: string (MemberClass method name)
 
         var self = this;
 
@@ -1125,46 +1169,9 @@
 
         this.update = function () {
             //our main callback to be executed after array method calls
-            var array = this,
-                args = Array.prototype.slice.call(arguments),
-                member, callBackArgs, i, stop;
+            var array = this;
 
-            if (removeMethodName && array.priorState) {
-                for (i = 0, stop = array.priorState.length; i < stop; i++) {
-                    member = array.priorState[i];
-                    if (member instanceof MemberClass && array.indexOf(member) === -1) {
-                        callBackArgs = args.slice();
-                        callBackArgs.unshift(i);
-                        callBackArgs.unshift(array);
-                        member[removeMethodName].apply(member, callBackArgs);
-                    }
-                }
-            }
-            for (i = 0, stop = array.length; i < stop; i++) {
-                callBackArgs = args.slice();
-
-                member = array[i];
-                //take action only if the array member has changed
-                if (!array.priorState || member !== array.priorState[i] || !member || !array.priorState[i]) {
-                    if (member instanceof MemberClass) {
-                        if (moveMethodName && array.priorState) {
-                            callBackArgs.unshift(i);
-                            callBackArgs.unshift(array);
-                            member[moveMethodName].apply(member, callBackArgs);
-                        }
-                    } else if (member !== undefined) {
-                        if (createMethodName) {
-                            callBackArgs.unshift.apply(callBackArgs, [member, array, i]);
-                            array[i] = MemberClass.prototype[createMethodName].apply(array, callBackArgs);
-                        } else {
-                            //techniques of using apply with constructor make for odd reporting of the constructor name in developer tools
-                            //so just limit arguments to seven total here
-                            array[i] = new MemberClass(member, array, i, callBackArgs[0], callBackArgs[1], callBackArgs[2], callBackArgs[3], callBackArgs[4]);
-                        }
-                    }
-                }
-            }
-            array.priorState = array.slice();
+            array.ownerInstance[updateMethodName](array.id, array, array.placeHolderNode);
             return array;
         };
 
@@ -1220,30 +1227,10 @@
     var Bind = window.SimpleDataBinding, liveArrayFactory;
 
     if (Bind) {
-        Bind.prototype.createLiveArrayMember = function (data, array, i) {
-            //transforms the array member from data to object instance
-            //context of the array
-            //since no member instance exists yet
-            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholderNode;
-
-            return array.ownerInstance.createChildArrayMember(array, data, placeholder);
-        };
-        Bind.prototype.moveLiveArrayMember = function (array, i) {
-            //move the member instance within the array
-            //context of the member instance
-            var placeholder = (array[i + 1] && array[i + 1].container) || array.placeholderNode;
-
-            this.container.parentElement.insertBefore(this.container, placeholder);
-            return this;
-        };
-        Bind.prototype.removeLiveArrayMember = function () {
-            //remove the member instance from the array
-            //context of the member instance
-            this.parent.removeChild(this);
-        };
-        liveArrayFactory = new LiveArrayFactory(Bind, "createLiveArrayMember", "moveLiveArrayMember", "removeLiveArrayMember");
+        liveArrayFactory = new LiveArrayFactory(Bind, "removeChild", "updateChildArray");
         Bind.prototype.arrayEnhancer = liveArrayFactory;
     }
+
 
     window.$bind = function (container, startData, configs, id) {
         configs = configs || {};

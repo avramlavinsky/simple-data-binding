@@ -75,7 +75,7 @@
                     datum = newData[prop];
                     if (typeof (datum) === "object") {
                         if (datum instanceof Array) {
-                            createChildArray(prop, datum);
+                            self.updateChildArray(prop, datum);
                         } else {
                             self.createChild(prop, getContainer(prop), datum);
                         }
@@ -101,13 +101,18 @@
         };
 
         this.removeChild = function (child) {
-            child.container.parentNode.removeChild(child.container);
+            //remove a child instance from a childArray and it's container from the DOM
+            removeChildContainer(child);
             delete self.children[child.id];
             child.removed = true;
             return child;
         };
 
         var wireData = function (data) {
+            //add a few non enumerable properties to data object:
+            //$bindings = all bindings associated with the object
+            //$binding = this simple data binding instance
+            //$set = set the property in the object and the binding and the DOM
             if (data) {
                 if (data.$bindings) {
                     data.$bindings.push(self);
@@ -139,37 +144,56 @@
         };
 
         var createChildArray = function (prop, data, el) {
-            var ar = self.childArrays[prop],
-                i, stop, elementTemplate;
+            //creates new child array of simple data binding instances
+            var elementTemplate,
+                ar = self.configs.modifyInputArrays === true ? data : [];
 
-            if (ar) {
-                for (i = 0, stop = ar.length; i < ar.length; i++) {
-                    self.removeChild(ar[i]);
+            self.childArrays[prop] = ar;
+            ar.idIndex = 0;
+            ar.ownerInstance = self;
+            ar.id = prop;
+            elementTemplate = el || getContainer(prop);
+            self.surroundByComments(ar, "child array " + prop, elementTemplate);
+            return ar;
+        };
+
+        var resetChildArray = function (prop, data, el, ar) {
+            //clean up removed members of child array and reset its placeholder comments if necessary
+            var i, stop, elementTemplate;
+
+            for (i = 0, stop = ar.priorState.length; i < stop; i++) {
+                if (data.indexOf(ar.priorState[i]) === -1) {
+                    self.removeChild(ar.priorState[i]);
                 }
-                ar.length = 0;
-                if (!document.body.contains(ar.placeholderNode)) {
-                    elementTemplate = el || getContainer(prop);
-                    if (!elementTemplate) {
-                        return null;
-                    }
-                    self.surroundByComments(ar, "child array " + prop, elementTemplate);
-                }
-            } else {
-                ar = self.configs.modifyInputArrays === true ? data : [],
-                self.childArrays[prop] = ar;
-                ar.idIndex = 0;
-                ar.ownerInstance = self;
-                ar.id = prop;
+            }
+            if (!document.body.contains(ar.placeholderNode)) {
                 elementTemplate = el || getContainer(prop);
                 if (!elementTemplate) {
                     return null;
                 }
                 self.surroundByComments(ar, "child array " + prop, elementTemplate);
             }
+            ar.ownerInstance = self;
+        };
 
-            for (i = 0, stop = data.length; i < stop; i++) {
-                ar[i] = (self.createChildArrayMember(ar, data[i]));
+        this.updateChildArray = function (prop, data, el) {
+            //updates a child array of simple data binding instances with given data
+            var ar = self.childArrays[prop],
+                frag = document.createDocumentFragment();
+
+
+            if (ar) {
+                resetChildArray(prop, data, el, ar);
+            } else {
+                ar = createChildArray(prop, data, el);
             }
+
+            for (var i = 0, stop = data.length; i < stop; i++) {
+                ar[i] = self.createChildArrayMember(ar, data[i], frag);
+            }
+            ar.priorState = ar.slice();
+
+            renderChildArray(ar, frag);
 
             if (self.arrayEnhancer && !ar.update) {
                 self.arrayEnhancer.enhance(ar);
@@ -178,24 +202,22 @@
             return ar;
         };
 
-        this.createChildArrayMember = function (childArray, data, placeholder) {
+        this.createChildArrayMember = function (childArray, data, frag) {
             //creates a member of child array
             //accessed externally by live array methods
             var child = self.cache.get(data),
-                id, el;
-
-            placeholder = placeholder || childArray.placeholderNode;
+                childContainer;
 
             if (data instanceof SimpleDataBinding) {
-                return data;
-            } else if (child) {
-                placeholder.parentNode.insertBefore(child.container, placeholder);
+                child = data;
+                placeChildArrayEl(child.container, frag);
+            } else if (child && child.removed) {
                 self.createChild(child.id, child.container, data);
-            }else{
-                id = generateChildArrayMemberId(childArray, data);
-                el = cloneInPlace(childArray.elementTemplate, placeholder);
-                child = self.createChild(id, el, data);
-
+                placeChildArrayEl(child.container, frag);
+            } else {
+                //timing is very sensitive: must place the element in the document fragment before creating our child instance
+                childContainer = placeChildArrayEl(createChildArrayEl(childArray), frag);
+                child = self.createChild(generateChildArrayMemberId(childArray, data), childContainer, data);
                 child.containingArray = childArray;
             }
             return child;
@@ -210,6 +232,20 @@
                 id = (id || childArray.id) + childArray.idIndex;
             }
             return id;
+        };
+
+        var setId = function () {
+            //constructs a meaningful id for a SimpleDataBinding instance
+            var instanceId = id,
+                timeStamp = new Date().getTime().toString();
+
+            if (self.container) {
+                if (!instanceId) {
+                    instanceId = self.container.getAttribute("databind") || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
+                }
+                self.container.setAttribute("databind", instanceId);
+            }
+            return instanceId || timeStamp;
         };
 
         var assign = Object.assign || function (obj1, obj2) {
@@ -383,7 +419,7 @@
 
         var is = function (el, selector) {
             //polyfill for matches method
-            var matchesTest = (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector);
+            var matchesTest = el ? (el.matches || el.matchesSelector || el.msMatchesSelector || el.mozMatchesSelector || el.webkitMatchesSelector || el.oMatchesSelector) : false;
             return matchesTest && matchesTest.call(el, selector);
         };
 
@@ -395,12 +431,21 @@
             return el;
         };
 
-        var cloneInPlace = function (el, placeholder) {
-            //inserts a clone of an element before a placeholder
-            var clone = el.cloneNode(true);
+        var placeChildArrayEl = function (el, frag) {
+            //appends a child to a document fragment
+            return frag && frag.appendChild(el);
+        };
 
-            placeholder.parentNode.insertBefore(clone, placeholder);
-            return clone;
+        var createChildArrayEl = function(childArray){
+            //create a container element for a child array member instance
+            return childArray.elementTemplate.cloneNode(true);
+        };
+
+        var renderChildArray = function (childArray, frag) {
+            var placeholder = childArray.placeholderNode;
+
+            placeholder.parentNode.insertBefore(frag, placeholder);
+            return placeholder;
         };
 
         var getNodeValue = function (el) {
@@ -492,20 +537,6 @@
             return container;
         };
 
-        var setId = function () {
-            //constructs a meaningful id for a SimpleDataBinding instance
-            var instanceId = id,
-                timeStamp = new Date().getTime().toString();
-            
-            if (self.container) {
-                if (!instanceId) {
-                    instanceId = self.container.getAttribute("databind") || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
-                }
-                self.container.setAttribute("databind", instanceId);
-            }
-            return instanceId || timeStamp;
-        };
-
         var setHiddenInput = function () {
             //creates a hidden input and associates data with its dataset
             var input;
@@ -552,6 +583,15 @@
             }
 
             return placeholder;
+        };
+
+        var removeChildContainer = function (child) {
+            //remove container element of a child instance from the DOM
+            var container = child.container;
+
+            if (container && container.parentNode) {
+                container.parentNode.removeChild(container);
+            }
         };
 
         this.parseNode = function (node) {
@@ -632,14 +672,19 @@
             var attrMethodName = node.nodeName,
                 attrMethod = self.attrMethods[attrMethodName],
                 el = node.ownerElement,
-                value, name;
+                parentEl, value, name;
 
             resolveDoubleCurlyBraces(node, node.nodeValue);
-            value = node.value || el && el[node.name];//be ware of element properties like node.href which may differ dramatically from the attribute node value
+            value = node.value || el && el[node.name];//element properties like node.href may differ dramatically from the attribute node value
             if (attrMethodName === "value" && (el.type === "radio" || el.type === "checkbox" || el.tagName === "OPTION")) {
                 name = el && el.name;
-                if (!name && el.tagName === "OPTION") {
-                    name = el.parentNode.name;
+                if (!name && el.tagName === "OPTION" && el.parentNode) {
+                    if (el.parentNode instanceof DocumentFragment) {
+                        parentEl = self.parent.container.tagName === "SELECT" ? self.parent.container : self.parent.container.querySelector("select");
+                    } else {
+                        parentEl = el.parentNode;
+                    }
+                    name = parentEl.name;
                 }
                 setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
@@ -751,7 +796,6 @@
         /* test-code */
         this.is = is;
         this.closest = closest;
-        this.cloneInPlace = cloneInPlace;
         this.getNodeValue = getNodeValue;
         this.getInitialNodeValues = getInitialNodeValues;
         this.setContainer = setContainer;
@@ -772,31 +816,29 @@
         this.templateMaster = function (placeClone) {
             //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
             return function (el, parsedAttrValue) {
-                var clone, template, nodes, isFromTemplateEl;
+                var storedTemplate, clone, template;
 
                 if (parsedAttrValue) {
-                    template = self.templates[parsedAttrValue] || doc.getElementById(parsedAttrValue);
+                    storedTemplate = self.root.templates[parsedAttrValue];
+                    template =  storedTemplate || doc.getElementById(parsedAttrValue);
 
                     if (template) {
                         if (template.tagName === "TEMPLATE") {
                             template = template.content || template.firstElementChild;
                             if (template instanceof DocumentFragment) {
-                                nodes = [].slice.call(template.childNodes, 0);//we need a reference to fragment's child nodes
+                                template = template.firstElementChild;
                             }
-                            isFromTemplateEl = true;
+                        } else if (!storedTemplate) {
+                            template.removeAttribute("id");
                         }
-                        self.templates[parsedAttrValue] = template;
+                        self.root.templates[parsedAttrValue] = template;
                         clone = template.cloneNode(true);
-                        if (!isFromTemplateEl) {
-                            //not if(nodes) since IE11 will process template and return child element
-                            clone.removeAttribute("id");
-                        }
                         if (el.placeholderNode) {
                             self.removeCommentedElements(el.placeholderNode);
                             el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
                         } else {
-                            placeClone(el, clone);//use returned value rather than just clone since template element content will generate a document framgment
-                            self.surroundByComments(el, "template " + parsedAttrValue, nodes && nodes[nodes.length - 1] || clone, true);
+                            placeClone(el, clone);
+                            self.surroundByComments(el, "template " + parsedAttrValue, clone, true);
                         }
                         self.parseNode(clone);
                     }
