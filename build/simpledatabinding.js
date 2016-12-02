@@ -558,7 +558,7 @@
             //   elementTemplate:  the element
             //   placeholder:  the new trailing comment
 
-            if (! (obj.placeholderNode && document.body.contains(obj.placeholderNode))) {
+            if (! (obj.placeholderNode && document.body.contains(obj.placeholderNode)) && elementTemplate && elementTemplate.parentNode) {
                 obj.elementTemplate = elementTemplate;
                 obj.placeholderNode = doc.createComment("end " + message);
                 elementTemplate.placeholderNode = obj.placeholderNode;
