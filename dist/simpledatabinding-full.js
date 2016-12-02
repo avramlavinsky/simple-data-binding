@@ -148,13 +148,15 @@
             var elementTemplate,
                 ar = self.configs.modifyInputArrays === true ? data : [];
 
-            self.childArrays[prop] = ar;
             ar.idIndex = 0;
             ar.ownerInstance = self;
             ar.id = prop;
             elementTemplate = el || getContainer(prop);
-            self.surroundByComments(ar, "child array " + prop, elementTemplate);
-            return ar;
+            if (elementTemplate) {
+                self.surroundByComments(ar, "child array " + prop, elementTemplate);
+                self.childArrays[prop] = ar;
+                return ar;
+            }
         };
 
         var resetChildArray = function (prop, data, el, ar) {
@@ -187,19 +189,20 @@
             } else {
                 ar = createChildArray(prop, data, el);
             }
+            if (ar) {
+                for (var i = 0, stop = data.length; i < stop; i++) {
+                    ar[i] = self.createChildArrayMember(ar, data[i], frag);
+                }
+                ar.priorState = ar.slice();
 
-            for (var i = 0, stop = data.length; i < stop; i++) {
-                ar[i] = self.createChildArrayMember(ar, data[i], frag);
+                renderChildArray(ar, frag);
+
+                if (self.arrayEnhancer && !ar.update) {
+                    self.arrayEnhancer.enhance(ar);
+                }
+
+                return ar;
             }
-            ar.priorState = ar.slice();
-
-            renderChildArray(ar, frag);
-
-            if (self.arrayEnhancer && !ar.update) {
-                self.arrayEnhancer.enhance(ar);
-            }
-
-            return ar;
         };
 
         this.createChildArrayMember = function (childArray, data, frag) {
