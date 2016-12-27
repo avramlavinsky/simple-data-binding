@@ -521,7 +521,18 @@ var pageData = {
                      "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n\n<!-- resulting markup -->\n<div childtemplate=\"questionType\">\n\t<label>\n\t\tDescription:\n\t\t<textarea></textarea>\n\t</label>\n</div>"
                     }
                 ]
-            }, 
+            },
+              {
+                "name": "replacementtemplate",
+                "desc": "Native attribute method.  Replaces element with a clone of the specified template.  The cloned template element and all its descendants are then parsed and bound to data.  Template elements are polyfilled for MS IE (all versions) but should be hidden in CSS for those browsers.  ***TEMPLATE REFERENCES ARE DYNAMIC, SO USE SINGLE QUOTES WHEN PASSING A STRING PRIMITIVE.",
+                "showExamples": "true",
+                "examples": [
+                    {
+                     "exampleDesc": "Passing a data property name:",
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div replacementtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n\n<!-- resulting markup -->\n<label>\n\t\tDescription:\n\t\t<textarea></textarea>\n\t</label>"
+                    }
+                ]
+            },
              {
                "name": "Custom Attribute Methods",
                "showArguments": "true",
