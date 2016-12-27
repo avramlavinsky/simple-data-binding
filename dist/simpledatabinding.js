@@ -1,4 +1,5 @@
 (function () {
+
     function SimpleDataBinding(container, startData, configs, id, parentInstance) {
         //binds data to and from form controls, text nodes, and attributes
         //automatically repeats markup bound to arrays
@@ -120,10 +121,10 @@
                     wire("$bindings", [self]);
                     wire("$set", $set);
                 }
-                wire("$binding",self);
+                wire("$binding", self);
             }
 
-            function $set (prop, val) {
+            function $set(prop, val) {
                 for (var i = 0, stop = data.$bindings.length; i < stop; i++) {
                     if (data.$bindings[i] && data.$bindings[i].set) {
                         data.$bindings[i].set(prop, val);
@@ -426,7 +427,7 @@
             return frag && frag.appendChild(el);
         };
 
-        var createChildArrayEl = function(childArray){
+        var createChildArrayEl = function (childArray) {
             //create a container element for a child array member instance
             return childArray.elementTemplate.cloneNode(true);
         };
@@ -515,7 +516,7 @@
             }
             if (!self.container && !parentInstance) {
                 //only if we are instantiating a new root do we default to the first element with a databind attribute or the first form or the body
-                self.container =  doc.querySelector('[' + toPrefixedHyphenated('databind') + ']') || doc.forms[0] || doc.body;
+                self.container = doc.querySelector('[' + toPrefixedHyphenated('databind') + ']') || doc.forms[0] || doc.body;
             }
             return self.container;
         };
@@ -545,7 +546,7 @@
             //   elementTemplate:  the element
             //   placeholder:  the new trailing comment
 
-            if (! (obj.placeholderNode && document.body.contains(obj.placeholderNode)) && elementTemplate && elementTemplate.parentNode) {
+            if (!(obj.placeholderNode && document.body.contains(obj.placeholderNode)) && elementTemplate && elementTemplate.parentNode) {
                 obj.elementTemplate = elementTemplate;
                 obj.placeholderNode = doc.createComment("end " + message);
                 elementTemplate.placeholderNode = obj.placeholderNode;
@@ -565,7 +566,7 @@
         this.removeCommentedElements = function (placeholder, attr) {
             //removes elements between a set of comments
             while (placeholder.previousSibling && placeholder.previousSibling.nodeType !== 8) {
-                if (placeholder.previousSibling.nodeType === 1 && (! attr || placeholder.previousSibling.getAttribute(attr) !== null)) {
+                if (placeholder.previousSibling.nodeType === 1 && (!attr || placeholder.previousSibling.getAttribute(attr) !== null)) {
                     placeholder.parentNode.removeChild(placeholder.previousSibling);
                 } else {
                     placeholder = placeholder.previousSibling;
@@ -588,7 +589,7 @@
             //recursively update node and its children's properties with dynamic values
             var i;
 
-            if (node.parsed) {
+            if (node.parsed || node.tagName === "TEMPLATE") {
                 return false;
             } else {
                 if (node.nodeType === 3) {
@@ -620,7 +621,9 @@
 
         var resolveAttrNode = function (node) {
             //resolve dynamic references in an attribute
-            if (node.nodeName.substr(0, 5) !== "data-") {
+            if (node.nodeName.substr(0, 5) === "data-") {
+                resolveDoubleCurlyBraces(node, node.nodeValue);
+            } else {
                 resolveAttrNodeName(node);
                 resolveAttrNodeValue(node);
                 return node;
@@ -631,7 +634,7 @@
             //resolve dynamically populated attribute names
             var attrName;
 
-            if ( node.rawName === undefined ) {
+            if (node.rawName === undefined) {
                 if (node.nodeName.substr(-2, 2) === "__") {
                     node.rawName = node.nodeName.slice(2, -2);
                     node.originalEl = node.ownerElement;
@@ -745,7 +748,7 @@
                 }
             } else {
                 return null;
-            } 
+            }
         };
 
         var parseExpression = function (str, node, addWatches) {
@@ -769,12 +772,12 @@
             if (fn) {
                 //important that return values for function as well as get should be undefined, not a null string, under failure conditions
                 //otherwise setNodeValue will overwrite previously set values to no selection for selects
-                value = typeof(fn) === "function" ? fn(): fn;
+                value = typeof (fn) === "function" ? fn() : fn;
             } else {
                 value = self.get(str, true);
                 if (addWatches !== false) {
                     self.watch(str, node);
-                } 
+                }
             }
             if (node && node.nodeName === "name" && value && addWatches !== false) {
                 self.watch(value, node);
@@ -788,39 +791,27 @@
 
         //<<<<<<<<<< attribute based methods and their subfunctions >>>>>>>>>>
 
-        this.templateMaster = function (placeClone) {
-            //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
-            return function (el, parsedAttrValue) {
-                var storedTemplate, clone, template;
-
-                if (parsedAttrValue) {
-                    storedTemplate = self.root.templates[parsedAttrValue];
-                    template =  storedTemplate || doc.getElementById(parsedAttrValue);
-
-                    if (template) {
-                        if (template.tagName === "TEMPLATE") {
-                            template = template.content || template.firstElementChild;
-                            if (template instanceof DocumentFragment) {
-                                template = template.firstElementChild;
-                            }
-                        } else if (!storedTemplate) {
-                            template.removeAttribute("id");
-                        }
-                        self.root.templates[parsedAttrValue] = template;
-                        clone = template.cloneNode(true);
-                        if (el.placeholderNode) {
-                            self.removeCommentedElements(el.placeholderNode);
-                            el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
-                        } else {
-                            placeClone(el, clone);
-                            self.surroundByComments(el, "template " + parsedAttrValue, clone, true);
-                        }
-                        self.parseNode(clone);
+        var replacementTemplate = self.templateMaster(function (el, clone) {
+            //custom attribute method
+            //replaces a given element with the specified template
+            el.parentNode.insertBefore(clone, el);
+            if (el === this.container) {
+                for (var prop in el.dataset) {
+                    if (el.dataset.hasOwnProperty[prop]) {
+                        clone.dataset[prop] = el.dataset[prop];
                     }
                 }
-                return el;
-            };
-        };
+                this.container = clone;
+            }
+            setTimeout(function () {
+                //wait for possible child array to render before removing parent
+                if (el.parentNode) {
+                    el.parentNode.removeChild(el);
+                }
+            })
+
+            return clone;
+        });
 
         var childTemplate = self.templateMaster(function (el, clone) {
             //native attribute method
@@ -971,7 +962,7 @@
             if (typeof (props) === "string") {
                 props = [props];
             }
-            if ( ! (props instanceof Array)) {
+            if (!(props instanceof Array)) {
                 globalScope = fnOrNode;
                 fnOrNode = props;
                 props = globalWatch;
@@ -1078,6 +1069,7 @@
             self.attrMethods.name = setNodeValue;
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
+            self.attrMethods[toPrefixedHyphenated("replacementtemplate")] = replacementTemplate;
             self.templates = assign({}, self.configs.templates || {});
             self.logic = assign({}, self.configs.logic || {});
             self.cache = new WeakMap();
@@ -1108,11 +1100,12 @@
             //overwrite with values in form controls if present
             //overwrite again with start dataArgument if present
             var el = self.boundHiddenInput || self.container;
-            
+
             if (el) {
+                self.startData = startData;
                 if (startData && self.parent) {
                     self.parent.cache.set(startData, self);
-                }          
+                }
                 self.data = prefixData(el.dataset);
                 self.update(self.data);
                 getInitialNodeValues();
@@ -1143,6 +1136,41 @@
 
         this.init();
     }
+
+    SimpleDataBinding.prototype.templateMaster = function (placeClone) {
+        //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
+        return function (el, parsedAttrValue) {
+            var storedTemplate, clone, template;
+
+            if (parsedAttrValue) {
+                storedTemplate = this.root.templates[parsedAttrValue];
+                template = storedTemplate || document.getElementById(parsedAttrValue);
+
+                if (template) {
+                    if (template.tagName === "TEMPLATE") {
+                        template = template.content || template.firstElementChild;
+                        if (template instanceof DocumentFragment) {
+                            template = template.firstElementChild;
+                        }
+                    } else if (!storedTemplate) {
+                        template.removeAttribute("id");
+                    }
+                    this.root.templates[parsedAttrValue] = template;
+                    clone = template.cloneNode(true);
+                    if (el.placeholderNode) {
+                        this.removeCommentedElements(el.placeholderNode);
+                        el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
+                    } else {
+                        placeClone.apply(this, [el, clone]);
+                        this.surroundByComments(el, "template " + parsedAttrValue, clone, true);
+                    }
+                    this.parseNode(clone);
+                }
+            }
+            return el;
+        };
+    };
+
 
     window.SimpleDataBinding = SimpleDataBinding;
 })();

@@ -15,11 +15,15 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      //order counts
       'build/simpledatabinding.js',
       'build/**/*.js',
+      'tests/testSetup.js',
       'tests/basicbinding.js',
+      'tests/scaling.js',
       'tests/functionalunits.js',
-      'tests/**/*.js'
+      'tests/liveArrays.js'
+      //'tests/**/*.js',
     ],
 
 
@@ -59,7 +63,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'/*, 'Firefox', 'IE'*/],
+    browsers: ['Chrome'/*,'Firefox', 'IE'*/],
 
 
     // Continuous Integration mode

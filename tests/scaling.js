@@ -2,7 +2,7 @@ describe("scaling - job form with selects", function () {
 
     //some intital values
     var scalingStartData = {
-        jobQuestions: [questionData.firstName, questionData.criminalRecord]
+        jobQuestions: [questionData.firstName, questionData.lastName]
     };
   
     var scale = 9;
