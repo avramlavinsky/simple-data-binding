@@ -518,7 +518,7 @@ var pageData = {
                 "examples": [
                     {
                      "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n\n<!-- resulting markup -->\n<div childtemplate=\"questionType\">\n\t<label>\n\t\tDescription:\n\t\t<textarea></textarea>\n\t</label>\n</div>"
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div childtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\nmyDataBinding.data.label = \"Description\";\n\n<!-- resulting markup -->\n<div childtemplate=\"questionType\">\n\t<label>\n\t\tDescription:\n\t\t<textarea></textarea>\n\t</label>\n</div>"
                     }
                 ]
             },
@@ -529,7 +529,7 @@ var pageData = {
                 "examples": [
                     {
                      "exampleDesc": "Passing a data property name:",
-                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div replacementtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\n\n<!-- resulting markup -->\n<label>\n\tDescription:\n\t<textarea></textarea>\n</label>"
+                     "exampleCode": "MARKUP:\n<!-- will be reassessed whenever data value for questionType changes -->\n<div replacementtemplate=\"questionType\"></div>\n\n<!-- template markup -->\n<label id=\"textAreaTemplate\">{{label}}<textarea></textarea></label>\n\nJS:\nmyDataBinding.data.questionType = \"textAreaTemplate\";\nmyDataBinding.data.label = \"Description\";\n\n<!-- resulting markup -->\n<label>\n\tDescription:\n\t<textarea></textarea>\n</label>"
                     }
                 ]
             },
