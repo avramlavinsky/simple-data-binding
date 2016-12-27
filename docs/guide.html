@@ -447,7 +447,7 @@ var pageData = {
                 "showExamples": "true",
                 "examples": [{
                     "exampleDesc": "Create an attribute method which places the template clone as the first child of the element.",
-                    "exampleCode": "mySimpleDataBinding.attrMethods.firstchildtemplate = mySimpleDataBinding.templateMaster(function(el, clone){\n\tif(el.firstChild){\n\t\tel.parentNode.insertBefore(clone, el);\n\t} else {\n\t\tel.parentNode.appendChild(clone);\n\t}\n});"               
+                    "exampleCode": "SimpleDataBinding.prototype.firstchildtemplate = SimpleDataBinding.prototype.templateMaster(function(el, clone){\n\tif(el.firstChild){\n\t\tel.parentNode.insertBefore(clone, el);\n\t} else {\n\t\tel.parentNode.appendChild(clone);\n\t}\n});"               
                 }]
             },            
             {
@@ -513,7 +513,7 @@ var pageData = {
             },
             {
                 "name": "childtemplate",
-                "desc": "Native attribute method.  Appends a clone of a template element to the element.  The cloned template element and all its descendants are then parsed and bound to data.  Templates should be marked up outside the SimpleDataBinding instance's container and hidden in CSS.",
+                "desc": "Native attribute method.  Appends a clone of a template element to the element.  The cloned template element and all its descendants are then parsed and bound to data.  Template elements are polyfilled for MS IE (all versions) but should be hidden in CSS for those browsers.  ***TEMPLATE REFERENCES ARE DYNAMIC, SO USE SINGLE QUOTES WHEN PASSING A STRING PRIMITIVE.",
                 "showExamples": "true",
                 "examples": [
                     {
