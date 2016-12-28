@@ -9,7 +9,7 @@ Two-way data-binding is a powerful tool.  Ideally, it can eliminate direct DOM r
 Two-way data-binding has been a key selling point for many JavaScript frameworks, but it shouldn't be sole justification for adopting a framework. Frameworks have their costs.  They are increasingly complex, short-lived, and weighty.
 </p>
 <p>
-<em>Simple Data Binding offers two-way data-binding à la carte </em> but can still render complex dynamic pages. 
+<em>Simple Data Binding offers two-way data-binding à la carte </em> but can still offers all the tools required to render the most complex dynamic pages (including templates, watches, and attribute based methods (directives).
 </p>
 <p>
 <strong>Check out the <a href="https://avramlavinsky.github.io/simple-data-binding/examples/examples.html">CODEPEN examples</a> and <a href="https://avramlavinsky.github.io/simple-data-binding/docs/guide.html">user's guide</a>.</strong>
