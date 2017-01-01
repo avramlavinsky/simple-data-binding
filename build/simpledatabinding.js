@@ -219,6 +219,9 @@
                 self.createChild(child.id, child.container, data);
                 placeChildArrayEl(child.container, frag);
             } else {
+                if (typeof (data) !== "object") {
+                    data = { value: data };//handle arrays of primitives
+                }
                 //timing is very sensitive: must place the element in the document fragment before creating our child instance
                 childContainer = placeChildArrayEl(createChildArrayEl(childArray), frag);
                 child = self.createChild(generateChildArrayMemberId(childArray, data), childContainer, data);
@@ -331,7 +334,7 @@
 
             for (var childId in self.children) {
                 if (self.children.hasOwnProperty(childId) && self.children[childId]) {
-                    dataClone[childId] = self.children[childId].export();
+                    dataClone[childId] = self.children[childId].export(unprefix);
                 }
             }
             return dataClone;
@@ -675,14 +678,14 @@
         var resolveAttrNodeValue = function (node) {
             //resolve curly braces and call attribute based methods
 
-            var attrMethodName = node.nodeName,
+            var attrMethodName = node.nodeName === "name" ? node.nodeName : toPrefixedCamel(toCamelCase(node.nodeName)),
                 attrMethod = self.attrMethods[attrMethodName],
                 el = node.ownerElement,
                 parentEl, value, name;
 
             resolveDoubleCurlyBraces(node, node.nodeValue);
             value = node.value || el && el[node.name];//element properties like node.href may differ dramatically from the attribute node value
-            if (attrMethodName === "value" && (el.type === "radio" || el.type === "checkbox" || el.tagName === "OPTION")) {
+            if (node.nodeName === "value" && (el.type === "radio" || el.type === "checkbox" || el.tagName === "OPTION")) {
                 name = el && el.name;
                 if (!name && el.tagName === "OPTION" && el.parentNode) {
                     if (el.parentNode instanceof DocumentFragment) {
@@ -695,7 +698,7 @@
                 setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
             if (attrMethod) {
-                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, node.nodeName]);
+                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName]);
             }
             return node;
         };
@@ -836,7 +839,7 @@
                 if (el.parentNode) {
                     el.parentNode.removeChild(el);
                 }
-            })
+            });
 
             return clone;
         });
