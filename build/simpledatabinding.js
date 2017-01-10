@@ -60,7 +60,7 @@
             return value;
         };
 
-        this.update = function (newData, bindDuringUpdate) {
+        this.update = function (newData, bindDuringUpdate, parse) {
             //assigns all values present in newData object to data
             var datum, val;
 
@@ -90,7 +90,9 @@
                 }
             }
 
-            self.parseNode(self.container);
+            if(parse !== false){
+                self.parseNode(self.container);
+            }
 
             self.checkWatches("*", false);
 
@@ -289,19 +291,19 @@
 
             topInstance = topInstance || (self.found = []) && self;
             if (children[id]) {
-                self.root.found.push(children[id]);
+                topInstance.found.push(children[id]);
             }
             if (childArrays[id]) {
-                self.root.found.push(childArrays[id]);
+                topInstance.found.push(childArrays[id]);
             }
-            if (all || !self.root.length) {
+            if (all || ! topInstance.found.length) {
                 for (childId in children) {
                     if (children.hasOwnProperty(childId)) {
                         children[childId].find(id, all, topInstance);
                     }
                 }
             }
-            return all ? self.root.found : self.root.found[0];
+            return all ? topInstance.found : topInstance.found[0];
         };
 
         this.find = function (id) {
@@ -982,8 +984,6 @@
             var val = getNodeValue(e.target),
               prop = e.target.name;
 
-            e.stopPropagation();
-
             if (self.containingArray && self.parent.get(prop) !== undefined && (e.target.type === "radio" || e.target.type === "checkbox")) {
                 //checkboxes and radios created in childArrays should change the value in the parent DataBinding instance
                 return self.parent.set(prop, val, true, "data", true);
@@ -1152,7 +1152,7 @@
                     self.parent.cache.set(startData, self);
                 }
                 self.data = prefixData(el.dataset);
-                self.update(self.data);
+                self.update(self.data, false, false);
                 getInitialNodeValues();
                 self.update(startData || {});
                 wireData(startData);

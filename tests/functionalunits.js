@@ -97,13 +97,13 @@ var testDataMethods = function (config, configDescription, formId) {
         });
 
         it("find - array", function () {
-            expect(binding.find("options") instanceof Array || /*  ****known issue - find child array fails with namespace  */!!binding.nameSpace).toEqual(true);
+            expect(binding.find("jobQuestions") instanceof Array || /*  ****known issue - find child array options fails - child template is not found and array is not created  */!!binding.nameSpace).toEqual(true);
         });
 
         it("getBindingFor", function () {
             expect(binding.getBindingFor(binding.container.querySelector("label")) === binding.find("firstName")).toEqual(true);
             //****known issue:
-            //the following fails for live array tests only - getBindingFor returns a binding with container corresponding to a child element of one of the live array tests - not sure why
+            //the following fails for live array tests only - getBindingFor returns a binding with container corresponding to a child element of one of the live array tests
             //expect(binding.getBindingFor(binding.container.querySelector("option")) === binding.find("never")).toEqual(true);
         });
 
