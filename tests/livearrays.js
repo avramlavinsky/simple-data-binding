@@ -52,7 +52,6 @@ describe("live arrays with simple data binding", function () {
     var questions = binding.childArrays.jobQuestions;
 
     it("push", function () {
-
         questions.push(questionData.offenseDetails);
         expect(binding.container.querySelector("textarea") && binding.container.querySelector("textarea").name).toEqual("offenseDetails");
     });

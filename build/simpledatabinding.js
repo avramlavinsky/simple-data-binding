@@ -60,7 +60,21 @@
             return value;
         };
 
-        this.update = function (newData, bindDuringUpdate, parse) {
+        this.dataBindFromAttr = function (el) {
+            var prop = el.getAttribute(toPrefixedHyphenated("databind")),
+                newData = self.get(prop, true, "startData");
+
+            if (newData instanceof Array) {
+                if (!el.parsed) {
+                    el.parsed = true;
+                    self.updateChildArray(prop, newData, el);
+                }
+            } else {
+                self.createChild(prop, el, newData);
+            }
+        };
+
+        this.update = function (newData, bindDuringUpdate, parse, bindObjects) {
             //assigns all values present in newData object to data
             var datum, val;
 
@@ -75,10 +89,12 @@
                 if (newData.hasOwnProperty(prop)) {
                     datum = newData[prop];
                     if (typeof (datum) === "object") {
-                        if (datum instanceof Array) {
-                            self.updateChildArray(prop, datum);
-                        } else {
-                            self.createChild(prop, getContainer(prop), datum);
+                        if (bindObjects !== false) {
+                            if (datum instanceof Array) {
+                                self.updateChildArray(prop, datum);
+                            } else {
+                                self.createChild(prop, getContainer(prop), datum);
+                            }
                         }
                     } else {
                         val = datum;
@@ -90,7 +106,7 @@
                 }
             }
 
-            if(parse !== false){
+            if (parse !== false) {
                 self.parseNode(self.container);
             }
 
@@ -154,10 +170,15 @@
             ar.idIndex = 0;
             ar.ownerInstance = self;
             ar.id = prop;
+            self.childArrayNameIndices[prop] = self.childArrayNameIndices[prop] || 0;
+            if (self.childArrays[prop]) {
+                self.childArrayNameIndices[prop]++;
+                ar.id += self.childArrayNameIndices[prop] || "";
+            }
             elementTemplate = el || getContainer(prop);
             if (elementTemplate) {
                 self.surroundByComments(ar, "child array " + prop, elementTemplate);
-                self.childArrays[prop] = ar;
+                self.childArrays[ar.id] = ar;
                 return ar;
             }
         };
@@ -187,7 +208,7 @@
                 frag = document.createDocumentFragment();
 
 
-            if (ar) {
+            if (ar && ar.placeHolderNode === el) {
                 resetChildArray(prop, data, el, ar);
             } else {
                 ar = createChildArray(prop, data, el);
@@ -209,6 +230,10 @@
         };
 
         this.createChildArrayMember = function (childArray, data, frag) {
+            if (typeof (data) !== "object") {
+                data = { value: data };//handle arrays of primitives
+            }
+
             //creates a member of child array
             //accessed externally by live array methods
             var child = self.cache.get(data),
@@ -221,9 +246,6 @@
                 self.createChild(child.id, child.container, data);
                 placeChildArrayEl(child.container, frag);
             } else {
-                if (typeof (data) !== "object") {
-                    data = { value: data };//handle arrays of primitives
-                }
                 //timing is very sensitive: must place the element in the document fragment before creating our child instance
                 childContainer = placeChildArrayEl(createChildArrayEl(childArray), frag);
                 child = self.createChild(generateChildArrayMemberId(childArray, data), childContainer, data);
@@ -234,12 +256,18 @@
 
         var generateChildArrayMemberId = function (childArray, data) {
             //generate a meaningful id for child instance within a child array
-            var id = data.name || data.id || data.heading || data.value || data.label;
+            var id = data.name;
 
-            if (!id || self.children[id]) {
-                childArray.idIndex++;
-                id = (id || childArray.id) + childArray.idIndex;
+            if (id) {
+                self.childNameIndices[id] = self.childNameIndices[id] || 0;
+                if (self.children[id]) {
+                    self.childNameIndices[id]++;
+                }
+                id += self.childNameIndices[id] || "";
+            } else {
+                id = childArray.id + "_" + childArray.idIndex;
             }
+            childArray.idIndex++;
             return id;
         };
 
@@ -250,9 +278,11 @@
 
             if (self.container) {
                 if (!instanceId) {
-                    instanceId = self.container.getAttribute("databind") || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
+                    instanceId = self.container.getAttribute(toPrefixedHyphenated("databind")) || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
                 }
-                self.container.setAttribute("databind", instanceId);
+                if (!self.container.getAttribute(toPrefixedHyphenated("databind"))) {
+                    self.container.setAttribute(toPrefixedHyphenated("databind"), instanceId);
+                }
             }
             return instanceId || timeStamp;
         };
@@ -273,10 +303,15 @@
             cachedChild = self.cache.get(data);
             if (cachedChild && container && cachedChild.removed) {
                 cachedChild.container = container;
-                cachedChild.update(data);
+                cachedChild.update(data, false, true, false);
                 cachedChild.removed = false;
                 child = cachedChild;
             } else {
+                if (self.children[id] && !self.children[id].containingArray) {
+                    self.childNameIndices[id] = self.childNameIndices[id] || 0;
+                    self.childNameIndices[id]++;
+                    id += self.childNameIndices[id] || "";
+                }
                 child = new SimpleDataBinding(container, data, self.configs, id, self);
             }
 
@@ -296,7 +331,7 @@
             if (childArrays[id]) {
                 topInstance.found.push(childArrays[id]);
             }
-            if (all || ! topInstance.found.length) {
+            if (all || !topInstance.found.length) {
                 for (childId in children) {
                     if (children.hasOwnProperty(childId)) {
                         children[childId].find(id, all, topInstance);
@@ -316,7 +351,7 @@
 
         this.getBindingFor = function (el) {
             var closestContainer = closest(el, "[databind]"),
-                id = closestContainer && closestContainer.getAttribute("databind"),
+                id = closestContainer && closestContainer.getAttribute(toPrefixedHyphenated("databind")),
                 bindings = self.root.findAll(id);
 
             return bindings.filter(function (binding) {
@@ -620,12 +655,14 @@
                     for (i = 0; i < node.childNodes.length; i++) {
                         //do not recurse if we have hit the container of a child SimpleDataBinding instance
                         //let the instance handle it
-                        if (!(node.childNodes[i].hasAttribute && node.childNodes[i].hasAttribute("databind"))) {
+                        if (node.childNodes[i].hasAttribute && node.childNodes[i].hasAttribute("databind")) {
+                            self.dataBindFromAttr(node.childNodes[i]);
+                        } else {
                             self.parseNode(node.childNodes[i]);
                         }
                     }
 
-                    if (node.getAttribute("databind")) {
+                    if (node.getAttribute(toPrefixedHyphenated("databind"))) {
                         setTimeout(function () {
                             node.classList.remove("unparsed");
                             node.classList.add("parsed");
@@ -1118,6 +1155,8 @@
             self.templates = assign({}, self.configs.templates || {});
             self.logic = assign({}, self.configs.logic || {});
             self.cache = new WeakMap();
+            self.childNameIndices = {};
+            self.childArrayNameIndices = {};
 
             return self;
         };
@@ -1147,14 +1186,17 @@
             var el = self.boundHiddenInput || self.container;
 
             if (el) {
+                if (typeof (startData) !== "object") {
+                    startData = { value: startData };
+                }
                 self.startData = startData;
                 if (startData && self.parent) {
                     self.parent.cache.set(startData, self);
                 }
                 self.data = prefixData(el.dataset);
-                self.update(self.data, false, false);
+                self.update(self.data, false, false, false);
                 getInitialNodeValues();
-                self.update(startData || {});
+                self.update(startData || {}, false, true, false);
                 wireData(startData);
             }
             return self;

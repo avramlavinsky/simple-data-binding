@@ -4,10 +4,14 @@ var testDataMethods = function (config, configDescription, formId) {
 
     describe("data methods - question branching setup " + configDescription, function () {
 
-        setForm(formId);
+        setForm(formId, config.nameSpace);
 
-        var binding = new SimpleDataBinding("#" + formId, startData(), config),
-            questionTemplate = binding.childArrays.jobQuestions.elementTemplate,
+        var data = startData();
+
+        data.sdbJobQuestions = data.jobQuestions;
+
+        var binding = new SimpleDataBinding("#" + formId, data, config);
+        var questionTemplate = binding.childArrays.jobQuestions.elementTemplate,
             originalMiddleNameBinding = binding.children.middleName,
             childArray;
 
@@ -84,8 +88,7 @@ var testDataMethods = function (config, configDescription, formId) {
         });
 
         it("createChild - replacing", function () {
-            var middleNameInput = createInput();
-            expect(binding.createChild("middleName", middleNameInput, questionData.middleName) === originalMiddleNameBinding).toEqual(true);
+            expect(binding.createChild("middleName", window.originalMiddleNameBinding.container, questionData.middleName) === originalMiddleNameBinding).toEqual(true);
         });
 
         it("find", function () {
@@ -101,10 +104,7 @@ var testDataMethods = function (config, configDescription, formId) {
         });
 
         it("getBindingFor", function () {
-            expect(binding.getBindingFor(binding.container.querySelector("label")) === binding.find("firstName")).toEqual(true);
-            //****known issue:
-            //the following fails for live array tests only - getBindingFor returns a binding with container corresponding to a child element of one of the live array tests
-            //expect(binding.getBindingFor(binding.container.querySelector("option")) === binding.find("never")).toEqual(true);
+            expect(binding.getBindingFor(binding.container.querySelector("label")) === binding.find("firstName1")).toEqual(true);
         });
 
         it("export", function () {
@@ -212,7 +212,7 @@ describe("DOM methods - question branching setup", function () {
     });
 
     it("getContainer", function () {
-        expect(binding.getContainer("firstName")).toEqual(binding.children.firstName.container);
+        expect(binding.getContainer("jobQuestions")).toEqual(binding.children.firstName.container);
     });
 
     it("setId", function () {

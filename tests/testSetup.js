@@ -94,7 +94,10 @@ var createInput = function (attr, value) {
 }
 
 var setForm = function (id) {
+    var form;
+
     document.write(markup);
-    document.forms[document.forms.length - 1].id = id;
-    document.forms[document.forms.length - 1].name = id;
+    form = document.forms[document.forms.length - 1];
+    form.id = id;
+    form.name = id;
 }
