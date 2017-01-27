@@ -1193,7 +1193,7 @@
                 if (startData && self.parent) {
                     self.parent.cache.set(startData, self);
                 }
-                self.data = prefixData(el.dataset);
+                self.data = prefixData(el.dataset || {}/* FF SVG elements have no dataset*/);
                 self.update(self.data, false, false, false);
                 getInitialNodeValues();
                 self.update(startData || {}, false, true, false);
