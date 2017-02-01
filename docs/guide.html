@@ -606,7 +606,7 @@ var filterItems = function(test){
     }
 }
 
-var guideBinding = new SimpleDataBinding(".guideBinding", { pageData: pageData, search: ""}, {logic: logic});
+var guideBinding = new SimpleDataBinding(".guideBinding", { page: pageData, search: ""}, {logic: logic});
         
 guideBinding.watch("search", function(newValue){
     filterItems(newValue);
