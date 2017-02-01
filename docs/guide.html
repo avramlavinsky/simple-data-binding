@@ -56,7 +56,7 @@
     
     <div id="templateContainer">
         
-        <article id="xxxarticleTemplate">
+        <article id="articleTemplate">
             <div childtemplate="headingTemplate"></div>
             <strong>Type:</strong><span>{{type}}</span>
             <div renderif="format">
@@ -73,7 +73,7 @@
             </div>
         </article>
         
-        <article id="xxxmethodTemplate">
+        <article id="methodTemplate">
             <h3 renderif="name">{{name}}</h3>
             <div renderif="format">
                 <strong>Format:</strong><code>{{format}}</code>
@@ -597,16 +597,18 @@ var filterItems = function(test){
     for(var i = 0, stop = guideInfo.sections.length; i < stop; i++){
         if(test){
             filtered = guideInfo.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
-            guideBinding.children.guideInfo1.childArrays.sections[i].update({items: filtered});
-            guideBinding.children.guideInfo.childArrays.sections[i].update({items: filtered});
+            sidebarBinding.childArrays.sections[i].update({items: filtered});
+            mainBinding.childArrays.sections[i].update({items: filtered});
         }else{
-            guideBinding.children.guideInfo1.childArrays.sections[i].update({items: guideInfo.sections[i].items});
-            guideBinding.children.guideInfo.childArrays.sections[i].update({items: guideInfo.sections[i].items});
+            sidebarBinding.childArrays.sections[i].update({items: guideInfo.sections[i].items});
+            mainBinding.childArrays.sections[i].update({items: guideInfo.sections[i].items});
         }
     }
 }
 
 var guideBinding = new SimpleDataBinding(".guideBinding", { guideInfo: guideInfo, search: ""}, {logic: logic});
+var sidebarBinding = guideBinding.children.guideInfo;
+var mainBinding = guideBinding.children.guideInfo1;        
         
 guideBinding.watch("search", function(newValue){
     filterItems(newValue);
