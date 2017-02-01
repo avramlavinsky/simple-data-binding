@@ -14,7 +14,7 @@
     
     <div class="guideBinding">
     
-    <aside class="sidebar" role="navigation" databind="page">
+    <aside class="sidebar" role="navigation" databind="guideInfo">
         <label class="search">Search: 
             <input name="search" type="search" />
         </label>
@@ -31,7 +31,7 @@
         
     </aside>
     
-    <main class="page" databind="page">
+    <main class="page" databind="guideInfo">
         
         <h1>Simple Data Binding User's Guide</h1>
         
@@ -114,7 +114,7 @@
 
     <script type="text/javascript">
 
-var pageData = {
+var guideInfo = {
    "sections": [
       {
          "heading": "Initial Arguments",
@@ -594,19 +594,19 @@ var logic =  {
 };
      
 var filterItems = function(test){
-    for(var i = 0, stop = pageData.sections.length; i < stop; i++){
+    for(var i = 0, stop = guideInfo.sections.length; i < stop; i++){
         if(test){
-            filtered = pageData.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
-            guideBinding.children.page.childArrays.sections[i].update({items: filtered});
-            guideBinding.children.sidebar.childArrays.sections[i].update({items: filtered});
+            filtered = guideInfo.sections[i].items.filter(function(mem){return mem.name.toLowerCase().indexOf(test.toLowerCase()) >= 0;});
+            guideBinding.children.guideInfo1.childArrays.sections[i].update({items: filtered});
+            guideBinding.children.guideInfo.childArrays.sections[i].update({items: filtered});
         }else{
-            guideBinding.children.page.childArrays.sections[i].update({items: pageData.sections[i].items});
-            guideBinding.children.sidebar.childArrays.sections[i].update({items: pageData.sections[i].items});
+            guideBinding.children.guideInfo1.childArrays.sections[i].update({items: guideInfo.sections[i].items});
+            guideBinding.children.guideInfo.childArrays.sections[i].update({items: guideInfo.sections[i].items});
         }
     }
 }
 
-var guideBinding = new SimpleDataBinding(".guideBinding", { page: pageData, search: ""}, {logic: logic});
+var guideBinding = new SimpleDataBinding(".guideBinding", { guideInfo: guideInfo, search: ""}, {logic: logic});
         
 guideBinding.watch("search", function(newValue){
     filterItems(newValue);
