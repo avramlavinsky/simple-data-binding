@@ -69,9 +69,7 @@
                 <strong>Optional</strong>
             </div>
             <p renderif="desc">{{desc}}</p>
-            <div renderif="this.startData.properties">
-                <div databind="properties"  data-format="" data-heading-template="h5Template" childtemplate="'articleTemplate'">
-                </div>
+            <div databind="properties"  data-format="" data-heading-template="h5Template" childtemplate="this.logic.subTemplate">
             </div>
         </article>
         
@@ -592,6 +590,9 @@ var logic =  {
         removeSpaces: function(str){
             return str && str.replace(/\s+/g, '');
         }
+    },
+    subTemplate: {
+        return this.startData.properties ? "articleTemplate" : "";
     }
 };
      
