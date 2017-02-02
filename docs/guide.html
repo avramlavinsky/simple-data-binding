@@ -74,18 +74,20 @@
         </article>
         
         <article id="propertyTemplate">
-            <div childtemplate="headingTemplate"></div>
-            <strong>Type:</strong><span>{{type}}</span>
-            <div renderif="format">
-                <strong>Format:</strong><code>{{format}}</code>
+            <div renderif="type">
+                <div childtemplate="headingTemplate"></div>
+                <strong>Type:</strong><span>{{type}}</span>
+                <div renderif="format">
+                    <strong>Format:</strong><code>{{format}}</code>
+                </div>
+                <div renderif="default">
+                    <strong>Default:</strong><span>{{default}}</span>
+                </div>
+                <div renderif="optional">
+                    <strong>Optional</strong>
+                </div>
+                <p renderif="desc">{{desc}}</p>
             </div>
-            <div renderif="default">
-                <strong>Default:</strong><span>{{default}}</span>
-            </div>
-            <div renderif="optional">
-                <strong>Optional</strong>
-            </div>
-            <p renderif="desc">{{desc}}</p>
         </article>
         
         <article id="methodTemplate">
