@@ -69,25 +69,25 @@
                 <strong>Optional</strong>
             </div>
             <p renderif="desc">{{desc}}</p>
-            <div renderif="this.startData.properties.type" databind="properties"  data-format="" data-heading-template="h5Template" childtemplate="'propertyTemplate'">
+            <div renderif="this.startData.properties">
+                <div databind="properties"  data-format="" data-heading-template="h5Template" childtemplate="'propertyTemplate'">
+                </div>
             </div>
         </article>
         
         <article id="propertyTemplate">
-            <div renderif="type">
-                <div childtemplate="headingTemplate"></div>
-                <strong>Type:</strong><span>{{type}}</span>
-                <div renderif="format">
-                    <strong>Format:</strong><code>{{format}}</code>
-                </div>
-                <div renderif="default">
-                    <strong>Default:</strong><span>{{default}}</span>
-                </div>
-                <div renderif="optional">
-                    <strong>Optional</strong>
-                </div>
-                <p renderif="desc">{{desc}}</p>
+            <div childtemplate="headingTemplate"></div>
+            <strong>Type:</strong><span>{{type}}</span>
+            <div renderif="format">
+                <strong>Format:</strong><code>{{format}}</code>
             </div>
+            <div renderif="default">
+                <strong>Default:</strong><span>{{default}}</span>
+            </div>
+            <div renderif="optional">
+                <strong>Optional</strong>
+            </div>
+            <p renderif="desc">{{desc}}</p>
         </article>
         
         <article id="methodTemplate">
