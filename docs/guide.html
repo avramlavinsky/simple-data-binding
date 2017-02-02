@@ -69,7 +69,7 @@
                 <strong>Optional</strong>
             </div>
             <p renderif="desc">{{desc}}</p>
-            <div databind="properties"  data-format="" data-heading-template="h5Template" childtemplate="'propertyTemplate'">
+            <div renderif="this.startData.properties" databind="properties"  data-format="" data-heading-template="h5Template" childtemplate="'propertyTemplate'">
             </div>
         </article>
         
