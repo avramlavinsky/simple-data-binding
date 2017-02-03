@@ -132,6 +132,7 @@
             //$bindings = all bindings associated with the object
             //$binding = this simple data binding instance
             //$set = set the property in the object and the binding and the DOM
+            //$update = update all assocated bindings
             if (data) {
                 if (data.$bindings) {
                     data.$bindings.push(self);
@@ -140,6 +141,13 @@
                     wire("$set", $set);
                 }
                 wire("$binding", self);
+                wire("$update", $update);
+            }
+
+            function $update(newData) {
+                for (var i = 0, stop = data.$bindings.length; i < stop; i++) {
+                    data.$bindings[i].update(newData || data);
+                }
             }
 
             function $set(prop, val) {
@@ -761,7 +769,7 @@
 
             if (node.nodeTemplate) {
                 node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
-                    return parseExpression($0.slice(2, -2), node);
+                    return parseExpression($0.slice(2, -2), node) || "";
                 });
             }
 
@@ -1248,13 +1256,8 @@
                     }
                     this.root.templates[parsedAttrValue] = template;
                     clone = template.cloneNode(true);
-                    if (el.placeholderNode) {
-                        this.removeCommentedElements(el.placeholderNode);
-                        el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
-                    } else {
-                        placeClone.apply(this, [el, clone]);
-                        this.surroundByComments(el, "template " + parsedAttrValue, clone, true);
-                    }
+                    placeClone.apply(this, [el, clone]);
+                    this.surroundByComments(el, "template " + parsedAttrValue, clone, true);
                     this.parseNode(clone);
                 }
             }
