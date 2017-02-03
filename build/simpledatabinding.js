@@ -769,7 +769,7 @@
 
             if (node.nodeTemplate) {
                 node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
-                    return parseExpression($0.slice(2, -2), node);
+                    return parseExpression($0.slice(2, -2), node) || "";
                 });
             }
 
