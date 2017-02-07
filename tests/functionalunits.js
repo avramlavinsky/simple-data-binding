@@ -304,7 +304,7 @@ describe("attr methods - question branching setup", function () {
     var binding = new SimpleDataBinding("#attrMethodsTestForm", startData());
 
     it("childTemplate", function () {
-        expect(binding.childTemplate(createEl("p"), "text", null, null).firstElementChild.tagName).toEqual("INPUT");
+        expect(binding.childTemplate(createEl("p"), "text", null, null, {}).firstElementChild.tagName).toEqual("INPUT");
     });
 
     it("renderIf", function () {
@@ -312,7 +312,7 @@ describe("attr methods - question branching setup", function () {
         expect(binding.renderIf(createEl("p"), undefined, "rawValue", null).parentNode).toEqual(null);
     });
 
-    it("childTemplate", function () {
+    it("setNodeValue", function () {
         expect(binding.setNodeValue(createInput(), "John", "firstName", null).value).toEqual("John");
     });
 

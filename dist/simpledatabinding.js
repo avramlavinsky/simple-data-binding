@@ -60,7 +60,21 @@
             return value;
         };
 
-        this.update = function (newData, bindDuringUpdate) {
+        this.dataBindFromAttr = function (el) {
+            var prop = el.getAttribute(toPrefixedHyphenated("databind")),
+                newData = self.get(prop, true, "startData");
+
+            if (newData instanceof Array) {
+                if (!el.parsed) {
+                    el.parsed = true;
+                    self.updateChildArray(prop, newData, el);
+                }
+            } else {
+                self.createChild(prop, el, newData);
+            }
+        };
+
+        this.update = function (newData, bindDuringUpdate, parse, bindObjects) {
             //assigns all values present in newData object to data
             var datum, val;
 
@@ -75,10 +89,12 @@
                 if (newData.hasOwnProperty(prop)) {
                     datum = newData[prop];
                     if (typeof (datum) === "object") {
-                        if (datum instanceof Array) {
-                            self.updateChildArray(prop, datum);
-                        } else {
-                            self.createChild(prop, getContainer(prop), datum);
+                        if (bindObjects !== false) {
+                            if (datum instanceof Array) {
+                                self.updateChildArray(prop, datum);
+                            } else {
+                                self.createChild(prop, getContainer(prop), datum);
+                            }
                         }
                     } else {
                         val = datum;
@@ -90,7 +106,9 @@
                 }
             }
 
-            self.parseNode(self.container);
+            if (parse !== false) {
+                self.parseNode(self.container);
+            }
 
             self.checkWatches("*", false);
 
@@ -114,6 +132,7 @@
             //$bindings = all bindings associated with the object
             //$binding = this simple data binding instance
             //$set = set the property in the object and the binding and the DOM
+            //$update = update all assocated bindings
             if (data) {
                 if (data.$bindings) {
                     data.$bindings.push(self);
@@ -122,6 +141,13 @@
                     wire("$set", $set);
                 }
                 wire("$binding", self);
+                wire("$update", $update);
+            }
+
+            function $update(newData) {
+                for (var i = 0, stop = data.$bindings.length; i < stop; i++) {
+                    data.$bindings[i].update(newData || data);
+                }
             }
 
             function $set(prop, val) {
@@ -152,10 +178,15 @@
             ar.idIndex = 0;
             ar.ownerInstance = self;
             ar.id = prop;
+            self.childArrayNameIndices[prop] = self.childArrayNameIndices[prop] || 0;
+            if (self.childArrays[prop]) {
+                self.childArrayNameIndices[prop]++;
+                ar.id += self.childArrayNameIndices[prop] || "";
+            }
             elementTemplate = el || getContainer(prop);
             if (elementTemplate) {
                 self.surroundByComments(ar, "child array " + prop, elementTemplate);
-                self.childArrays[prop] = ar;
+                self.childArrays[ar.id] = ar;
                 return ar;
             }
         };
@@ -185,7 +216,7 @@
                 frag = document.createDocumentFragment();
 
 
-            if (ar) {
+            if (ar && ar.placeHolderNode === el) {
                 resetChildArray(prop, data, el, ar);
             } else {
                 ar = createChildArray(prop, data, el);
@@ -207,6 +238,10 @@
         };
 
         this.createChildArrayMember = function (childArray, data, frag) {
+            if (typeof (data) !== "object") {
+                data = { value: data };//handle arrays of primitives
+            }
+
             //creates a member of child array
             //accessed externally by live array methods
             var child = self.cache.get(data),
@@ -229,12 +264,18 @@
 
         var generateChildArrayMemberId = function (childArray, data) {
             //generate a meaningful id for child instance within a child array
-            var id = data.name || data.id || data.heading || data.value || data.label;
+            var id = data.name;
 
-            if (!id || self.children[id]) {
-                childArray.idIndex++;
-                id = (id || childArray.id) + childArray.idIndex;
+            if (id) {
+                self.childNameIndices[id] = self.childNameIndices[id] || 0;
+                if (self.children[id]) {
+                    self.childNameIndices[id]++;
+                }
+                id += self.childNameIndices[id] || "";
+            } else {
+                id = childArray.id + "_" + childArray.idIndex;
             }
+            childArray.idIndex++;
             return id;
         };
 
@@ -245,9 +286,11 @@
 
             if (self.container) {
                 if (!instanceId) {
-                    instanceId = self.container.getAttribute("databind") || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
+                    instanceId = self.container.getAttribute(toPrefixedHyphenated("databind")) || self.container.id || self.container.name || "binding-" + self.container.tagName + "-" + timeStamp;
                 }
-                self.container.setAttribute("databind", instanceId);
+                if (!self.container.getAttribute(toPrefixedHyphenated("databind"))) {
+                    self.container.setAttribute(toPrefixedHyphenated("databind"), instanceId);
+                }
             }
             return instanceId || timeStamp;
         };
@@ -268,10 +311,15 @@
             cachedChild = self.cache.get(data);
             if (cachedChild && container && cachedChild.removed) {
                 cachedChild.container = container;
-                cachedChild.update(data);
+                cachedChild.update(data, false, true, false);
                 cachedChild.removed = false;
                 child = cachedChild;
             } else {
+                if (self.children[id] && !self.children[id].containingArray) {
+                    self.childNameIndices[id] = self.childNameIndices[id] || 0;
+                    self.childNameIndices[id]++;
+                    id += self.childNameIndices[id] || "";
+                }
                 child = new SimpleDataBinding(container, data, self.configs, id, self);
             }
 
@@ -286,19 +334,19 @@
 
             topInstance = topInstance || (self.found = []) && self;
             if (children[id]) {
-                self.root.found.push(children[id]);
+                topInstance.found.push(children[id]);
             }
             if (childArrays[id]) {
-                self.root.found.push(childArrays[id]);
+                topInstance.found.push(childArrays[id]);
             }
-            if (all || !self.root.length) {
+            if (all || !topInstance.found.length) {
                 for (childId in children) {
                     if (children.hasOwnProperty(childId)) {
                         children[childId].find(id, all, topInstance);
                     }
                 }
             }
-            return all ? self.root.found : self.root.found[0];
+            return all ? topInstance.found : topInstance.found[0];
         };
 
         this.find = function (id) {
@@ -311,7 +359,7 @@
 
         this.getBindingFor = function (el) {
             var closestContainer = closest(el, "[databind]"),
-                id = closestContainer && closestContainer.getAttribute("databind"),
+                id = closestContainer && closestContainer.getAttribute(toPrefixedHyphenated("databind")),
                 bindings = self.root.findAll(id);
 
             return bindings.filter(function (binding) {
@@ -331,7 +379,7 @@
 
             for (var childId in self.children) {
                 if (self.children.hasOwnProperty(childId) && self.children[childId]) {
-                    dataClone[childId] = self.children[childId].export();
+                    dataClone[childId] = self.children[childId].export(unprefix);
                 }
             }
             return dataClone;
@@ -602,12 +650,14 @@
                     for (i = 0; i < node.childNodes.length; i++) {
                         //do not recurse if we have hit the container of a child SimpleDataBinding instance
                         //let the instance handle it
-                        if (!(node.childNodes[i].hasAttribute && node.childNodes[i].hasAttribute("databind"))) {
+                        if (node.childNodes[i].hasAttribute && node.childNodes[i].hasAttribute("databind")) {
+                            self.dataBindFromAttr(node.childNodes[i]);
+                        } else {
                             self.parseNode(node.childNodes[i]);
                         }
                     }
 
-                    if (node.getAttribute("databind")) {
+                    if (node.getAttribute(toPrefixedHyphenated("databind"))) {
                         setTimeout(function () {
                             node.classList.remove("unparsed");
                             node.classList.add("parsed");
@@ -662,14 +712,14 @@
         var resolveAttrNodeValue = function (node) {
             //resolve curly braces and call attribute based methods
 
-            var attrMethodName = node.nodeName,
+            var attrMethodName = node.nodeName === "name" ? node.nodeName : toPrefixedCamel(toCamelCase(node.nodeName)),
                 attrMethod = self.attrMethods[attrMethodName],
                 el = node.ownerElement,
                 parentEl, value, name;
 
             resolveDoubleCurlyBraces(node, node.nodeValue);
             value = node.value || el && el[node.name];//element properties like node.href may differ dramatically from the attribute node value
-            if (attrMethodName === "value" && (el.type === "radio" || el.type === "checkbox" || el.tagName === "OPTION")) {
+            if (node.nodeName === "value" && (el.type === "radio" || el.type === "checkbox" || el.tagName === "OPTION")) {
                 name = el && el.name;
                 if (!name && el.tagName === "OPTION" && el.parentNode) {
                     if (el.parentNode instanceof DocumentFragment) {
@@ -682,7 +732,7 @@
                 setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
             if (attrMethod) {
-                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, node.nodeName]);
+                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName, node]);
             }
             return node;
         };
@@ -706,7 +756,7 @@
 
             if (node.nodeTemplate) {
                 node.nodeValue = node.nodeTemplate.replace(/{{(.*?)}}/g, function ($0) {
-                    return parseExpression($0.slice(2, -2), node);
+                    return parseExpression($0.slice(2, -2), node) || "";
                 });
             }
 
@@ -737,6 +787,7 @@
                         for (i = 0, stop = argsArray.length; i < stop; i++) {
                             args[i] = parseExpression(argsArray[i].trim(), node);
                         }
+                        args.push.apply(args, arguments);//any arguments passed will be added after arguments specified in the attribute value - essential for binding handlers
                         return pointer.apply(self, args);
                     };
                     if (addWatches !== false) {
@@ -772,7 +823,7 @@
             if (fn) {
                 //important that return values for function as well as get should be undefined, not a null string, under failure conditions
                 //otherwise setNodeValue will overwrite previously set values to no selection for selects
-                value = typeof (fn) === "function" ? fn() : fn;
+                value = typeof (fn) === "function" && str.indexOf("(") > 0 ? fn() : fn;
             } else {
                 value = self.get(str, true);
                 if (addWatches !== false) {
@@ -808,7 +859,7 @@
                 if (el.parentNode) {
                     el.parentNode.removeChild(el);
                 }
-            })
+            });
 
             return clone;
         });
@@ -830,6 +881,13 @@
                 el.parentElement.removeChild(el);
             }
             return el;
+        };
+
+        var click = function (el, fn) {
+            var binding = this;
+            el.addEventListener("click", function (e) {
+                fn.apply(binding, [e, el]);
+            });
         };
 
         var setNodeValue = function (el, parsedAttrValue, rawAttrValue, attrName) {
@@ -943,8 +1001,6 @@
             //handles changes to form control values within the container
             var val = getNodeValue(e.target),
               prop = e.target.name;
-
-            e.stopPropagation();
 
             if (self.containingArray && self.parent.get(prop) !== undefined && (e.target.type === "radio" || e.target.type === "checkbox")) {
                 //checkboxes and radios created in childArrays should change the value in the parent DataBinding instance
@@ -1070,9 +1126,12 @@
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.attrMethods[toPrefixedHyphenated("replacementtemplate")] = replacementTemplate;
+            self.attrMethods[toPrefixedHyphenated("click")] = click;
             self.templates = assign({}, self.configs.templates || {});
             self.logic = assign({}, self.configs.logic || {});
             self.cache = new WeakMap();
+            self.childNameIndices = {};
+            self.childArrayNameIndices = {};
 
             return self;
         };
@@ -1102,14 +1161,17 @@
             var el = self.boundHiddenInput || self.container;
 
             if (el) {
+                if (typeof (startData) !== "object") {
+                    startData = { value: startData };
+                }
                 self.startData = startData;
                 if (startData && self.parent) {
                     self.parent.cache.set(startData, self);
                 }
-                self.data = prefixData(el.dataset);
-                self.update(self.data);
+                self.data = prefixData(el.dataset || {}/* FF SVG elements have no dataset*/);
+                self.update(self.data, false, false, false);
                 getInitialNodeValues();
-                self.update(startData || {});
+                self.update(startData || {}, false, true, false);
                 wireData(startData);
             }
             return self;
@@ -1139,7 +1201,7 @@
 
     SimpleDataBinding.prototype.templateMaster = function (placeClone) {
         //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
-        return function (el, parsedAttrValue) {
+        return function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) {
             var storedTemplate, clone, template;
 
             if (parsedAttrValue) {
@@ -1157,13 +1219,12 @@
                     }
                     this.root.templates[parsedAttrValue] = template;
                     clone = template.cloneNode(true);
-                    if (el.placeholderNode) {
-                        this.removeCommentedElements(el.placeholderNode);
-                        el.placeholderNode.parentNode.insertBefore(clone, el.placeholderNode);
-                    } else {
-                        placeClone.apply(this, [el, clone]);
-                        this.surroundByComments(el, "template " + parsedAttrValue, clone, true);
+                    if (attrNode.placeholderNode) {
+                        this.removeCommentedElements(attrNode.placeholderNode);
+                        attrNode.placeholderNode.remove();
                     }
+                    placeClone.apply(this, [el, clone]);
+                    this.surroundByComments(attrNode, "template " + parsedAttrValue, clone, true);
                     this.parseNode(clone);
                 }
             }

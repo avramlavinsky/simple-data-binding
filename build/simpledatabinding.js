@@ -745,7 +745,7 @@
                 setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
             if (attrMethod) {
-                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName]);
+                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName, node]);
             }
             return node;
         };
@@ -800,6 +800,7 @@
                         for (i = 0, stop = argsArray.length; i < stop; i++) {
                             args[i] = parseExpression(argsArray[i].trim(), node);
                         }
+                        args.push.apply(args, arguments);//any arguments passed will be added after arguments specified in the attribute value - essential for binding handlers
                         return pointer.apply(self, args);
                     };
                     if (addWatches !== false) {
@@ -835,7 +836,7 @@
             if (fn) {
                 //important that return values for function as well as get should be undefined, not a null string, under failure conditions
                 //otherwise setNodeValue will overwrite previously set values to no selection for selects
-                value = typeof (fn) === "function" ? fn() : fn;
+                value = typeof (fn) === "function" && str.indexOf("(") > 0 ? fn() : fn;
             } else {
                 value = self.get(str, true);
                 if (addWatches !== false) {
@@ -910,6 +911,13 @@
             return el;
         };
 
+        var click = function (el, fn) {
+            var binding = this;
+            el.addEventListener("click", function (e) {
+                fn.apply(binding, [e, el]);
+            });
+        };
+
         var setNodeValue = function (el, parsedAttrValue, rawAttrValue, attrName) {
             //executed as a native attribute method wherever a name attribute is encountered
             //sets node value to data property value
@@ -936,6 +944,7 @@
         this.childTemplate = childTemplate;
         this.replacementTemplate = replacementTemplate;
         this.renderIf = renderIf;
+        this.click = click;
         this.setNodeValue = setNodeValue;
         /* end-test-code */
 
@@ -1160,6 +1169,7 @@
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.attrMethods[toPrefixedHyphenated("replacementtemplate")] = replacementTemplate;
+            self.attrMethods[toPrefixedHyphenated("click")] = click;
             self.templates = assign({}, self.configs.templates || {});
             self.logic = assign({}, self.configs.logic || {});
             self.cache = new WeakMap();
@@ -1238,7 +1248,7 @@
 
     SimpleDataBinding.prototype.templateMaster = function (placeClone) {
         //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
-        return function (el, parsedAttrValue) {
+        return function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) {
             var storedTemplate, clone, template;
 
             if (parsedAttrValue) {
@@ -1256,8 +1266,12 @@
                     }
                     this.root.templates[parsedAttrValue] = template;
                     clone = template.cloneNode(true);
+                    if (attrNode.placeholderNode) {
+                        this.removeCommentedElements(attrNode.placeholderNode);
+                        attrNode.placeholderNode.remove();
+                    }
                     placeClone.apply(this, [el, clone]);
-                    this.surroundByComments(el, "template " + parsedAttrValue, clone, true);
+                    this.surroundByComments(attrNode, "template " + parsedAttrValue, clone, true);
                     this.parseNode(clone);
                 }
             }
