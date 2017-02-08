@@ -669,13 +669,13 @@
             }
         };
 
-        var resolveAttrNode = function (node) {
+        var resolveAttrNode = function (node, fromWatch) {
             //resolve dynamic references in an attribute
             if (node.nodeName.substr(0, 5) === "data-") {
                 resolveDoubleCurlyBraces(node, node.nodeValue);
             } else {
                 resolveAttrNodeName(node);
-                resolveAttrNodeValue(node);
+                resolveAttrNodeValue(node, fromWatch);
                 return node;
             }
         };
@@ -709,7 +709,7 @@
             return attrName;
         };
 
-        var resolveAttrNodeValue = function (node) {
+        var resolveAttrNodeValue = function (node, fromWatch) {
             //resolve curly braces and call attribute based methods
 
             var attrMethodName = node.nodeName === "name" ? node.nodeName : toPrefixedCamel(toCamelCase(node.nodeName)),
@@ -732,7 +732,7 @@
                 setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
             if (attrMethod) {
-                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName, node]);
+                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName, node, ! fromWatch]);
             }
             return node;
         };
@@ -874,11 +874,11 @@
             return el.appendChild(clone);
         });
 
-        var renderIf = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode, commentLabel) {
+        var renderIf = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) {
             //native attribute method
             //removes the node from the dom whenever the attribute value evalutes to falsey
             //replaces it when truey
-            this.surroundByComments(el, (commentLabel || "render if ") + rawAttrValue, el, true);
+            this.surroundByComments(el, attrName + " " + rawAttrValue, el, true);
             if (parsedAttrValue && !el.parentElement) {
                 el.placeholderNode.parentNode.insertBefore(el, el.placeholderNode);
             } else if (!parsedAttrValue && el.parentElement) {
@@ -1055,7 +1055,7 @@
                     } else {
                         node = watches[i];
                         if (node.nodeType === 2) {
-                            resolveAttrNode(node);
+                            resolveAttrNode(node, true);
                         } else {
                             resolveDoubleCurlyBraces(node);
                         }
@@ -1128,7 +1128,7 @@
             self.attrMethods = assign({}, self.configs.attrMethods || {});
             self.attrMethods.name = setNodeValue;
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
-            self.attrMethods[toPrefixedHyphenated("renderifnot")] = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) { renderIf.apply(self, [el, !parsedAttrValue, rawAttrValue, attrName, attrNode, "render if not "]); };
+            self.attrMethods[toPrefixedHyphenated("renderifnot")] = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) { renderIf.apply(self, [el, !parsedAttrValue, rawAttrValue, attrName, attrNode]); };
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.attrMethods[toPrefixedHyphenated("replacementtemplate")] = replacementTemplate;
             self.attrMethods[toPrefixedHyphenated("click")] = click;
