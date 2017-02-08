@@ -37,7 +37,7 @@
                     parentInstance[repository][prop] = val;
                 }
             } else {
-                self[repository][prop] = val;
+                self[repository][prop] = repository === "data" ? (val || "") : val;
             }
 
             return self[repository][prop];
@@ -766,15 +766,19 @@
         var parseFunctionOrObject = function (str, node, addWatches) {
             //parses a string as a path to a funtion with arguments or an object
             //if a function, the arguments are each parsed recursively as expressions
-            if (str.substr(0, 5) === "this.") {
+            if (str.indexOf(".") > 0) {
 
                 var parenIndex = str.indexOf("("),
                     argsArray = parenIndex > 0 && str.slice(parenIndex + 1, -1).split(","),
                     path = str.substr(0, parenIndex === -1 ? str.length : parenIndex),
-                    pointer = self,
-                    pathArray, fn, i, stop;
+                    pointer, pathArray, fn, i, stop;
 
                 pathArray = path.split(".");
+                pointer = pathArray[0] === "this" ? self : window[pathArray[0]];
+                if (!pointer) {
+                    return null;
+                }
+
                 for (i = 1, stop = pathArray.length; i < stop; i++) {
                     if (pointer) {
                         pointer = pointer[pathArray[i]];
@@ -825,7 +829,7 @@
                 //otherwise setNodeValue will overwrite previously set values to no selection for selects
                 value = typeof (fn) === "function" && str.indexOf("(") > 0 ? fn() : fn;
             } else {
-                value = self.get(str, true);
+                value = self.get(str, true) || "";
                 if (addWatches !== false) {
                     self.watch(str, node);
                 }
@@ -870,11 +874,11 @@
             return el.appendChild(clone);
         });
 
-        var renderIf = function (el, parsedAttrValue, rawAttrValue) {
+        var renderIf = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode, commentLabel) {
             //native attribute method
             //removes the node from the dom whenever the attribute value evalutes to falsey
             //replaces it when truey
-            this.surroundByComments(el, "render if " + rawAttrValue, el, true);
+            this.surroundByComments(el, (commentLabel || "render if ") + rawAttrValue, el, true);
             if (parsedAttrValue && !el.parentElement) {
                 el.placeholderNode.parentNode.insertBefore(el, el.placeholderNode);
             } else if (!parsedAttrValue && el.parentElement) {
@@ -1124,6 +1128,7 @@
             self.attrMethods = assign({}, self.configs.attrMethods || {});
             self.attrMethods.name = setNodeValue;
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
+            self.attrMethods[toPrefixedHyphenated("renderifnot")] = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) { renderIf.apply(self, [el, !parsedAttrValue, rawAttrValue, attrName, attrNode, "render if not "]); };
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.attrMethods[toPrefixedHyphenated("replacementtemplate")] = replacementTemplate;
             self.attrMethods[toPrefixedHyphenated("click")] = click;
