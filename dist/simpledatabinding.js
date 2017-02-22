@@ -22,6 +22,8 @@
             repository = repository || "data";
             existingValue = self.data[prop];
 
+            val = self.normalize(val);
+
             if (setWhereDefined) {
                 while (existingValue === undefined && inherit !== false && parentInstance.parent) {
                     //search for a reference to the property in ancestors
@@ -58,6 +60,16 @@
                 value = parentInstance[repository][prop];
             }
             return value;
+        };
+
+        this.normalize = function (val, bool) {
+            if (val === 0) {
+                val = "0";
+            }
+            if (bool && (val === "false" || val === "undefined")) {
+                val = "";
+            }
+            return val;
         };
 
         this.dataBindFromAttr = function (el) {
@@ -878,6 +890,7 @@
             //native attribute method
             //removes the node from the dom whenever the attribute value evalutes to falsey
             //replaces it when truey
+            parsedAttrValue = self.normalize(parsedAttrValue, true);
             this.surroundByComments(el, attrName + " " + rawAttrValue, el, true);
             if (parsedAttrValue && !el.parentElement) {
                 el.placeholderNode.parentNode.insertBefore(el, el.placeholderNode);
@@ -890,7 +903,9 @@
         var click = function (el, fn) {
             var binding = this;
             el.addEventListener("click", function (e) {
-                fn.apply(binding, [e, el]);
+                if (!el.hasAttribute("disabled") && !(el.getAttribute("aria-disabled") === "true")) {
+                    fn.apply(binding, [e, el]);
+                }
             });
         };
 
@@ -1128,7 +1143,7 @@
             self.attrMethods = assign({}, self.configs.attrMethods || {});
             self.attrMethods.name = setNodeValue;
             self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
-            self.attrMethods[toPrefixedHyphenated("renderifnot")] = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) { renderIf.apply(self, [el, !parsedAttrValue, rawAttrValue, attrName, attrNode]); };
+            self.attrMethods[toPrefixedHyphenated("renderifnot")] = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) { renderIf.apply(self, [el, !self.normalize(parsedAttrValue, true), rawAttrValue, attrName, attrNode]); };
             self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
             self.attrMethods[toPrefixedHyphenated("replacementtemplate")] = replacementTemplate;
             self.attrMethods[toPrefixedHyphenated("click")] = click;
