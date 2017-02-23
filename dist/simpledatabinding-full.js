@@ -669,7 +669,7 @@
                         }
                     }
 
-                    if (node.classList /* SVG nodes in IE11 have no classList */ && node.getAttribute(toPrefixedHyphenated("databind"))) {
+                    if (node.classList /* SVG nodes do not have classLists in some browsers */ && node.getAttribute(toPrefixedHyphenated("databind"))) {
                         setTimeout(function () {
                             node.classList.remove("unparsed");
                             node.classList.add("parsed");
@@ -744,7 +744,7 @@
                 setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
             if (attrMethod) {
-                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName, node, !fromWatch]);
+                attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName, node, ! fromWatch]);
             }
             return node;
         };

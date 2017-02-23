@@ -669,7 +669,7 @@
                         }
                     }
 
-                    if (node.getAttribute(toPrefixedHyphenated("databind"))) {
+                    if (node.classList /* SVG nodes do not have classLists in some browsers */ && node.getAttribute(toPrefixedHyphenated("databind"))) {
                         setTimeout(function () {
                             node.classList.remove("unparsed");
                             node.classList.add("parsed");
