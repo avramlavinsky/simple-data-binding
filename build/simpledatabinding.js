@@ -1288,7 +1288,7 @@
                     clone = template.cloneNode(true);
                     if (attrNode.placeholderNode) {
                         this.removeCommentedElements(attrNode.placeholderNode);
-                        attrNode.placeholderNode.remove();
+                        attrNode.placeholderNode.parentNode.removeChild(attrNode.placeholderNode);
                     }
                     placeClone.apply(this, [el, clone]);
                     this.surroundByComments(attrNode, "template " + parsedAttrValue, clone, true);
