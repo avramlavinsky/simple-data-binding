@@ -1,5 +1,8 @@
 (function () {
 
+    var attrMethods = {}, proto;
+
+
     function SimpleDataBinding(container, startData, configs, id, parentInstance) {
         //binds data to and from form controls, text nodes, and attributes
         //automatically repeats markup bound to arrays
@@ -7,8 +10,83 @@
         //see https://avramlavinsky.github.io/simple-data-binding/docs/guide.html for usage
 
         var self = this,
+            setNodeValue = this.attrMethods.name,
             doc = document,
             observer;
+
+
+        //<<<<< String Utilities >>>>>
+
+        var toCamelCase = function (str) {
+            //converts hyphenated to camel case
+            return str.replace(/-([a-z])/gi, function (s, group1) {
+                return group1.toUpperCase();
+            });
+        };
+
+        var toHyphenated = function (str) {
+            //converts camel case to hyphenated lower case
+            return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        };
+
+        var toPrefixedCamel = function (str) {
+            //prefixes camel case string with namespace if not already prefixed
+            if (self.nameSpace && str && str.substring(0, self.nameSpace.length) !== self.nameSpace) {
+                str = self.nameSpace + str.charAt(0).toUpperCase() + str.slice(1);
+            }
+            return str;
+        };
+
+        var toPrefixedHyphenated = function (str) {
+            //prefixes hyphenated string with namespace
+            return (self.attrPrefix ? toHyphenated(self.attrPrefix) + "-" : "") + str;
+        };
+
+        var toUnprefixedCamel = function (str) {
+            //strips the namespace from camel strings
+            if (self.nameSpace) {
+                str = str.substring(self.nameSpace.length);
+                return str.charAt(0).toLowerCase() + str.slice(1);
+            } else {
+                return str;
+            }
+        };
+
+        var prefixData = function (dataset) {
+            //prefix data property names with namespace as needed
+            if (self.nameSpace) {
+                for (var prop in dataset) {
+                    if (prop.substring(0, self.nameSpace.length) !== self.nameSpace) {
+                        self.set(prop, dataset[prop]);
+                        delete dataset[prop];
+                    }
+                }
+            }
+            return dataset;
+        };
+
+        var unprefixData = function (obj) {
+            //remove namespace prefix from data property names
+            if (self.nameSpace) {
+                for (var prop in obj) {
+                    if (obj.hasOwnProperty(prop)) {
+                        obj[toUnprefixedCamel(prop)] = obj[prop];
+                        delete obj[prop];
+                    }
+                }
+            }
+            return obj;
+        };
+
+        /* test-code */
+        this.toCamelCase = toCamelCase;
+        this.toHyphenated = toHyphenated;
+        this.toPrefixedCamel = toPrefixedCamel;
+        this.toPrefixedHyphenated = toPrefixedHyphenated;
+        this.toUnprefixedCamel = toUnprefixedCamel;
+        this.prefixData = prefixData;
+        this.unprefixData = unprefixData;
+        /* end-test-code */
 
 
         //<<<< Core Data Methods >>>>
@@ -405,78 +483,6 @@
         /* end-test-code */
 
 
-        //<<<<< String Utilities >>>>>
-
-        var toCamelCase = function (str) {
-            //converts hyphenated to camel case
-            return str.replace(/-([a-z])/gi, function (s, group1) {
-                return group1.toUpperCase();
-            });
-        };
-
-        var toHyphenated = function (str) {
-            //converts camel case to hyphenated lower case
-            return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-        };
-
-        var toPrefixedCamel = function (str) {
-            //prefixes camel case string with namespace if not already prefixed
-            if (self.nameSpace && str && str.substring(0, self.nameSpace.length) !== self.nameSpace) {
-                str = self.nameSpace + str.charAt(0).toUpperCase() + str.slice(1);
-            }
-            return str;
-        };
-
-        var toPrefixedHyphenated = function (str) {
-            //prefixes hyphenated string with namespace
-            return (self.attrPrefix ? toHyphenated(self.attrPrefix) + "-" : "") + str;
-        };
-
-        var toUnprefixedCamel = function (str) {
-            //strips the namespace from camel strings
-            if (self.nameSpace) {
-                str = str.substring(self.nameSpace.length);
-                return str.charAt(0).toLowerCase() + str.slice(1);
-            } else {
-                return str;
-            }
-        };
-
-        var prefixData = function (dataset) {
-            //prefix data property names with namespace as needed
-            if (self.nameSpace) {
-                for (var prop in dataset) {
-                    if (prop.substring(0, self.nameSpace.length) !== self.nameSpace) {
-                        self.set(prop, dataset[prop]);
-                        delete dataset[prop];
-                    }
-                }
-            }
-            return dataset;
-        };
-
-        var unprefixData = function (obj) {
-            //remove namespace prefix from data property names
-            if (self.nameSpace) {
-                for (var prop in obj) {
-                    if (obj.hasOwnProperty(prop)) {
-                        obj[toUnprefixedCamel(prop)] = obj[prop];
-                        delete obj[prop];
-                    }
-                }
-            }
-            return obj;
-        };
-
-        /* test-code */
-        this.toCamelCase = toCamelCase;
-        this.toHyphenated = toHyphenated;
-        this.toPrefixedCamel = toPrefixedCamel;
-        this.toPrefixedHyphenated = toPrefixedHyphenated;
-        this.toUnprefixedCamel = toUnprefixedCamel;
-        this.prefixData = prefixData;
-        this.unprefixData = unprefixData;
-        /* end-test-code */
 
 
         //<<< DOM Methods >>>
@@ -754,7 +760,7 @@
                     }
                     name = parentEl.name;
                 }
-                setNodeValue(el, parseExpression(name, node, false), name, "name");
+                self.setNodeValue(el, parseExpression(name, node, false), name, "name");
             }
             if (attrMethod) {
                 attrMethod.apply(self, [el, parseExpression(node.nodeValue, node), node.nodeValue, attrMethodName, node, ! fromWatch]);
@@ -883,89 +889,6 @@
         this.parseExpression = parseExpression;
         /* end-test-code */
 
-
-        //<<<<<<<<<< attribute based methods and their subfunctions >>>>>>>>>>
-
-        var replacementTemplate = self.templateMaster(function (el, clone) {
-            //custom attribute method
-            //replaces a given element with the specified template
-            el.parentNode.insertBefore(clone, el);
-            if (el === this.container) {
-                for (var prop in el.dataset) {
-                    if (el.dataset.hasOwnProperty[prop]) {
-                        clone.dataset[prop] = el.dataset[prop];
-                    }
-                }
-                this.container = clone;
-            }
-            setTimeout(function () {
-                //wait for possible child array to render before removing parent
-                if (el.parentNode) {
-                    el.parentNode.removeChild(el);
-                }
-            });
-
-            return clone;
-        });
-
-        var childTemplate = self.templateMaster(function (el, clone) {
-            //native attribute method
-            //appends a template clone as a child of the element
-            return el.appendChild(clone);
-        });
-
-        var renderIf = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) {
-            //native attribute method
-            //removes the node from the dom whenever the attribute value evalutes to falsey
-            //replaces it when truey
-            parsedAttrValue = self.normalize(parsedAttrValue, true);
-            this.surroundByComments(el, attrName + " " + rawAttrValue, el, true);
-            if (parsedAttrValue && !el.parentElement) {
-                el.placeholderNode.parentNode.insertBefore(el, el.placeholderNode);
-            } else if (!parsedAttrValue && el.parentElement) {
-                el.parentElement.removeChild(el);
-            }
-            return el;
-        };
-
-        var click = function (el, fn) {
-            var binding = this;
-            el.addEventListener("click", function (e) {
-                if (!el.hasAttribute("disabled") && !(el.getAttribute("aria-disabled") === "true")) {
-                    fn.apply(binding, [e, el]);
-                }
-            });
-        };
-
-        var setNodeValue = function (el, parsedAttrValue, rawAttrValue, attrName) {
-            //executed as a native attribute method wherever a name attribute is encountered
-            //sets node value to data property value
-            if (parsedAttrValue !== undefined) {
-                if (el.type === "radio" && attrName === "name") {
-                    el.checked = (parsedAttrValue === el.value);
-                } else if (el.type === "checkbox" && attrName === "name") {
-                    el.checked = (parsedAttrValue.indexOf(el.value) !== -1);
-                } else if (el.tagName === "SELECT" && !parsedAttrValue) {
-                    setTimeout(function () {
-                        el.selectedIndex = "-1";
-                    }, 0);
-                } else if (el.tagName === "OPTION" && (attrName === "value" || attrName === "name")) {
-                    el.selected = el.value && (parsedAttrValue).indexOf(el.value) !== -1;
-                } else {
-                    el.value = parsedAttrValue;
-                }
-            }
-
-            return el;
-        };
-
-        /* test-code */
-        this.childTemplate = childTemplate;
-        this.replacementTemplate = replacementTemplate;
-        this.renderIf = renderIf;
-        this.click = click;
-        this.setNodeValue = setNodeValue;
-        /* end-test-code */
 
 
         //<<<<<< Listeners, Handlers, and Watches >>>>>>
@@ -1183,13 +1106,8 @@
             self.watches = self.configs.watches || {};
             self.globalScopeWatches = self.configs.globalScopeWatches || {};
             self.checkboxDataDelimiter = self.configs.checkboxDataDelimiter || ",";
-            self.attrMethods = assign({}, self.configs.attrMethods || {});
-            self.attrMethods.name = setNodeValue;
-            self.attrMethods[toPrefixedHyphenated("renderif")] = renderIf;
-            self.attrMethods[toPrefixedHyphenated("renderifnot")] = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) { renderIf.apply(self, [el, !self.normalize(parsedAttrValue, true), rawAttrValue, attrName, attrNode]); };
-            self.attrMethods[toPrefixedHyphenated("childtemplate")] = childTemplate;
-            self.attrMethods[toPrefixedHyphenated("replacementtemplate")] = replacementTemplate;
-            self.attrMethods[toPrefixedHyphenated("click")] = click;
+            self.nameSpaceAttrMethods(toPrefixedHyphenated);
+            self.attrMethods = assign(self.attrMethods, self.configs.attrMethods || {});
             self.templates = assign({}, self.configs.templates || {});
             self.logic = assign({}, self.configs.logic || {});
             self.cache = new WeakMap();
@@ -1266,7 +1184,16 @@
         this.init();
     }
 
-    SimpleDataBinding.prototype.templateMaster = function (placeClone) {
+
+
+    //<<<<<<<<<<<<<< Prototype >>>>>>>>>>>>>
+
+    proto = SimpleDataBinding.prototype;
+
+
+    //<<<<<<<<<<<<<< attrMethod (directive) helper/factory functions >>>>>>>>>>>>>
+
+    proto.templateMaster = function (placeClone) {
         //generates attribute methods to place template in any relative manner to the element as specified in the placeClone method
         return function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) {
             var storedTemplate, clone, template;
@@ -1298,6 +1225,120 @@
             return el;
         };
     };
+
+    proto.nameSpaceAttrMethods = function (toPrefixedHyphenated) {
+        for (var method in this.attrMethods) {
+            if (this.attrMethods.hasOwnProperty(method)) {
+                this.attrMethods[toPrefixedHyphenated(method)] = this.attrMethods[method];
+            }
+        }
+        /* test-code */
+        this.replacementTempate = this.attrMethods[toPrefixedHyphenated("replacementtemplate")];
+        this.childTemplate = this.attrMethods[toPrefixedHyphenated("childtemplate")];
+        this.renderIf = this.attrMethods[toPrefixedHyphenated("renderif")];
+        this.click = this.attrMethods[toPrefixedHyphenated("click")];
+        this.setNodeValue = this.attrMethods.name;
+        /* end-test-code */
+    };
+
+
+    //<<<<<<<<<< attribute based methods and their subfunctions >>>>>>>>>>
+
+    attrMethods.replacementtemplate = proto.templateMaster(function (el, clone) {
+        //custom attribute method
+        //replaces a given element with the specified template
+        el.parentNode.insertBefore(clone, el);
+        if (el === this.container) {
+            for (var prop in el.dataset) {
+                if (el.dataset.hasOwnProperty[prop]) {
+                    clone.dataset[prop] = el.dataset[prop];
+                }
+            }
+            this.container = clone;
+        }
+        setTimeout(function () {
+            //wait for possible child array to render before removing parent
+            if (el.parentNode) {
+                el.parentNode.removeChild(el);
+            }
+        });
+
+        return clone;
+    });
+
+    attrMethods.childtemplate = proto.templateMaster(function (el, clone) {
+        //native attribute method
+        //appends a template clone as a child of the element
+        return el.appendChild(clone);
+    });
+
+    attrMethods.renderif = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) {
+        //native attribute method
+        //removes the node from the dom whenever the attribute value evalutes to falsey
+        //replaces it when truey
+        parsedAttrValue = this.normalize(parsedAttrValue, true);
+        this.surroundByComments(el, attrName + " " + rawAttrValue, el, true);
+        if (parsedAttrValue && !el.parentElement) {
+            el.placeholderNode.parentNode.insertBefore(el, el.placeholderNode);
+        } else if (!parsedAttrValue && el.parentElement) {
+            el.parentElement.removeChild(el);
+        }
+        return el;
+    };
+
+    attrMethods.click = function (el, fn) {
+        var binding = this;
+
+        el.addEventListener("click", function (e) {
+            if (!el.hasAttribute("disabled") && !(el.getAttribute("aria-disabled") === "true")) {
+                fn.apply(binding, [e, el]);
+            }
+        });
+    };
+
+    attrMethods.clickon = function (el, val, prop) {
+        var binding = this;
+
+        attrMethods.click(el, function () {
+            binding[prop] = "true";
+        });
+    };
+
+    attrMethods.clickoff = function (el, val, prop) {
+        var binding = this;
+
+        attrMethods.click(el, function () {
+            binding[prop] = "";
+        });
+    };
+
+    attrMethods.name = function (el, parsedAttrValue, rawAttrValue, attrName) {
+        //executed as a native attribute method wherever a name attribute is encountered
+        //sets node value to data property value
+        if (parsedAttrValue !== undefined) {
+            if (el.type === "radio" && attrName === "name") {
+                el.checked = (parsedAttrValue === el.value);
+            } else if (el.type === "checkbox" && attrName === "name") {
+                el.checked = (parsedAttrValue.indexOf(el.value) !== -1);
+            } else if (el.tagName === "SELECT" && !parsedAttrValue) {
+                setTimeout(function () {
+                    el.selectedIndex = "-1";
+                }, 0);
+            } else if (el.tagName === "OPTION" && (attrName === "value" || attrName === "name")) {
+                el.selected = el.value && (parsedAttrValue).indexOf(el.value) !== -1;
+            } else {
+                el.value = parsedAttrValue;
+            }
+        }
+
+        return el;
+    };
+
+    proto.attrMethods = attrMethods;
+
+    /* test-code */
+    proto.setNodeValue = attrMethods.name;
+    /* end-test-code */
 
 
     window.SimpleDataBinding = SimpleDataBinding;
