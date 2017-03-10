@@ -1288,8 +1288,8 @@
     };
 
     proto.attrMethods = attrMethods;
-
-
+    proto.setNodeValue = attrMethods.name;
+    
 
 
     window.SimpleDataBinding = SimpleDataBinding;
