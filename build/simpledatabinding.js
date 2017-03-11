@@ -1300,7 +1300,7 @@
         var binding = this;
 
         attrMethods.click(el, function () {
-            binding[prop] = "true";
+            binding.set(prop, "true", true, null, true);
         });
     };
 
@@ -1308,7 +1308,7 @@
         var binding = this;
 
         attrMethods.click(el, function () {
-            binding[prop] = "";
+            binding.set(prop, "", true, null, true);
         });
     };
 
