@@ -10,7 +10,7 @@
         //see https://avramlavinsky.github.io/simple-data-binding/docs/guide.html for usage
 
         var self = this,
-            setNodeValue = this.attrMethods.name,
+            setNodeValue = this.rawAttrMethods.name,
             doc = document,
             observer;
 
@@ -130,16 +130,6 @@
                 value = parentInstance[repository][prop];
             }
             return value;
-        };
-
-        this.normalize = function (val, bool) {
-            if (val === 0) {
-                val = "0";
-            }
-            if (bool && (val === "false" || val === "undefined")) {
-                val = "";
-            }
-            return val;
         };
 
         this.dataBindFromAttr = function (el) {
@@ -1069,7 +1059,7 @@
             self.watches = self.configs.watches || {};
             self.globalScopeWatches = self.configs.globalScopeWatches || {};
             self.checkboxDataDelimiter = self.configs.checkboxDataDelimiter || ",";
-            self.nameSpaceAttrMethods(toPrefixedHyphenated);
+            self.attrMethods = self.nameSpaceAttrMethods(toPrefixedHyphenated);
             self.attrMethods = assign(self.attrMethods, self.configs.attrMethods || {});
             self.templates = assign({}, self.configs.templates || {});
             self.logic = assign({}, self.configs.logic || {});
@@ -1186,12 +1176,27 @@
     };
 
     proto.nameSpaceAttrMethods = function (toPrefixedHyphenated) {
-        for (var method in this.attrMethods) {
-            if (this.attrMethods.hasOwnProperty(method)) {
-                this.attrMethods[toPrefixedHyphenated(method)] = this.attrMethods[method];
+        var attrMethods = {};
+        for (var method in this.rawAttrMethods) {
+            if (this.rawAttrMethods.hasOwnProperty(method) && method !== "name") {
+                attrMethods[toPrefixedHyphenated(method)] = this.rawAttrMethods[method];
             }
         }
+        attrMethods.name = this.rawAttrMethods.name;
+        
 
+
+        return attrMethods;
+    };
+
+    proto.normalize = function (val, bool) {
+        if (val === 0) {
+            val = "0";
+        }
+        if (bool && (val === "false" || val === "undefined")) {
+            val = "";
+        }
+        return val;
     };
 
 
@@ -1238,6 +1243,8 @@
         }
         return el;
     };
+
+    attrMethods.renderifnot = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) { attrMethods.renderif.apply(this, [el, !this.normalize(parsedAttrValue, true), rawAttrValue, attrName, attrNode]); };
 
     attrMethods.click = function (el, fn) {
         var binding = this;
@@ -1287,7 +1294,7 @@
         return el;
     };
 
-    proto.attrMethods = attrMethods;
+    proto.rawAttrMethods = attrMethods;
     proto.setNodeValue = attrMethods.name;
     
 
