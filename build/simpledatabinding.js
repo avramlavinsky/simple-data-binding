@@ -518,13 +518,15 @@
                 }
             } else if (el.type === "checkbox") {
                 val = self.get(el.name, true);
-                val = val !== undefined ? val.split(self.checkboxDataDelimiter) : [];
+                val = val ? val.split(self.checkboxDataDelimiter) : [];
                 if (el.checked) {
-                    val.push(el.value);
+                    if (val.indexOf(el.value) === -1) {
+                        val.push(el.value);
+                    }
                 } else {
                     val.splice(val.indexOf(el.value), 1);
                 }
-                val = val.join(self.delimiter);
+                val = val.join(self.checkboxDataDelimiter);
             } else if (el.tagName === "OPTION") {
                 val = self.get(el.name, true);
                 val = val !== undefined ? val.split(self.checkboxDataDelimiter) : [];
@@ -533,7 +535,7 @@
                 } else {
                     val.splice(val.indexOf(el.value), 1);
                 }
-                val = val.join(self.delimiter);
+                val = val.join(self.checkboxDataDelimiter);
             } else {
                 val = el.value;
             }
