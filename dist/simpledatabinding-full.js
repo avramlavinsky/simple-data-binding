@@ -10,7 +10,6 @@
         //see https://avramlavinsky.github.io/simple-data-binding/docs/guide.html for usage
 
         var self = this,
-            setNodeValue = this.rawAttrMethods.name,
             doc = document,
             observer;
 
@@ -1181,15 +1180,20 @@
     };
 
     proto.nameSpaceAttrMethods = function (toPrefixedHyphenated) {
-        var attrMethods = {};
-        for (var method in this.rawAttrMethods) {
-            if (this.rawAttrMethods.hasOwnProperty(method) && method !== "name") {
-                attrMethods[toPrefixedHyphenated(method)] = this.rawAttrMethods[method];
-            }
-        }
-        attrMethods.name = this.rawAttrMethods.name;
-        
+        var attrMethods;
 
+        if (this.attrPrefix) {
+            attrMethods = { name: this.attrMethods.name }
+            for (var method in this.attrMethods) {
+                if (this.attrMethods.hasOwnProperty(method) && method !== "name") {
+                    attrMethods[toPrefixedHyphenated(method)] = this.attrMethods[method];
+                }
+            }
+        } else {
+            attrMethods = this.attrMethods;
+        }
+
+        
 
         return attrMethods;
     };
@@ -1299,7 +1303,7 @@
         return el;
     };
 
-    proto.rawAttrMethods = attrMethods;
+    proto.attrMethods = attrMethods;
     proto.setNodeValue = attrMethods.name;
     
 
