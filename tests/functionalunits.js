@@ -304,12 +304,12 @@ describe("attr methods - question branching setup", function () {
     var binding = new SimpleDataBinding("#attrMethodsTestForm", startData());
 
     it("childTemplate", function () {
-        expect(binding.childTemplate(createEl("p"), "text", null, null, {}).firstElementChild.tagName).toEqual("INPUT");
+        expect(binding.attrMethods.childtemplate.apply(binding, [createEl("p"), "text", null, null, {}]).firstElementChild.tagName).toEqual("INPUT");
     });
 
     it("renderIf", function () {
-        expect(binding.renderIf(createEl("p"), "firstName", "rawValue", null).parentNode.tagName).toEqual("FORM");
-        expect(binding.renderIf(createEl("p"), undefined, "rawValue", null).parentNode).toEqual(null);
+        expect(binding.attrMethods.renderif.apply(binding, [createEl("p"), "firstName", "rawValue", null]).parentNode.tagName).toEqual("FORM");
+        expect(binding.attrMethods.renderif.apply(binding, [createEl("p"), undefined, "rawValue", null]).parentNode).toEqual(null);
     });
 
     it("setNodeValue", function () {
