@@ -497,7 +497,7 @@
 
         var getNodeValue = function (el) {
             //returns value of form control or selected value of radio or checkbox group
-            var val;
+            var val, i;
 
             if (el.type === "radio") {
                 if (el.checked) {
@@ -506,12 +506,15 @@
             } else if (el.type === "checkbox") {
                 val = self.get(el.name, true);
                 val = val ? val.split(self.checkboxDataDelimiter) : [];
+                i = val.indexOf(el.value);
                 if (el.checked) {
-                    if (val.indexOf(el.value) === -1) {
+                    if (i === -1) {
                         val.push(el.value);
                     }
                 } else {
-                    val.splice(val.indexOf(el.value), 1);
+                    if (i !== -1) {
+                        val.splice(i, 1);
+                    }
                 }
                 val = val.join(self.checkboxDataDelimiter);
             } else if (el.tagName === "OPTION") {
