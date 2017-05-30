@@ -25,20 +25,23 @@
   },
   "homepage": "https://github.com/avramlavinsky/simple-data-binding#readme",
   "devDependencies": {
+    "clean": "^4.0.2",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
+    "gulp-gzip": "^1.4.0",
     "gulp-jshint": "^2.0.1",
     "gulp-minify": "0.0.14",
     "gulp-strip-code": "^0.1.4",
-    "jasmine": "^2.5.2",
+    "jasmine": "^2.6.0",
     "jasmine-core": "^2.5.2",
     "jshint": "^2.9.3",
     "jshint-stylish": "^2.2.1",
-    "karma": "^1.3.0",
-    "karma-chrome-launcher": "^2.0.0",
-    "karma-firefox-launcher": "^1.0.0",
+    "karma": "^1.7.0",
+    "karma-chrome-launcher": "^2.1.1",
+    "karma-firefox-launcher": "^1.0.1",
     "karma-ie-launcher": "^1.0.0",
-    "karma-jasmine": "^1.0.2",
+    "karma-jasmine": "^1.1.0",
+    "karma-opera-launcher": "^1.0.0",
     "minify": "^2.0.12"
   }
 }

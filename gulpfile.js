@@ -58,7 +58,8 @@ gulp.task('concat', function () {
       .pipe(gulp.dest('dist'));
 });
 
-gulp.task('make', ['concat', 'compress', 'zip']);
+gulp.task('make', ['concat', 'compress']);
+//gulp.task('make', ['concat', 'compress', 'zip']);
 
 gulp.task('default', ['lint', 'test', 'make']);
 

@@ -79,7 +79,6 @@
 
 
 
-
         //<<<< Core Data Methods >>>>
 
         this.set = function (prop, val, inherit, repository, setWhereDefined) {
@@ -455,7 +454,6 @@
             }
             return dataClone;
         };
-
 
 
 
@@ -856,7 +854,6 @@
 
 
 
-
         //<<<<<< Listeners, Handlers, and Watches >>>>>>
 
         var setListeners = function (handleKeyUp) {
@@ -864,7 +861,6 @@
             if (self.container) {
                 //listen for changes in the container element's dataset
                 observer = new MutationObserver(mutationHandler);
-
 
                 //listen for form control changes within our container
                 self.container.addEventListener("change", changeHandler);
@@ -1048,7 +1044,6 @@
 
 
 
-
         //<<<<<<<<< Initialization >>>>>>>>>>
 
         var initProps = function () {
@@ -1118,7 +1113,6 @@
 
 
 
-
         this.init = function () {
             //sets core properties
             //inits listeners
@@ -1180,6 +1174,7 @@
     };
 
     proto.nameSpaceAttrMethods = function (toPrefixedHyphenated) {
+        //if an attribute prefix is specified in configs, prepend it to all attribute method names except the name method
         var attrMethods;
 
         if (this.attrPrefix) {
@@ -1193,12 +1188,11 @@
             attrMethods = this.attrMethods;
         }
 
-        
-
         return attrMethods;
     };
 
     proto.normalize = function (val, bool) {
+        //handle zero, false, and undefined properly in the conversion to DOMStringMap
         if (val === 0) {
             val = "0";
         }
@@ -1253,9 +1247,16 @@
         return el;
     };
 
-    attrMethods.renderifnot = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) { attrMethods.renderif.apply(this, [el, !this.normalize(parsedAttrValue, true), rawAttrValue, attrName, attrNode]); };
+    attrMethods.renderifnot = function (el, parsedAttrValue, rawAttrValue, attrName, attrNode) {
+        //native attribute method
+        //removes the node from the dom whenever the attribute value evaluates to truey
+        //replaces it when falsey
+        attrMethods.renderif.apply(this, [el, !this.normalize(parsedAttrValue, true), rawAttrValue, attrName, attrNode]);
+    };
 
     attrMethods.click = function (el, fn) {
+        //native attribute method
+        //executes the handler designated in the attribute value on click
         var binding = this;
 
         el.addEventListener("click", function (e) {
@@ -1266,6 +1267,8 @@
     };
 
     attrMethods.clickon = function (el, val, prop) {
+        //native attribute method
+        //sets the supplied data property to "true" when the element is clicked
         var binding = this;
 
         attrMethods.click(el, function () {
@@ -1274,6 +1277,8 @@
     };
 
     attrMethods.clickoff = function (el, val, prop) {
+        //native attribute method
+        //sets the supplied data property to "" when the element is clicked
         var binding = this;
 
         attrMethods.click(el, function () {
@@ -1288,13 +1293,13 @@
             if (el.type === "radio" && attrName === "name") {
                 el.checked = (parsedAttrValue === el.value);
             } else if (el.type === "checkbox" && attrName === "name") {
-                el.checked = (parsedAttrValue.indexOf(el.value) !== -1);
+                el.checked = (parsedAttrValue.split(this.checkboxDataDelimiter).indexOf(el.value) !== -1);
             } else if (el.tagName === "SELECT" && !parsedAttrValue) {
                 setTimeout(function () {
                     el.selectedIndex = "-1";
                 }, 0);
             } else if (el.tagName === "OPTION" && (attrName === "value" || attrName === "name")) {
-                el.selected = el.value && (parsedAttrValue).indexOf(el.value) !== -1;
+                el.selected = el.value && parsedAttrValue.split(this.checkboxDataDelimiter).indexOf(el.value) !== -1;
             } else {
                 el.value = parsedAttrValue;
             }
