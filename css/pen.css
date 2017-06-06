@@ -62,13 +62,14 @@ button{
 input,
 textarea,
 select,
-opton,
+option,
 button{
   margin-top: 8px;
   width: 200px;
   max-width: 100%;
   border-style: solid;
   padding: 4px 8px;
+  border-radius: 0;
 }
 option{
   margin: 0;
