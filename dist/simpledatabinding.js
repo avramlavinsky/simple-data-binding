@@ -1153,7 +1153,7 @@
                     if (template.tagName === "TEMPLATE") {
                         template = template.content || template.firstElementChild;
                         if (template instanceof DocumentFragment) {
-                            template = template.firstElementChild;
+                            template = template.firstElementChild || /*MS Edge known defect*/ template.querySelector("*");
                         }
                     } else if (!storedTemplate) {
                         template.removeAttribute("id");
