@@ -267,9 +267,9 @@ describe("DOM methods - question branching setup", function () {
         expect(binding.resolveDoubleCurlyBraces(createInput().attributes[0])).toEqual("John");
     });
 
-    it("parseFunctionOrObject", function () {
-        binding.fn = function (prop) { return prop; };
-        expect(binding.parseFunctionOrObject("this.fn(firstName)", {})()).toEqual("John");
+    it("parsePointer", function () {
+        binding.fn = function (prop) { return this.get(prop); };
+        expect(binding.parsePointer("this.fn")("firstName")).toEqual("John");
     });
 
     it("parseExpression number", function () {
@@ -286,7 +286,7 @@ describe("DOM methods - question branching setup", function () {
     });
 
     it("parseExpression function", function () {
-        expect(binding.parseExpression("this.fn(firstName)", {})).toEqual("John");
+        expect(binding.parseExpression("this.fn('firstName')", {})).toEqual("John");
     });
 
     it("parseExpression nested function", function () {

@@ -788,81 +788,91 @@
             return node.nodeValue;
         };
 
-        var parseFunctionOrObject = function (str, node, addWatches) {
-            //parses a string as a path to a funtion with arguments or an object
-            //if a function, the arguments are each parsed recursively as expressions
-            if (str.indexOf(".") > 0) {
+        var parsePointer = function (str) {
+            var props = str.split("."),
+                pointer = props[0] === "this" ? self : null;
 
-                var parenIndex = str.indexOf("("),
-                    argsArray = parenIndex > 0 && str.slice(parenIndex + 1, -1).split(","),
-                    path = str.substr(0, parenIndex === -1 ? str.length : parenIndex),
-                    pointer, pathArray, fn, i, stop;
-
-                pathArray = path.split(".");
-                pointer = pathArray[0] === "this" ? self : window[pathArray[0]];
-                if (!pointer) {
-                    return null;
+            if(pointer){
+                for(var i = 1, stop = props.length; i < stop; i++){
+                    pointer = pointer ? pointer[props[i]] : null;
                 }
-
-                for (i = 1, stop = pathArray.length; i < stop; i++) {
-                    if (pointer) {
-                        pointer = pointer[pathArray[i]];
-                    }
+                if(pointer instanceof Function){
+                    pointer = pointer.bind(self);
                 }
-
-                if (typeof (pointer) === "function") {
-                    fn = function () {
-                        var args = [];
-                        for (i = 0, stop = argsArray.length; i < stop; i++) {
-                            args[i] = parseExpression(argsArray[i].trim(), node);
-                        }
-                        args.push.apply(args, arguments);//any arguments passed will be added after arguments specified in the attribute value - essential for binding handlers
-                        return pointer.apply(self, args);
-                    };
-                    if (addWatches !== false) {
-                        self.watch(argsArray, fn);
-                    }
-                    return fn;
-                } else {
-                    return pointer;
-                }
-            } else {
-                return null;
             }
+            return pointer;
         };
 
-        var parseExpression = function (str, node, addWatches) {
-            //parses a string as an expression: string primitive, number primitive, path to a function and arguments, path to an object, or data property
-            if (!str) {
-                return str;
-            }
+        var parseUntrusted = function(str, node, addWatches){
+            var quoted = str.match(/^'(.*)'$/), obj;
 
-            var stringPrimitive = str.substr(0, 1) === "'" && str.slice(1, -1),
-                numberPrimitive = Number(str),
-                fn, value;
-
-            if (stringPrimitive) {
-                return stringPrimitive;
-            }
-            if (!isNaN(numberPrimitive)) {
-                return numberPrimitive;
-            }
-
-            fn = parseFunctionOrObject(str, node, addWatches);//parseFunctionOrObject adds its own watches so no need to add here
-            if (fn) {
-                //important that return values for function as well as get should be undefined, not a null string, under failure conditions
-                //otherwise setNodeValue will overwrite previously set values to no selection for selects
-                value = typeof (fn) === "function" && str.indexOf("(") > 0 ? fn() : fn;
-            } else {
-                value = self.get(str, true) || "";
-                if (addWatches !== false) {
+            str = str.trim();
+            if(quoted){
+                return quoted[1];
+            }else if(str === 0 || (str && ! isNaN(str))){
+                return Number(str);
+            }else{
+                obj = parsePointer(str);
+                if(obj){
+                  return obj;
+                }else{
+                  if (str && addWatches !== false) {
                     self.watch(str, node);
+                  }
+                  return self.get(str, true) || "";
                 }
             }
-            if (node && node.nodeName === "name" && value && addWatches !== false) {
-                self.watch(value, node);
+        }
+
+        var parseExpression = function (str, node, addWatches) {
+           //parse a string as an expression
+           //without evaling anything other than our secure white list and generated strings which reference a local array
+           var whiteList = /(?:===)|(?:==)|(?:!==)|(?:!=)|(?:>=)|(?:<=)|(?:\+)|(?:\-)|(?:\*)|(?:\/)|(?:\()|(?:\))|(?:\,)|(?:\&\&)|(?:\&)|(?:\|\|)|(?:\|)|(?:\!)/g,
+               trusted = str.match(whiteList) || [],
+               untrusted = str.split(whiteList) || [],
+               rawResultArray = [],
+               trustedCounter = 0,
+               untrustedCounter = 0,
+               i = 0,
+               nextTrusted, nextUntrusted, rawResult, result;
+
+
+            while (i < str.length){
+                nextTrusted = trusted[trustedCounter];
+                nextUntrusted = untrusted[untrustedCounter];
+                if(nextTrusted !== undefined && str.substr(i, nextTrusted.length) === nextTrusted){
+                   rawResultArray.push(nextTrusted);
+                   i += nextTrusted.length;
+                   trustedCounter++;
+                }else if(str.substr(i, nextUntrusted.length) === nextUntrusted){
+                    if(nextUntrusted.trim() !== ""){
+                        rawResultArray.push("untrusted[" + untrustedCounter + "]");
+                        untrusted[untrustedCounter] = parseUntrusted(nextUntrusted, node, addWatches);  
+                    }
+                    i += nextUntrusted.length;//this line must be outside conditional to cover possible blank spaces 
+                    untrustedCounter++;
+                }else{
+                    console.log("Error: Possible infinite loop in parseExpression at iteration " + i, str);
+                    i = 10000;
+                    return "";
+                }
             }
-            return value;
+
+            rawResult = rawResultArray.join("");
+
+            try{
+                result = eval(rawResult);
+                //there is no security risk in this eval
+                //the raw result we are evaling contains no untrusted content
+                //only our white list and strings which referance an array
+                if (node && node.nodeName === "name" && result && addWatches !== false) {
+                   self.watch(result, node);
+                }
+                return result;
+            }catch(error){
+                console.log(error, untrusted);
+                return error;
+            }
         };
 
 
@@ -879,7 +889,7 @@
         this.resolveAttrNodeName = resolveAttrNodeName;
         this.resolveAttrNodeValue = resolveAttrNodeValue;
         this.resolveDoubleCurlyBraces = resolveDoubleCurlyBraces;
-        this.parseFunctionOrObject = parseFunctionOrObject;
+        this.parsePointer = parsePointer;
         this.parseExpression = parseExpression;
         /* end-test-code */
 
