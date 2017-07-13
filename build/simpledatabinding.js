@@ -203,6 +203,7 @@
             removeChildContainer(child);
             delete self.children[child.id];
             child.removed = true;
+            self.removedChildren[child.id] = child;
             return child;
         };
 
@@ -323,14 +324,10 @@
 
             //creates a member of child array
             //accessed externally by live array methods
-            var child = self.cache.get(data),
-                childContainer;
+            var child, childContainer;
 
             if (data instanceof SimpleDataBinding) {
                 child = data;
-                placeChildArrayEl(child.container, frag);
-            } else if (child && child.removed) {
-                self.createChild(child.id, child.container, data);
                 placeChildArrayEl(child.container, frag);
             } else {
                 //timing is very sensitive: must place the element in the document fragment before creating our child instance
@@ -387,11 +384,12 @@
         this.createChild = function (id, container, data) {
             var child = null, cachedChild;
 
-            cachedChild = self.cache.get(data);
+            cachedChild = self.removedChildren[id];
             if (cachedChild && container && cachedChild.removed) {
                 cachedChild.container = container;
                 cachedChild.update(data, false, true, false);
                 cachedChild.removed = false;
+                delete self.removedChildren[id];
                 child = cachedChild;
             } else {
                 if (self.children[id] && !self.children[id].containingArray) {
@@ -1114,7 +1112,7 @@
             self.attrMethods = assign(self.attrMethods, self.configs.attrMethods || {});
             self.templates = assign({}, self.configs.templates || {});
             self.logic = assign({}, self.configs.logic || {});
-            self.cache = new WeakMap();
+            self.removedChildren = {};
             self.childNameIndices = {};
             self.childArrayNameIndices = {};
 
@@ -1150,9 +1148,6 @@
                     startData = { value: startData };
                 }
                 self.startData = startData;
-                if (startData && self.parent) {
-                    self.parent.cache.set(startData, self);
-                }
                 self.data = prefixData(el.dataset || {}/* FF SVG elements have no dataset*/);
                 self.update(self.data, false, false, false);
                 getInitialNodeValues();

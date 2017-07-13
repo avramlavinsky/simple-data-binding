@@ -29,6 +29,7 @@
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
     "gulp-gzip": "^1.4.0",
+    "gulp-header": "^1.8.8",
     "gulp-jshint": "^2.0.1",
     "gulp-minify": "0.0.14",
     "gulp-strip-code": "^0.1.4",
