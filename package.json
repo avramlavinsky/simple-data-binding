@@ -1,6 +1,6 @@
 {
   "name": "simpledatabinding",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "data binding ala carte",
   "main": "build/simpledatabinding.js",
   "directories": {
@@ -19,11 +19,12 @@
     "binding"
   ],
   "author": "Avram Lavinsky",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/avramlavinsky/simple-data-binding/issues"
   },
   "homepage": "https://github.com/avramlavinsky/simple-data-binding#readme",
+  "initiated": 2016,
   "devDependencies": {
     "clean": "^4.0.2",
     "gulp": "^3.9.1",

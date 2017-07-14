@@ -7,7 +7,8 @@ var stripCode = require('gulp-strip-code');
 var clean = require('gulp-clean');
 var gzip = require('gulp-gzip');
 var concat = require('gulp-concat');
-
+var header = require('gulp-header');
+var pkg = require('./package.json');
 
 gulp.task('clean', function () {
     // Delete the dist directory
@@ -56,6 +57,21 @@ gulp.task('concat', function () {
       .pipe(concat('simpledatabinding-full.js'))
       .pipe(stripCode())
       .pipe(gulp.dest('dist'));
+});
+
+gulp.task('header', function(){
+
+ var banner = ['/*',
+  ' * <%= pkg.name %> - <%= pkg.description %>, by <%= pkg.author %>, copyright <%= pkg.initiated %>-' + new Date().getFullYear(),
+  ' * @version v<%= pkg.version %>',
+  ' * @link <%= pkg.homepage %>',
+  ' * @license <%= pkg.license %>',
+  ' */',
+  ''].join('\n');
+ 
+ gulp.src('dist/*.js')
+  .pipe(header(banner, { pkg : pkg } ))
+  .pipe(gulp.dest('dist'));
 });
 
 gulp.task('make', ['concat', 'compress']);
