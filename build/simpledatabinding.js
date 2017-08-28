@@ -667,7 +667,7 @@
                     resolveDoubleCurlyBraces(node);
                 } else if (node.nodeType === 1) {
                     for (i = 0; i < node.attributes.length; i++) {
-                        resolveAttrNode(node.attributes[i]);
+                        self.resolveAttrNode(node.attributes[i]);
                     }
 
                     for (i = 0; i < node.childNodes.length; i++) {
@@ -692,13 +692,20 @@
             }
         };
 
-        var resolveAttrNode = function (node, fromWatch) {
+        this.resolveAttrNode = function (node, fromWatch) {
             //resolve dynamic references in an attribute
             if (node.nodeName.substr(0, 5) === "data-") {
                 resolveDoubleCurlyBraces(node, node.nodeValue);
             } else {
                 resolveAttrNodeName(node);
                 resolveAttrNodeValue(node, fromWatch);
+		if(node.nodeName === "name" || node.nodeName === "value"){
+                    //dynamic name and value attributes create a bit of a chicken and egg timing problem for selects, radios and checkboxes,
+                    //so reevaluate after a delay
+                    setTimeout(function(){
+                        self.setNodeValue(node.ownerElement, self.get(node.nodeValue, true), node.nodeValue, node.nodeName);
+                    });
+                }
                 return node;
             }
         };
@@ -820,7 +827,7 @@
                   return self.get(str, true) || "";
                 }
             }
-        }
+        };
 
         var parseExpression = function (str, node, addWatches) {
            //parse a string as an expression
@@ -883,7 +890,6 @@
         this.getContainer = getContainer;
         this.setHiddenInput = setHiddenInput;
         this.setId = setId;
-        this.resolveAttrNode = resolveAttrNode;
         this.resolveAttrNodeName = resolveAttrNodeName;
         this.resolveAttrNodeValue = resolveAttrNodeValue;
         this.resolveDoubleCurlyBraces = resolveDoubleCurlyBraces;
@@ -1031,7 +1037,7 @@
                     } else {
                         node = watches[i];
                         if (node.nodeType === 2) {
-                            resolveAttrNode(node, true);
+                            self.resolveAttrNode(node, true);
                         } else {
                             resolveDoubleCurlyBraces(node);
                         }
@@ -1111,7 +1117,7 @@
             self.attrMethods = self.nameSpaceAttrMethods(toPrefixedHyphenated);
             self.attrMethods = assign(self.attrMethods, self.configs.attrMethods || {});
             self.templates = assign({}, self.configs.templates || {});
-            self.logic = assign({}, self.configs.logic || {});
+            self.logic = assign(proto.logic, self.configs.logic || {});
             self.removedChildren = {};
             self.childNameIndices = {};
             self.childArrayNameIndices = {};
@@ -1230,7 +1236,7 @@
         var attrMethods;
 
         if (this.attrPrefix) {
-            attrMethods = { name: this.attrMethods.name }
+            attrMethods = { name: this.attrMethods.name };
             for (var method in this.attrMethods) {
                 if (this.attrMethods.hasOwnProperty(method) && method !== "name") {
                     attrMethods[toPrefixedHyphenated(method)] = this.attrMethods[method];
@@ -1312,7 +1318,7 @@
         var binding = this;
 
         el.addEventListener("click", function (e) {
-            if (!el.hasAttribute("disabled") && !(el.getAttribute("aria-disabled") === "true")) {
+            if (!el.hasAttribute("disabled") && el.getAttribute("aria-disabled") !== "true") {
                 fn.apply(binding, [e, el]);
             }
         });
@@ -1362,6 +1368,7 @@
 
     proto.attrMethods = attrMethods;
     proto.setNodeValue = attrMethods.name;
+    proto.logic = {};
     
 
 
