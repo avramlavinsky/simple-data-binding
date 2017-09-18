@@ -1347,6 +1347,8 @@
     attrMethods.name = function (el, parsedAttrValue, rawAttrValue, attrName) {
         //executed as a native attribute method wherever a name attribute is encountered
         //sets node value to data property value
+        var start, end;
+
         if (parsedAttrValue !== undefined) {
             if (el.type === "radio" && attrName === "name") {
                 el.checked = (parsedAttrValue === el.value);
@@ -1359,12 +1361,18 @@
             } else if (el.tagName === "OPTION" && (attrName === "value" || attrName === "name")) {
                 el.selected = el.value && parsedAttrValue.split(this.checkboxDataDelimiter).indexOf(el.value) !== -1;
             } else {
+                start = el.selectionStart,
+                end = el.selectionEnd;
                 el.value = parsedAttrValue;
+                //ie11 has a well documented problem losing cursor position when setting input values
+                if(start !== undefined){
+                    el.setSelectionRange(start, end);
+                }  
             }
         }
 
         return el;
-    };
+    };	
 
     proto.attrMethods = attrMethods;
     proto.setNodeValue = attrMethods.name;
