@@ -1372,7 +1372,7 @@
         }
 
         return el;
-    };	
+    };
 
     proto.attrMethods = attrMethods;
     proto.setNodeValue = attrMethods.name;

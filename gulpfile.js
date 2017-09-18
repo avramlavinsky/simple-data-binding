@@ -76,6 +76,8 @@ gulp.task('header', function(){
 
 gulp.task('make', ['concat', 'compress']);
 //gulp.task('make', ['concat', 'compress', 'zip']);
+gulp.task('finish', ['header', 'zip']);
 
-gulp.task('default', ['lint', 'test', 'make']);
+//gulp.task('default', ['lint', 'test', 'make']);
+//gulp.task('default', ['make', 'make', 'finish']);
 
