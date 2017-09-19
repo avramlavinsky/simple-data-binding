@@ -1325,14 +1325,14 @@
                 end = el.selectionEnd;
                 el.value = parsedAttrValue;
                 //ie11 has a well documented problem losing cursor position when setting input values
-                if(start !== undefined){
+                if(typeof(start) === "number" && typeof(end) === "number"){
                     el.setSelectionRange(start, end);
                 }  
             }
         }
 
         return el;
-    };	
+    };
 
     proto.attrMethods = attrMethods;
     proto.setNodeValue = attrMethods.name;
