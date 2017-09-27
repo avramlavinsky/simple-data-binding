@@ -43,3 +43,18 @@ Two-way data-binding has been a key selling point for many JavaScript frameworks
   <strong>Extensible</strong> – Create your own templates, watches and attribute based methods easily for unique data-binding needs and beyond.
   </li>
 </ul>
+
+
+<h2>How it Works</h2>
+
+<p>
+Under the hood, SimpleDataBinding relies on the MutationObserver API (Supported in all major modern browsers and IE >= 11) combined with data attributes.  A new SimpleDataBinding instance receives a container and a data object as arguments. All prmimitives in the data object are treated as strings and stored in the dataset DomStringMap property of the container element, and the instance's data property is a pointer to that dataset.  Therefore any changes to the instance's data property automatically change the data attribute of the container, and these changes are captured by a MutationObserver.  In this way, any part of the DOM which references a data property via double curley braces or the supplied value of a "directive" (a method dictated by an expando attribute) can be synchronized when the value of the corresponding data property changes.
+</p>
+
+<p>
+Nested objects in the supplied data argument to the binding instance will be matched to child elements of the container element with a databind property matching the property name of that nested object.  A child binding instance will be created.  It's container will be the corresponding child element, and all primitives within that nested data object will be placed in that instances data property, a pointer to the dataset DOMStringMap of the new container. 
+</p>
+
+<p>
+Nested arrays in the supplied data argument passed to a binding instance will create an array of child bindings.  The property name of the array value will be matched to a databind property of an element within the parent binding's container.  That element will be duplicated for each member of the array, each becoming a new binding instance's container.  If the array contains objects, those objects will be the initial data argument for the new binding instance.  If the array contains primitives, they will be interpretted as objects with a single propery named "value", and the value of that property will be the string value of the primitive.  SimpleDataBinding requires no repeat directives because all repetition is dictated by the form of the data supplied.
+</p>
