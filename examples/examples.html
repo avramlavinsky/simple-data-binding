@@ -77,6 +77,8 @@
     }
     
     function setPage(){
+      var iframe = document.querySelector("iframe");
+      
       page.update(pageData[pageIndex]);
       prev.removeAttribute("disabled");
       next.removeAttribute("disabled");
@@ -85,11 +87,13 @@
       }else if (pageIndex == pageData.length - 1){
         next.setAttribute("disabled", "disabled");
       }
-      iframeListener = iframeListener || document.querySelector("iframe").addEventListener("load", function(){
-        penIsLoading = false;
-      }) || true;
       params.set("page", pageIndex);
       document.location.search = params.toString();
+      if(iframe){
+        iframeListener = iframeListener || iframe.addEventListener("load", function(){
+          penIsLoading = false;
+        }) || true;
+      }
     }
     
     function setDataHrefs(data, i){
