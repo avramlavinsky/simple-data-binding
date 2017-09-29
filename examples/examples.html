@@ -89,7 +89,7 @@
         next.setAttribute("disabled", "disabled");
       }
       params.set("page", pageIndex);
-      window.history.pushState(true, document.title, "/" + document.location.pathname + params.toString() );
+      window.history.pushState(true, document.title, document.location.pathname + params.toString() );
       if(iframe){
         iframeListener = iframeListener || iframe.addEventListener("load", function(){
           penIsLoading = false;
