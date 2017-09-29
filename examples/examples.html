@@ -59,6 +59,8 @@
     
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
+    setTimeout(setPage, 0);
+    
     function changePage(e){
       var link = this; 
       
@@ -69,21 +71,25 @@
         setTimeout(function(){
           var increment = Number(link.dataset.increment);
           pageIndex += increment;
-          page.update(pageData[pageIndex]);
-          prev.removeAttribute("disabled");
-          next.removeAttribute("disabled");
-          if(pageIndex == 0){
-            prev.setAttribute("disabled", "disabled");
-          }else if (pageIndex == pageData.length - 1){
-            next.setAttribute("disabled", "disabled");
-          }
-          iframeListener = iframeListener || document.querySelector("iframe").addEventListener("load", function(){
-            penIsLoading = false;
-          }) || true;
-          params.set("page", pageIndex);
-          document.location.search = params.toString();
+          setPage();
         }, 0);
       }
+    }
+    
+    function setPage(){
+      page.update(pageData[pageIndex]);
+      prev.removeAttribute("disabled");
+      next.removeAttribute("disabled");
+      if(pageIndex == 0){
+        prev.setAttribute("disabled", "disabled");
+      }else if (pageIndex == pageData.length - 1){
+        next.setAttribute("disabled", "disabled");
+      }
+      iframeListener = iframeListener || document.querySelector("iframe").addEventListener("load", function(){
+        penIsLoading = false;
+      }) || true;
+      params.set("page", pageIndex);
+      document.location.search = params.toString();
     }
     
     function setDataHrefs(data, i){
