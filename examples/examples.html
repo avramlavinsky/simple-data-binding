@@ -60,7 +60,7 @@
     
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
-    setPage(true);   
+    setTimeout(setPage, 0, true);   
     
     function changePage(e){
       var link = this; 
