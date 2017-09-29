@@ -60,8 +60,7 @@
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
-      var link = this,
-          params = 
+      var link = this; 
       
       if( this.hasAttribute("disabled") || penIsLoading){
         e.preventDefault();
