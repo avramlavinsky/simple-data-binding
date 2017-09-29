@@ -48,6 +48,7 @@
         "YGoggY",
         "NRXvjr"
       ],
+      rawHref = "//codepen.io/cagerattler/embed/[[hash]]?height=800&theme-id=0&slug-hash=[[hash]]&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true",  
       prev = document.querySelector(".prev"),
       next = document.querySelector(".next"),
       params = new URLSearchParams(window.location.search),
@@ -59,7 +60,7 @@
     
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
-    setTimeout(setPage, 0);
+    setPage(true);   
     
     function changePage(e){
       var link = this; 
@@ -76,7 +77,7 @@
       }
     }
     
-    function setPage(){
+    function setPage(initial){
       var iframe = document.querySelector("iframe");
       
       page.update(pageData[pageIndex]);
@@ -94,12 +95,13 @@
         iframeListener = iframeListener || iframe.addEventListener("load", function(){
           penIsLoading = false;
         }) || true;
+        if(initial){
+          iframe.src = rawHref.replace(/\[\[hash\]\]/g, penHashes[pageIndex]);
+        }
       }
     }
     
     function setDataHrefs(data, i){
-      var rawHref = "//codepen.io/cagerattler/embed/[[hash]]?height=800&theme-id=0&slug-hash=[[hash]]&default-tab=js%2Cresult&user=cagerattler&embed-version=2&editable=true";
-      
       data.prevHref = i == 0 ? "#0" : rawHref.replace(/\[\[hash\]\]/g, penHashes[i-1]);
       data.nextHref = i == penHashes.length - 1 ? "#0" : rawHref.replace(/\[\[hash\]\]/g, penHashes[i+1]);
     }
