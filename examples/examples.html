@@ -87,8 +87,9 @@
       }else if (pageIndex == pageData.length - 1){
         next.setAttribute("disabled", "disabled");
       }
-      params.set("page", pageIndex);
-      document.location.search = "?" + params.toString();
+      //would be nice to have page in url at all times but causes infinite loop
+      //params.set("page", pageIndex);
+      //document.location.search = "?" + params.toString();
       if(iframe){
         iframeListener = iframeListener || iframe.addEventListener("load", function(){
           penIsLoading = false;
