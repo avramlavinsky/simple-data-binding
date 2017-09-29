@@ -88,14 +88,15 @@
       }else if (pageIndex == pageData.length - 1){
         next.setAttribute("disabled", "disabled");
       }
-      //would be nice to have page in url at all times but causes infinite loop
-      //params.set("page", pageIndex);
+      params.set("page", pageIndex);
+      window.history.pushState(true, document.title, "/" + document.location.pathName + params.toString() );
       //document.location.search = "?" + params.toString();
       if(iframe){
         iframeListener = iframeListener || iframe.addEventListener("load", function(){
           penIsLoading = false;
           if(initial){
             iframe.src = rawHref.replace(/\[\[hash\]\]/g, penHashes[pageIndex]);
+            initial = false;
           }
         }) || true;
       }
