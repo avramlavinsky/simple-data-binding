@@ -91,18 +91,15 @@
       params.set("page", pageIndex);
       window.history.pushState(true, document.title, document.location.pathname + "?" + params.toString() );
       if(iframe){
-        console.log("iframe");
         iframeListener = iframeListener || iframe.addEventListener("load", function(){
           penIsLoading = false;
           if(initial){
-            console.log("initial");
             iframe.src = rawHref.replace(/\[\[hash\]\]/g, penHashes[pageIndex]);
-            console.log(pageIndex, iframe.src);
             initial = false;
           }
         }) || true;
       }else{
-        console.log("no iframe");
+        setTimeout(setPage, 50, true);
       }
     }
     
