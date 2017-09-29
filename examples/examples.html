@@ -94,10 +94,10 @@
       if(iframe){
         iframeListener = iframeListener || iframe.addEventListener("load", function(){
           penIsLoading = false;
+          if(initial){
+            iframe.src = rawHref.replace(/\[\[hash\]\]/g, penHashes[pageIndex]);
+          }
         }) || true;
-        if(initial){
-          iframe.src = rawHref.replace(/\[\[hash\]\]/g, penHashes[pageIndex]);
-        }
       }
     }
     
