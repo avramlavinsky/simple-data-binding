@@ -50,7 +50,8 @@
       ],
       prev = document.querySelector(".prev"),
       next = document.querySelector(".next"),
-      pageIndex = 0,
+      params = new URLSearchParams(window.location.search),
+      pageIndex = Number(params.get("page")),
       penIsLoading = false,
       iframeListener;
     
@@ -59,7 +60,8 @@
     window.page = new SimpleDataBinding(document.documentElement, pageData[0]);
     
     function changePage(e){
-      var link = this;
+      var link = this,
+          params = 
       
       if( this.hasAttribute("disabled") || penIsLoading){
         e.preventDefault();
@@ -78,7 +80,9 @@
           }
           iframeListener = iframeListener || document.querySelector("iframe").addEventListener("load", function(){
             penIsLoading = false;
-          }) || true
+          }) || true;
+          params.set("page", pageIndex);
+          document.location.search = params.toString():
         }, 0);
       }
     }
