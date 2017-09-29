@@ -55,10 +55,10 @@ Under the hood, SimpleDataBinding relies on the MutationObserver API (Supported 
 <h2>Key Concepts</h2>
 
 <ul>
-  <li>The most important properties of a binding instance are its <em>container</em> and its <em>data</em>.</li>
+  <li>The most important properties of a binding instance are its <a href="https://avramlavinsky.github.io/simple-data-binding/docs/guide.html#Properties-container">container</a> and its <a href="https://avramlavinsky.github.io/simple-data-binding/docs/guide.html#Properties-data">data</a>.</li>
   <li><code>myBinding.container</code>is a DOM element which will be parsed and synchronized with data.</li>
   <li><code>myBinding.data</code>is a DOMStringMap with values to synchronize to.  It is flat, and all properties are strings.</li>
-  <li>Controls within a container are automatically synchronized with data properties corresponding to their name attributres, and their initial values are captured in data.</li>
+  <li>Controls within a container are <a href="https://avramlavinsky.github.io/simple-data-binding/examples/examples.html"> automatically synchronized with data properties corresponding to their name attributres</a>, and their initial values are captured in data.</li>
   <li>If the initial data argument supplied to a binding instance contains nested objects, they spawn new bindings.</li>
   <li>If the initial data argument supplied to a binding instance contains nested arrays, they spawn arrays of new bindings.</li>
   <li>SimpleDataBinding requires no repeat methods, because repeition is dictated by arrays in the initial data argument.
