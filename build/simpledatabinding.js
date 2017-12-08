@@ -1361,10 +1361,16 @@
             } else if (el.tagName === "OPTION" && (attrName === "value" || attrName === "name")) {
                 el.selected = el.value && parsedAttrValue.split(this.checkboxDataDelimiter).indexOf(el.value) !== -1;
             } else {
-                start = el.selectionStart,
-                end = el.selectionEnd;
+                if((el.tagName === "INPUT" || el.tagName === "TEXTAREA") && el === document.activeElement){
+                    try{
+                        //ie11 throws invalid state errors on some input types when reading selectionStart or end so wrap in try catch
+                        start = el.selectionStart;
+                        end = el.selectionEnd;
+                    }catch(error){                    
+                    }
+                }
                 el.value = parsedAttrValue;
-                //ie11 has a well documented problem losing cursor position when setting input values
+                //ie11 has a well documented problem losing cursor position when setting input values so reset it
                 if(typeof(start) === "number" && typeof(end) === "number"){
                     el.setSelectionRange(start, end);
                 }  
