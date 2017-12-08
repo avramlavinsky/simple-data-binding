@@ -78,21 +78,21 @@
         };
 
         /* test-code */
-        this.toCamelCase = toCamelCase;
-        this.toHyphenated = toHyphenated;
-        this.toPrefixedCamel = toPrefixedCamel;
-        this.toPrefixedHyphenated = toPrefixedHyphenated;
-        this.toUnprefixedCamel = toUnprefixedCamel;
-        this.prefixData = prefixData;
-        this.unprefixData = unprefixData;
+        self.toCamelCase = toCamelCase;
+        self.toHyphenated = toHyphenated;
+        self.toPrefixedCamel = toPrefixedCamel;
+        self.toPrefixedHyphenated = toPrefixedHyphenated;
+        self.toUnprefixedCamel = toUnprefixedCamel;
+        self.prefixData = prefixData;
+        self.unprefixData = unprefixData;
         /* end-test-code */
 
 
         //<<<< Core Data Methods >>>>
 
-        this.set = function (prop, val, inherit, repository, setWhereDefined) {
+        self.set = function (prop, val, inherit, repository, setWhereDefined) {
             //set value in the closest instance where that value exists
-            //or set it as a new property for this instance
+            //or set it as a new property for self instance
             var parentInstance = self, existingValue;
 
             prop = toPrefixedCamel(prop);
@@ -122,7 +122,7 @@
             return self[repository][prop];
         };
 
-        this.get = function (prop, inherit, repository) {
+        self.get = function (prop, inherit, repository) {
             //get the closest inheritted value unless inherit is false
             var parentInstance = self, value;
 
@@ -139,7 +139,7 @@
             return value;
         };
 
-        this.dataBindFromAttr = function (el) {
+        self.dataBindFromAttr = function (el) {
             var prop = el.getAttribute(toPrefixedHyphenated("databind")),
                 newData = self.get(prop, true, "startData");
 
@@ -153,7 +153,7 @@
             }
         };
 
-        this.update = function (newData, bindDuringUpdate, parse, bindObjects) {
+        self.update = function (newData, bindDuringUpdate, parse, bindObjects) {
             //assigns all values present in newData object to data
             var datum, val;
 
@@ -198,7 +198,7 @@
             return self.data;
         };
 
-        this.removeChild = function (child) {
+        self.removeChild = function (child) {
             //remove a child instance from a childArray and it's container from the DOM
             removeChildContainer(child);
             delete self.children[child.id];
@@ -290,7 +290,7 @@
             ar.ownerInstance = self;
         };
 
-        this.updateChildArray = function (prop, data, el) {
+        self.updateChildArray = function (prop, data, el) {
             //updates a child array of simple data binding instances with given data
             var ar = self.childArrays[prop],
                 frag = document.createDocumentFragment();
@@ -317,7 +317,7 @@
             }
         };
 
-        this.createChildArrayMember = function (childArray, data, frag) {
+        self.createChildArrayMember = function (childArray, data, frag) {
             if (typeof (data) !== "object") {
                 data = { value: data };//handle arrays of primitives
             }
@@ -381,7 +381,7 @@
             return obj1;
         };
 
-        this.createChild = function (id, container, data) {
+        self.createChild = function (id, container, data) {
             var child = null, cachedChild;
 
             cachedChild = self.removedChildren[id];
@@ -426,15 +426,15 @@
             return all ? topInstance.found : topInstance.found[0];
         };
 
-        this.find = function (id) {
+        self.find = function (id) {
             return find(id);
         };
 
-        this.findAll = function (id) {
+        self.findAll = function (id) {
             return find(id, true);
         };
 
-        this.getBindingFor = function (el) {
+        self.getBindingFor = function (el) {
             var closestContainer = closest(el, "[databind]"),
                 id = closestContainer && closestContainer.getAttribute(toPrefixedHyphenated("databind")),
                 bindings = self.root.findAll(id);
@@ -444,7 +444,7 @@
             })[0];
         };
 
-        this.export = function (unprefix) {
+        self.export = function (unprefix) {
             //creates an (unbound) clone of data
             //recreates nesting via recursion
             //removes namespace from property names
@@ -463,10 +463,10 @@
         };
 
         /* test-code */
-        this.createChildArray = createChildArray;
-        this.assign = assign;
-        this.generateChildArrayMemberId = generateChildArrayMemberId;
-        this.wireData = wireData;
+        self.createChildArray = createChildArray;
+        self.assign = assign;
+        self.generateChildArrayMemberId = generateChildArrayMemberId;
+        self.wireData = wireData;
         /* end-test-code */
 
 
@@ -611,7 +611,7 @@
             return input;
         };
 
-        this.surroundByComments = function (obj, message, elementTemplate, retain) {
+        self.surroundByComments = function (obj, message, elementTemplate, retain) {
             //surround an element by comments
             //add properties to an associated object:
             //   elementTemplate:  the element
@@ -634,7 +634,7 @@
             return obj.placeholderNode;
         };
 
-        this.removeCommentedElements = function (placeholder, attr) {
+        self.removeCommentedElements = function (placeholder, attr) {
             //removes elements between a set of comments
             while (placeholder.previousSibling && placeholder.previousSibling.nodeType !== 8) {
                 if (placeholder.previousSibling.nodeType === 1 && (!attr || placeholder.previousSibling.getAttribute(attr) !== null)) {
@@ -656,7 +656,7 @@
             }
         };
 
-        this.parseNode = function (node) {
+        self.parseNode = function (node) {
             //recursively update node and its children's properties with dynamic values
             var i;
 
@@ -692,7 +692,7 @@
             }
         };
 
-        this.resolveAttrNode = function (node, fromWatch) {
+        self.resolveAttrNode = function (node, fromWatch) {
             //resolve dynamic references in an attribute
             if (node.nodeName.substr(0, 5) === "data-") {
                 resolveDoubleCurlyBraces(node, node.nodeValue);
@@ -882,19 +882,19 @@
 
 
         /* test-code */
-        this.is = is;
-        this.closest = closest;
-        this.getNodeValue = getNodeValue;
-        this.getInitialNodeValues = getInitialNodeValues;
-        this.setContainer = setContainer;
-        this.getContainer = getContainer;
-        this.setHiddenInput = setHiddenInput;
-        this.setId = setId;
-        this.resolveAttrNodeName = resolveAttrNodeName;
-        this.resolveAttrNodeValue = resolveAttrNodeValue;
-        this.resolveDoubleCurlyBraces = resolveDoubleCurlyBraces;
-        this.parsePointer = parsePointer;
-        this.parseExpression = parseExpression;
+        self.is = is;
+        self.closest = closest;
+        self.getNodeValue = getNodeValue;
+        self.getInitialNodeValues = getInitialNodeValues;
+        self.setContainer = setContainer;
+        self.getContainer = getContainer;
+        self.setHiddenInput = setHiddenInput;
+        self.setId = setId;
+        self.resolveAttrNodeName = resolveAttrNodeName;
+        self.resolveAttrNodeValue = resolveAttrNodeValue;
+        self.resolveDoubleCurlyBraces = resolveDoubleCurlyBraces;
+        self.parsePointer = parsePointer;
+        self.parseExpression = parseExpression;
         /* end-test-code */
 
 
@@ -940,7 +940,7 @@
             return observer;
         };
 
-        this.turnOnAllBindings = function () {
+        self.turnOnAllBindings = function () {
             //recursively turns on mutation observer within instance and it's descendants
             turnOnBindings();
             for (var childId in self.children) {
@@ -996,7 +996,7 @@
             }
         };
 
-        this.watch = function (props, fnOrNode, globalScope) {
+        self.watch = function (props, fnOrNode, globalScope) {
             //adds a watch function to a data property or array of data properties
             var globalWatch = ["*"],
                 instance, watchType;
@@ -1047,7 +1047,7 @@
             return instance;
         };
 
-        this.checkWatches = function (prop, recursive) {
+        self.checkWatches = function (prop, recursive) {
             //check watches on the specific property as well as general watches which apply and execute
 
             if (self.removed) {
@@ -1091,12 +1091,12 @@
 
 
         /* test-code */
-        this.setListeners = setListeners;
-        this.turnOnBindings = turnOnBindings;
-        this.turnOffBindings = turnOffBindings;
-        this.mutationHandler = mutationHandler;
-        this.changeHandler = changeHandler;
-        this.executeWatchFn = executeWatchFn;
+        self.setListeners = setListeners;
+        self.turnOnBindings = turnOnBindings;
+        self.turnOffBindings = turnOffBindings;
+        self.mutationHandler = mutationHandler;
+        self.changeHandler = changeHandler;
+        self.executeWatchFn = executeWatchFn;
         /* end-test-code */
 
 
@@ -1165,13 +1165,13 @@
 
 
         /* test-code */
-        this.initProps = initProps;
-        this.initFamilyTree = initFamilyTree;
-        this.initData = initData;
+        self.initProps = initProps;
+        self.initFamilyTree = initFamilyTree;
+        self.initData = initData;
         /* end-test-code */
 
 
-        this.init = function () {
+        self.init = function () {
             //sets core properties
             //inits listeners
             //processes initial data
@@ -1179,14 +1179,14 @@
             initFamilyTree();
             initProps();
             initData();
-            setListeners(this.configs.keyUp);
+            setListeners(self.configs.keyUp);
 
             self.initialized = true;
 
-            return this;
+            return self;
         };
 
-        this.init();
+        self.init();
     }
 
 
