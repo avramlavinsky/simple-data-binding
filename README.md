@@ -62,5 +62,5 @@ Under the hood, SimpleDataBinding relies on the MutationObserver API (Supported 
   <li>If the initial data argument supplied to a binding instance contains nested objects, <a href="https://avramlavinsky.github.io/simple-data-binding/examples/examples.html?page=2">they spawn new bindings</a>.</li>
   <li>If the initial data argument supplied to a binding instance contains nested arrays, <a href="https://avramlavinsky.github.io/simple-data-binding/examples/examples.html?page=3">they spawn arrays of new bindings</a>.</li>
   <li>SimpleDataBinding requires no repeat methods, because repeition is dictated by arrays in the initial data argument.</li>
-  <li>SimpleDataBinding requires no spcific methods to dynamically control CSS because all data values are accessible in CSS as data attributes.</li>
+  <li>SimpleDataBinding requires no specific methods to dynamically control CSS because all data values are accessible in CSS as data attributes.</li>
 </ul>
